@@ -380,6 +380,25 @@ Module HelperTools
         End Select
     End Function
 
+    Public Sub AddOptionsToMenuDistributionOfSurfaceLoad(menuitem As Param_Integer)
+        menuitem.AddNamedValue("Uniform", 0)
+        menuitem.AddNamedValue("DirectionX", 1)
+        menuitem.AddNamedValue("DirectionY", 2)
+    End Sub
+
+    Public Function GetStringFromDistributionOfSurfaceLoad(item As Integer) As String
+        Select Case item
+            Case 0
+                Return "Uniform"
+            Case 1
+                Return "DirectionX"
+            Case 2
+                Return "DirectionY"
+            Case Else
+                Return "Uniform"
+        End Select
+    End Function
+
     Public Sub AddOptionsToMenuDirection(menuitem As Param_Integer)
         menuitem.AddNamedValue("X", 0)
         menuitem.AddNamedValue("Y", 1)
@@ -1033,7 +1052,7 @@ Module HelperTools
         Dim SE_sloads(100000, 4) As String 'a surface load consists of: Load case, Surface name, coord sys (GCS/LCS), direction (X, Y, Z), value (kN/m)
         Dim SE_fploads(100000, 10) As String 'a free point load consists of: Load case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
         Dim SE_flloads(100000, 11) As String 'a free line load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), LineShape
-        Dim SE_fsloads(100000, 8) As String 'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m^2), BoundaryShape
+        Dim SE_fsloads(100000, 11) As String 'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution, 1 or 2 values (kN/m^2), BoundaryShape
         Dim SE_hinges(100000, 14) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
         Dim SE_eLoads(100000, 15) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
         Dim SE_pointLoadPoint(100000, 6) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
@@ -1164,7 +1183,7 @@ Module HelperTools
                     DupNodeDict.Add(SE_nodes(i, 0), SE_nodes(i, 0))
                     isNodeDuplicate.Add(SE_nodes(i, 0), False)
                 Else
-                    Rhino.RhinoApp.WriteLine("Model contains duplicity nodes")
+                    Rhino.RhinoApp.WriteLine("Model contains duplicate nodes")
                 End If
 
             Next i
@@ -1177,7 +1196,7 @@ Module HelperTools
                                     If System.Math.Abs(SE_nodes(i, 3) - SE_nodes(j, 3)) < Tolerance Then
                                         DupNodeDict(SE_nodes(j, 0)) = SE_nodes(i, 0)
                                         isNodeDuplicate(SE_nodes(j, 0)) = True
-                                        Rhino.RhinoApp.WriteLine(SE_nodes(j, 0) & "is duplicit and is removed")
+                                        Rhino.RhinoApp.WriteLine(SE_nodes(j, 0) & "is duplicate and is removed")
                                     End If
                                 End If
                             End If
@@ -1317,7 +1336,7 @@ Module HelperTools
         End If
         If (in_edgeLoads IsNot Nothing) Then
             eloadscount = in_edgeLoads.Count / 15
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & eloadscount)
+            Rhino.RhinoApp.WriteLine("Number of edge loads: " & eloadscount)
             For i = 0 To eloadscount - 1
                 For j = 0 To 14
                     SE_eLoads(i, j) = in_edgeLoads(j + i * 15)
@@ -1327,7 +1346,7 @@ Module HelperTools
 
         If (in_lineMomentEdge IsNot Nothing) Then
             lineMomentEdgeCount = in_lineMomentEdge.Count / 13
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & eloadscount)
+            Rhino.RhinoApp.WriteLine("Number of edge moments: " & lineMomentEdgeCount)
             For i = 0 To lineMomentEdgeCount - 1
                 For j = 0 To 12
                     SE_lineMomentEdge(i, j) = in_lineMomentEdge(j + i * 13)
@@ -1337,7 +1356,7 @@ Module HelperTools
 
         If (in_pointLoadsPoints IsNot Nothing) Then
             pointLoadpointCount = in_pointLoadsPoints.Count / 6
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & pointLoadpointCount)
+            Rhino.RhinoApp.WriteLine("Number of point loads: " & pointLoadpointCount)
             For i = 0 To pointLoadpointCount - 1
                 For j = 0 To 5
                     SE_pointLoadPoint(i, j) = in_pointLoadsPoints(j + i * 6)
@@ -1346,7 +1365,7 @@ Module HelperTools
         End If
         If (in_pointMomentPoint IsNot Nothing) Then
             pointMomentpointCount = in_pointMomentPoint.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & pointLoadpointCount)
+            Rhino.RhinoApp.WriteLine("Number of point moments: " & pointMomentpointCount)
             For i = 0 To pointMomentpointCount - 1
                 For j = 0 To 4
                     SE_PointMomentPointNode(i, j) = in_pointMomentPoint(j + i * 5)
@@ -1355,7 +1374,7 @@ Module HelperTools
         End If
         If (in_pointLoadsBeams IsNot Nothing) Then
             pointLoadbeamCount = in_pointLoadsBeams.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & lloadcount)
+            Rhino.RhinoApp.WriteLine("Number of beam point loads: " & pointLoadbeamCount)
             For i = 0 To pointLoadbeamCount - 1
                 For j = 0 To 11
                     SE_pointLoadBeam(i, j) = in_pointLoadsBeams(j + i * 12)
@@ -1365,7 +1384,7 @@ Module HelperTools
 
         If (in_pointMomentBeam IsNot Nothing) Then
             pointMomentbeamCount = in_pointMomentBeam.Count / 10
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & lloadcount)
+            Rhino.RhinoApp.WriteLine("Number of beam point moments: " & pointMomentbeamCount)
             For i = 0 To pointMomentbeamCount - 1
                 For j = 0 To 9
                     SE_pointMomentBeam(i, j) = in_pointMomentBeam(j + i * 10)
@@ -1376,7 +1395,7 @@ Module HelperTools
 
         If (in_lineMomentBeam IsNot Nothing) Then
             lineMomentBeamCount = in_lineMomentBeam.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & lloadcount)
+            Rhino.RhinoApp.WriteLine("Number of beam line moments: " & lineMomentBeamCount)
             For i = 0 To lineMomentBeamCount - 1
                 For j = 0 To 10
                     SE_lineMomentBeam(i, j) = in_lineMomentBeam(j + i * 11)
@@ -1407,7 +1426,7 @@ Module HelperTools
 
         If (in_freePointMoment IsNot Nothing) Then
             fpointmomentloadcount = in_freePointMoment.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of free point loads: " & fpointmomentloadcount)
+            Rhino.RhinoApp.WriteLine("Number of free point moments: " & fpointmomentloadcount)
             For i = 0 To fpointmomentloadcount - 1
                 For j = 0 To 10
                     SE_fMomentPointloads(i, j) = in_freePointMoment(j + i * 11)
@@ -1426,11 +1445,11 @@ Module HelperTools
         End If
 
         If (in_fsloads IsNot Nothing) Then
-            fsloadcount = in_fsloads.Count / 9
+            fsloadcount = in_fsloads.Count / 11
             Rhino.RhinoApp.WriteLine("Number of free surface loads: " & fsloadcount)
             For i = 0 To fsloadcount - 1
-                For j = 0 To 8
-                    SE_fsloads(i, j) = in_fsloads(j + i * 9)
+                For j = 0 To 10
+                    SE_fsloads(i, j) = in_fsloads(j + i * 11)
                 Next j
             Next i
         End If
@@ -1438,7 +1457,7 @@ Module HelperTools
 
         If (in_ThermalLoadBeams IsNot Nothing) Then
             thermalLoadsBeamcount = in_ThermalLoadBeams.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of surface thermal loads: " & thermalLoadsBeamcount)
+            Rhino.RhinoApp.WriteLine("Number of beam thermal loads: " & thermalLoadsBeamcount)
             For i = 0 To thermalLoadsBeamcount - 1
                 For j = 0 To 11
                     SE_ThermalLoadBeams(i, j) = in_ThermalLoadBeams(j + i * 12)
@@ -1448,7 +1467,7 @@ Module HelperTools
 
         If (in_ThermalLoadSurfaces IsNot Nothing) Then
             thermalLoadsSurfacescount = in_ThermalLoadSurfaces.Count / 6
-            Rhino.RhinoApp.WriteLine("Number of surface loads: " & sloadcount)
+            Rhino.RhinoApp.WriteLine("Number of thermal surface loads: " & thermalLoadsSurfacescount)
             For i = 0 To thermalLoadsSurfacescount - 1
                 For j = 0 To 5
                     SE_ThermalLoadSurfaces(i, j) = in_ThermalLoadSurfaces(j + i * 6)
@@ -1468,7 +1487,7 @@ Module HelperTools
 
         If (in_CrossLinks IsNot Nothing) Then
             crosslinkscount = in_CrossLinks.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of hinges: " & crosslinkscount)
+            Rhino.RhinoApp.WriteLine("Number of cross links: " & crosslinkscount)
             For i = 0 To crosslinkscount - 1
                 For j = 0 To 2
                     SE_Crosslinks(i, j) = in_CrossLinks(j + i * 4)
@@ -1478,7 +1497,7 @@ Module HelperTools
 
         If (in_LineHiges IsNot Nothing) Then
             linehingecount = in_LineHiges.Count / 14
-            Rhino.RhinoApp.WriteLine("Number of hinges: " & hingecount)
+            Rhino.RhinoApp.WriteLine("Number of line hinges: " & linehingecount)
             For i = 0 To linehingecount - 1
                 For j = 0 To 13
                     SE_LineHinges(i, j) = in_LineHiges(j + i * 14)
@@ -1490,7 +1509,7 @@ Module HelperTools
 
         If (in_LinCombinations IsNot Nothing) Then
             lincominationcount = in_LinCombinations.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of linear combinations: " & lincominationcount)
             For i = 0 To lincominationcount - 1
                 For j = 0 To 2
                     SE_lincombinations(i, j) = in_LinCombinations(j + i * 3)
@@ -1499,7 +1518,7 @@ Module HelperTools
         End If
         If (in_NonLinCombinations IsNot Nothing) Then
             nonlincominationcount = in_NonLinCombinations.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of non-linear combinations: " & nonlincominationcount)
             For i = 0 To nonlincominationcount - 1
                 For j = 0 To 3
                     SE_nonlincombinations(i, j) = in_NonLinCombinations(j + i * 4)
@@ -1509,7 +1528,7 @@ Module HelperTools
 
         If (in_StabCombinations IsNot Nothing) Then
             stabcombicount = in_StabCombinations.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of stability combinations: " & stabcombicount)
             For i = 0 To stabcombicount - 1
                 For j = 0 To 1
                     SE_stabcombinations(i, j) = in_StabCombinations(j + i * 2)
@@ -1519,7 +1538,7 @@ Module HelperTools
 
         If (in_gapElem IsNot Nothing) Then
             gapsnr = in_gapElem.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of gap elements: " & gapsnr)
             For i = 0 To gapsnr - 1
                 For j = 0 To 3
                     SE_gapselem(i, j) = in_gapElem(j + i * 4)
@@ -1529,7 +1548,7 @@ Module HelperTools
 
         If (in_presstensionElem IsNot Nothing) Then
             ptelemnsnr = in_presstensionElem.Count / 2
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of pretension elements: " & ptelemnsnr)
             For i = 0 To ptelemnsnr - 1
                 For j = 0 To 1
                     SE_presstensionelems(i, j) = in_presstensionElem(j + i * 2)
@@ -1540,7 +1559,7 @@ Module HelperTools
 
         If (in_limitforceElem IsNot Nothing) Then
             lfelemnsnr = in_limitforceElem.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
+            Rhino.RhinoApp.WriteLine("Number of limit force elements: " & lfelemnsnr)
             For i = 0 To lfelemnsnr - 1
                 For j = 0 To 3
                     SE_limforceelem(i, j) = in_limitforceElem(j + i * 4)
@@ -1611,7 +1630,7 @@ Module HelperTools
 
         If ((in_nonlinearfunctions IsNot Nothing)) Then
             nlfunctionscount = in_nonlinearfunctions.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of surface supports: " & nSurfaceSupports)
+            Rhino.RhinoApp.WriteLine("Number of non-linear functions: " & nlfunctionscount)
             For i = 0 To nlfunctionscount - 1
                 For j = 0 To 4
                     SE_NonlinearFunctions(i, j) = in_nonlinearfunctions(j + i * 5)
@@ -3321,14 +3340,16 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
             oSB.AppendLine(ConCat_ht("2", "Direction"))
             oSB.AppendLine(ConCat_ht("3", "Distribution"))
             oSB.AppendLine(ConCat_ht("4", "q"))
-            oSB.AppendLine(ConCat_ht("5", "Validity"))
-            oSB.AppendLine(ConCat_ht("6", "Select"))
-            oSB.AppendLine(ConCat_ht("7", "System"))
-            oSB.AppendLine(ConCat_ht("8", "Location"))
-            oSB.AppendLine(ConCat_ht("9", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("10", "Selected objects"))
-            oSB.AppendLine(ConCat_ht("11", "Validity from"))
-            oSB.AppendLine(ConCat_ht("12", "Validity to"))
+            oSB.AppendLine(ConCat_ht("5", "q1"))
+            oSB.AppendLine(ConCat_ht("6", "q2"))
+            oSB.AppendLine(ConCat_ht("7", "Validity"))
+            oSB.AppendLine(ConCat_ht("8", "Select"))
+            oSB.AppendLine(ConCat_ht("9", "System"))
+            oSB.AppendLine(ConCat_ht("10", "Location"))
+            oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
+            oSB.AppendLine(ConCat_ht("12", "Selected objects"))
+            oSB.AppendLine(ConCat_ht("13", "Validity from"))
+            oSB.AppendLine(ConCat_ht("14", "Validity to"))
 
             oSB.AppendLine("</h>")
 
@@ -6194,6 +6215,22 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
         'a free line load consists of:
         'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), BoundaryShape
 
+        'oSB.AppendLine(ConCat_ht("0", "Load case"))
+        'oSB.AppendLine(ConCat_ht("1", "Name"))
+        'oSB.AppendLine(ConCat_ht("2", "Direction"))
+        'oSB.AppendLine(ConCat_ht("3", "Distribution"))
+        'oSB.AppendLine(ConCat_ht("4", "q"))
+        'oSB.AppendLine(ConCat_ht("5", "q1"))
+        'oSB.AppendLine(ConCat_ht("6", "q2"))
+        'oSB.AppendLine(ConCat_ht("7", "Validity"))
+        'oSB.AppendLine(ConCat_ht("8", "Select"))
+        'oSB.AppendLine(ConCat_ht("9", "System"))
+        'oSB.AppendLine(ConCat_ht("10", "Location"))
+        'oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
+        'oSB.AppendLine(ConCat_ht("12", "Selected objects"))
+        'oSB.AppendLine(ConCat_ht("13", "Validity from"))
+        'oSB.AppendLine(ConCat_ht("14", "Validity to"))
+
         Dim BoundaryShape As String
         Dim LineShape As String
         Dim row_id As Long
@@ -6212,46 +6249,60 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
         End Select
 
         'distribution
-        oSB.AppendLine(ConCat_pvt("3", "0", "Uniform"))
-        'load value
-        oSB.AppendLine(ConCat_pv("4", loads(iload, 5) * 1000))
+        Select Case loads(iload, 5)
+            Case "DirectionX"
+                oSB.AppendLine(ConCat_pvt("3", "1", "Dir X"))
+            Case "DirectionY"
+                oSB.AppendLine(ConCat_pvt("3", "2", "Dir Y"))
+            Case Else
+                oSB.AppendLine(ConCat_pvt("3", "0", "Uniform"))
+        End Select
+
+        'load value(s)
+        Select Case loads(iload, 5)
+            Case "DirectionX", "DirectionY"
+                oSB.AppendLine(ConCat_pv("5", loads(iload, 6) * 1000))
+                oSB.AppendLine(ConCat_pv("6", loads(iload, 7) * 1000))
+            Case Else
+                oSB.AppendLine(ConCat_pv("4", loads(iload, 6) * 1000))
+        End Select
 
         'validity
         Select Case loads(iload, 1)
             Case "All"
-                oSB.AppendLine(ConCat_pvt("5", "0", "All"))
+                oSB.AppendLine(ConCat_pvt("7", "0", "All"))
             Case "-Z"
-                oSB.AppendLine(ConCat_pvt("5", "1", "-Z"))
+                oSB.AppendLine(ConCat_pvt("7", "1", "-Z"))
             Case "+Z"
-                oSB.AppendLine(ConCat_pvt("5", "2", "+Z"))
+                oSB.AppendLine(ConCat_pvt("7", "2", "+Z"))
             Case "From-to"
-                oSB.AppendLine(ConCat_pvt("5", "3", "From-to"))
+                oSB.AppendLine(ConCat_pvt("7", "3", "From-to"))
             Case "Z=0"
-                oSB.AppendLine(ConCat_pvt("5", "4", "Z=0"))
+                oSB.AppendLine(ConCat_pvt("7", "4", "Z=0"))
             Case "-Z"
-                oSB.AppendLine(ConCat_pvt("5", "5", "-Z (incl. 0)"))
+                oSB.AppendLine(ConCat_pvt("7", "5", "-Z (incl. 0)"))
             Case "+Z"
-                oSB.AppendLine(ConCat_pvt("5", "6", "+Z (incl. 0)"))
+                oSB.AppendLine(ConCat_pvt("7", "6", "+Z (incl. 0)"))
         End Select
 
         'selection (loads(iload,2))
-        oSB.AppendLine(ConCat_pvt("6", "0", "Auto"))
+        oSB.AppendLine(ConCat_pvt("8", "0", "Auto"))
 
         'coordinate system
         Select Case loads(iload, 3)
             Case "GCS - Length"
-                oSB.AppendLine(ConCat_pvt("7", "0", "GCS"))
-                oSB.AppendLine(ConCat_pvt("8", "0", "Length"))
+                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
+                oSB.AppendLine(ConCat_pvt("10", "0", "Length"))
             Case "GCS - Projection"
-                oSB.AppendLine(ConCat_pvt("7", "0", "GCS"))
-                oSB.AppendLine(ConCat_pvt("8", "1", "Projection"))
+                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
+                oSB.AppendLine(ConCat_pvt("10", "1", "Projection"))
             Case "Member LCS"
-                oSB.AppendLine(ConCat_pvt("7", "1", "Member LCS"))
+                oSB.AppendLine(ConCat_pvt("9", "1", "Member LCS"))
         End Select
 
         'table of geometry
 
-        oSB.AppendLine(ConCat_opentable("9", ""))
+        oSB.AppendLine(ConCat_opentable("11", ""))
 
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Node"))
@@ -6262,7 +6313,7 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
         oSB.AppendLine(ConCat_ht("5", "Edge"))
         oSB.AppendLine("</h>")
 
-        BoundaryShape = loads(iload, 6)
+        BoundaryShape = loads(iload, 8)
         row_id = 0
 
         For Each LineShape In BoundaryShape.Split("|")
@@ -6292,10 +6343,10 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
             row_id = row_id + 1
         Next LineShape
 
-        oSB.AppendLine(ConCat_closetable("9"))
-        oSB.AppendLine(ConCat_pv("10", ""))
-        oSB.AppendLine(ConCat_pv("11", loads(iload, 7)))
-        oSB.AppendLine(ConCat_pv("12", loads(iload, 8)))
+        oSB.AppendLine(ConCat_closetable("11"))
+        oSB.AppendLine(ConCat_pv("12", ""))
+        oSB.AppendLine(ConCat_pv("13", loads(iload, 9)))
+        oSB.AppendLine(ConCat_pv("14", loads(iload, 10)))
 
         oSB.AppendLine("</obj>")
 

@@ -6,10 +6,9 @@ Imports Rhino.Geometry
 
 Namespace Koala
     ''' <summary>
-    ''' Obsolete. Use version 2 instead which supports a non-uniform load distribution.
+    ''' Improved implementation of the FreeSurfaceLoad component to include the option to set a non-uniform distribution.
     ''' </summary>
-    <System.Obsolete>
-    Public Class FreeSurfaceLoad
+    Public Class FreeSurfaceLoad2
         Inherits GH_Component
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -20,15 +19,9 @@ Namespace Koala
         ''' </summary>
         Public Sub New()
             MyBase.New("FreeSurfaceLoad", "FreeSurfaceLoad",
-                "FreeSurfaceLoad description",
+                "FreeSurfaceLoad with option for distributed load",
                 "Koala", "Load")
         End Sub
-
-        Public Overrides ReadOnly Property Exposure As GH_Exposure
-            Get
-                Return GH_Exposure.hidden
-            End Get
-        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.
@@ -43,7 +36,13 @@ Namespace Koala
             AddOptionsToMenuCoordSysFreeLine(pManager.Param(3))
             pManager.AddIntegerParameter("Direction", "Direction", "Direction of load: X,Y,Z", GH_ParamAccess.item, 2)
             AddOptionsToMenuDirection(pManager.Param(4))
-            pManager.AddNumberParameter("LoadValue", "LoadValue", "Value of Load in KN/m", GH_ParamAccess.item, -1)
+
+            Dim idx As Integer = pManager.AddIntegerParameter("Distribution", "Distribution", "Distribution of the surface load: Uniform | DirectionX | DirectionY", GH_ParamAccess.item, 0)
+            AddOptionsToMenuDistributionOfSurfaceLoad(pManager.Param(idx))
+
+            pManager.AddNumberParameter("LoadValue1", "LoadValue1", "Value of Load in KN/m", GH_ParamAccess.item, -1)
+            pManager.AddNumberParameter("LoadValue2", "LoadValue2", "Value of Load at end in KN/m (if not uniform distribution)", GH_ParamAccess.item, -1)
+
             pManager.AddCurveParameter("Boundaries", "Boundaries", "List of lines", GH_ParamAccess.list)
             pManager.AddNumberParameter("ValidityFrom", "ValidityFrom", "Validity From in m", GH_ParamAccess.item, 0)
             pManager.AddNumberParameter("ValidityTo", "ValidityTo", "Validity To in m", GH_ParamAccess.item, 0)
@@ -71,10 +70,11 @@ Namespace Koala
             Dim Selection As String = "Auto"
             Dim CoordSys As String = "GCS - Length"
             Dim Direction As String = "Z"
-            Dim LoadValue As Double = -1.0
+            Dim Distribution As String = "Uniform"
+            Dim LoadValue1 As Double = -1.0
+            Dim LoadValue2 As Double = -1.0
             Dim Boundaries = New List(Of Curve)
             Dim i As Integer
-
 
             Dim ValidityFrom As Double = 0.0
             Dim ValidityTo As Double = 0.0
@@ -88,16 +88,26 @@ Namespace Koala
             CoordSys = GetStringFromCoordSysLine(i)
             If (Not DA.GetData(4, i)) Then Return
             Direction = GetStringFromDirection(i)
-            If (Not DA.GetData(5, LoadValue)) Then Return
-            If (Not DA.GetDataList(Of Curve)(6, Boundaries)) Then Return
-            If (Not DA.GetData(7, ValidityFrom)) Then Return
-            If (Not DA.GetData(8, ValidityTo)) Then Return
+            If (Not DA.GetData(5, i)) Then Return
+            Distribution = GetStringFromDistributionOfSurfaceLoad(i)
+
+            If (Not DA.GetData(6, LoadValue1)) Then Return
+            Select Case Distribution
+                Case "DirectionX", "DirectionY"
+                    DA.GetData(7, LoadValue2)
+                Case Else
+                    LoadValue2 = LoadValue1
+            End Select
+
+            If (Not DA.GetDataList(Of Curve)(8, Boundaries)) Then Return
+            If (Not DA.GetData(9, ValidityFrom)) Then Return
+            If (Not DA.GetData(10, ValidityTo)) Then Return
 
             Dim j As Long
 
             Dim SE_fsloads(Boundaries.Count, 11)
             Dim FlatList As New List(Of System.Object)()
-            'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m^2), BoundaryShape
+            'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 or 2 values (kN/m^2), BoundaryShape
 
             Dim itemcount As Long
             Dim item As Rhino.Geometry.Curve
@@ -141,9 +151,9 @@ Namespace Koala
                 SE_fsloads(itemcount, 2) = Selection
                 SE_fsloads(itemcount, 3) = CoordSys
                 SE_fsloads(itemcount, 4) = Direction
-                SE_fsloads(itemcount, 5) = "Uniform"
-                SE_fsloads(itemcount, 6) = LoadValue
-                SE_fsloads(itemcount, 7) = LoadValue
+                SE_fsloads(itemcount, 5) = Distribution
+                SE_fsloads(itemcount, 6) = LoadValue1
+                SE_fsloads(itemcount, 7) = LoadValue2
                 SE_fsloads(itemcount, 8) = BoundaryShape
                 SE_fsloads(itemcount, 9) = ValidityFrom
                 SE_fsloads(itemcount, 10) = ValidityTo
@@ -160,10 +170,7 @@ Namespace Koala
                 Next j
             Next i
 
-
-
             DA.SetDataList(0, FlatList)
-
 
         End Sub
 
@@ -253,7 +260,7 @@ Namespace Koala
         ''' </summary>
         Public Overrides ReadOnly Property ComponentGuid() As Guid
             Get
-                Return New Guid("8bb2139d-3082-480f-8c0e-de049cc89821")
+                Return New Guid("8499bfdb-1f34-4702-95a8-bb73d18a3a91")
             End Get
         End Property
     End Class
