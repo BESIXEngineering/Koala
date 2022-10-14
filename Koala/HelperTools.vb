@@ -4351,356 +4351,221 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
             oSB.AppendLine("</row>")
             oSB.AppendLine("</p3>")
 
-        ElseIf formtype = "CONC" Then
-
+        Else
+            Dim catalogueLib As String
+            Dim catalogueItem As String
             sectiontype = Strings.UCase(Strings.Left(sectiondef, 4))
 
+            If formtype = "CONC" Then
+                catalogueLib = "EP_CssLib.EP_ProfLib_Concrete.1"
+                Select Case sectiontype
+                    Case "RECT" '> full rectangle
+                        catalogueItem = "0"
+                    Case "ISEC" '> Isection
+                        catalogueItem = "1"
+                    Case "TSEC" '> Tsection
+                        catalogueItem = "2"
+                    Case "LSEC" '> L section
+                        catalogueItem = "3"
+                    Case "CIRC" '> full circle
+                        catalogueItem = "4"
+                    Case "OVAL" '> oval
+                        catalogueItem = "5"
+                    Case "LREV" '> L rev 
+                        catalogueItem = "6"
+                    Case Else
+                        Throw New ArgumentException("Invalid Concrete section type " & sectiontype)
+                End Select
+
+            ElseIf formtype = "TIMB" Then
+                catalogueLib = "EP_CssLib.EP_ProfLib_Timber.1"
+
+                Select Case sectiontype
+                    Case "RECT" '> full rectangle
+                        catalogueItem = "0"
+                    Case "CIRC" '> full circle
+                        catalogueItem = "1"
+                    Case "TSEC" '> Tsection
+                        catalogueItem = "4"
+                    Case "ISEC" '> Isection
+                        catalogueItem = "5"
+                        'Case "LSEC" '> L section
+                        '    catalogueItem = "3"'
+                        'Case "LREV" '> L rev 
+                        '    catalogueItem = "6" '
+                        'Case "OVAL" '> oval
+                        '    catalogueItem = "5"'
+                        'Case "DREC" '> DoubleRectangle
+                        '    catalogueItem = "7"
+                        'Case "TREC" '> TripleRectangle
+                        '    catalogueItem = "8"
+                        'Case "ISSH" '> ISectionWithHaunch
+                        '    catalogueItem = "9"
+                        'Case "CSEC" '> CSection
+                        '    catalogueItem = "10"
+                        'Case "USEC" '> USection
+                        '    catalogueItem = "11"
+                        'Case "PIPE" '> Pipe
+                        '    catalogueItem = "12"
+                        'Case "POLY" '> Polygon
+                        '    catalogueItem = "13"
+                        'Case "XSEC" '> XSection
+                        '    catalogueItem = "14"
+                        'Case "ZSEC" '> ZSection
+                        '    catalogueItem = "15"
+                        'Case "SBOX" '> Box
+                        '    catalogueItem = "16"
+                        'Case "DBOX" '> DoubleBox
+                        '    catalogueItem = "17"
+                        'Case "TRAP" '> Trapezoid
+                        '    catalogueItem = "28"
+                        'Case "ISAH" '> ISectionWithHaunchAsymmetric
+                        '    catalogueItem = "29"
+                        'Case "TSSH" '> TSectionWithHaunch
+                        '    catalogueItem = "30"
+                        'Case "SREP" '> RectangleWithPlates
+                        '    catalogueItem = "31"
+                        'Case "DREP" '> DoubleRectangleWithPlates
+                        '    catalogueItem = "32"
+                    Case Else
+                        Throw New ArgumentException("Invalid Timber section type " & sectiontype)
+                End Select
+            Else
+                catalogueLib = "EP_CssLib.EP_ProfLib_GeomThinWalled.1"
+
+                Select Case sectiontype
+                    Case "IROS" '> IRolled
+                        catalogueItem = "0"
+                    Case "TUBE" '> Tube
+                        catalogueItem = "1"
+                    Case "PIPE" '> Pipe
+                        catalogueItem = "2"
+                    Case "ANGL" '> Angle
+                        catalogueItem = "3"
+                    Case "CHAN" '> Channel
+                        catalogueItem = "4"
+                    Case "TTEE" '> TTee
+                        catalogueItem = "5"
+                    Case "RECT" '> full rectangle
+                        catalogueItem = "6"
+                    Case "CIRC" '> full circle
+                        catalogueItem = "7"
+                    Case "IROA" '> IRolledAsymmetric
+                        catalogueItem = "8"
+                        'Case "ZZEE" '> ZZee
+                        '    catalogueItem = "24"
+                        'Case "CFCH" '> ColdFormedChannel
+                        '    catalogueItem = "25"
+                        'Case "CFCL" '> ColdFormedChannelWithLips
+                        '    catalogueItem = "26"
+                        'Case "CFZE" '> ColdFormedZee
+                        '    catalogueItem = "27"
+                    Case Else
+                        Throw New ArgumentException("Invalid Thin-Walled section type " & sectiontype)
+                End Select
+            End If
+
+            Dim dimensionValues As Double() = Array.ConvertAll(Split(Mid(sectiondef, 5), "x"), New Converter(Of String, Double)(AddressOf Double.Parse))
+            Dim dimensionNameString As String
+
             Select Case sectiontype
-                Case "RECT"
-                    'get height and width
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "0")) '> rectangle
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "ISEC"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectBh = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectBs = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectts = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    sectth = Split(Mid(sectiondef, 5), "x")(4) / 1000
-                    sects = Split(Mid(sectiondef, 5), "x")(5) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "1")) '> Isection
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "Bh"))
-                    oSB.AppendLine(ConCat_pv("4", sectBh))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "Bs"))
-                    oSB.AppendLine(ConCat_pv("4", sectBs))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "ts"))
-                    oSB.AppendLine(ConCat_pv("4", sectts))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""5"">")
-                    oSB.AppendLine(ConCat_pv("0", "th"))
-                    oSB.AppendLine(ConCat_pv("4", sectth))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""6"">")
-                    oSB.AppendLine(ConCat_pv("0", "s"))
-                    oSB.AppendLine(ConCat_pv("4", sects))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "TSEC"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectth = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectsh = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "2")) '> Tsection
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "th"))
-                    oSB.AppendLine(ConCat_pv("4", sectth))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "sh"))
-                    oSB.AppendLine(ConCat_pv("4", sectsh))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "LSEC"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectth = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectsh = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "3")) '> L section
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "th"))
-                    oSB.AppendLine(ConCat_pv("4", sectth))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "sh"))
-                    oSB.AppendLine(ConCat_pv("4", sectsh))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "LREV"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectth = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectsh = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "6")) '> L rev 
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "th"))
-                    oSB.AppendLine(ConCat_pv("4", sectth))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "sh"))
-                    oSB.AppendLine(ConCat_pv("4", sectsh))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "CIRC"
-                    sectD = Mid(sectiondef, 5) / 1000
-                    'get diameter
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "4")) '> circle
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "D"))
-                    oSB.AppendLine(ConCat_pv("4", sectD))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "OVAL"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Concrete.1"))
-                    oSB.AppendLine(ConCat_pv("2", "5")) '> oval
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-            End Select
-        ElseIf formtype = "TIMB" Then
-            sectiontype = Strings.UCase(Strings.Left(sectiondef, 4))
-            Select Case sectiontype
-                Case "RECT"
-                    sectH = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    sectB = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Timber.1"))
-                    oSB.AppendLine(ConCat_pv("2", "0")) '> rectangle
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "H"))
-                    oSB.AppendLine(ConCat_pv("4", sectH))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "B"))
-                    oSB.AppendLine(ConCat_pv("4", sectB))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "ISEC"
-                    sectBa = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    secttha = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectBb = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectthb = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    sectBc = Split(Mid(sectiondef, 5), "x")(4) / 1000
-                    sectthc = Split(Mid(sectiondef, 5), "x")(5) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Timber.1"))
-                    oSB.AppendLine(ConCat_pv("2", "5")) '> Tsection
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "Ba"))
-                    oSB.AppendLine(ConCat_pv("4", sectBa))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "tha"))
-                    oSB.AppendLine(ConCat_pv("4", secttha))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "Bb"))
-                    oSB.AppendLine(ConCat_pv("4", sectBb))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "thb"))
-                    oSB.AppendLine(ConCat_pv("4", sectthb))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""5"">")
-                    oSB.AppendLine(ConCat_pv("0", "Bc"))
-                    oSB.AppendLine(ConCat_pv("4", sectBc))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""6"">")
-                    oSB.AppendLine(ConCat_pv("0", "thc"))
-                    oSB.AppendLine(ConCat_pv("4", sectthc))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "TSEC"
-                    sectBa = Split(Mid(sectiondef, 5), "x")(0) / 1000
-                    secttha = Split(Mid(sectiondef, 5), "x")(1) / 1000
-                    sectBb = Split(Mid(sectiondef, 5), "x")(2) / 1000
-                    sectthb = Split(Mid(sectiondef, 5), "x")(3) / 1000
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Timber.1"))
-                    oSB.AppendLine(ConCat_pv("2", "4")) '> Tsection
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "Ba"))
-                    oSB.AppendLine(ConCat_pv("4", sectBa))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""2"">")
-                    oSB.AppendLine(ConCat_pv("0", "tha"))
-                    oSB.AppendLine(ConCat_pv("4", secttha))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""3"">")
-                    oSB.AppendLine(ConCat_pv("0", "Bb"))
-                    oSB.AppendLine(ConCat_pv("4", sectBb))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""4"">")
-                    oSB.AppendLine(ConCat_pv("0", "thb"))
-                    oSB.AppendLine(ConCat_pv("4", sectthb))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
-                Case "CIRC"
-                    sectD = Mid(sectiondef, 5) / 1000
-                    'get diameter
-                    oSB.AppendLine(ConCat_pv("1", "EP_CssLib.EP_ProfLib_Timber.1"))
-                    oSB.AppendLine(ConCat_pv("2", "1")) '> circle
-                    oSB.AppendLine("<p3 t="""">")
-                    oSB.AppendLine("<h>")
-                    oSB.AppendLine(ConCat_ht("0", "Name"))
-                    oSB.AppendLine(ConCat_ht("1", "Material"))
-                    oSB.AppendLine(ConCat_ht("4", "Length"))
-                    oSB.AppendLine("</h>")
-                    oSB.AppendLine("<row id=""0"">")
-                    oSB.AppendLine(ConCat_pv("0", "Material"))
-                    oSB.AppendLine(ConCat_pn("1", sectionmat))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("<row id=""1"">")
-                    oSB.AppendLine(ConCat_pv("0", "D"))
-                    oSB.AppendLine(ConCat_pv("4", sectD))
-                    oSB.AppendLine("</row>")
-                    oSB.AppendLine("</p3>")
+                Case "RECT" '> full rectangle
+                    dimensionNameString = "H;B"
+                Case "ISEC" '> Isection
+                    dimensionNameString = "H;Bh;Bs;ts;th;s"
+                Case "TSEC" '> Tsection
+                    dimensionNameString = "H;B;th;sh"
+                Case "LSEC" '> L section
+                    dimensionNameString = "H;B;th;sh"
+                Case "LREV" '> L rev 
+                    dimensionNameString = "H;B;th;sh"
+                Case "CIRC" '> full circle
+                    dimensionNameString = "D"
+                Case "OVAL" '> oval
+                    dimensionNameString = "H;B"
+                Case "DREC" '> DoubleRectangle
+                    dimensionNameString = "tha;Ba;a"
+                Case "TREC" '> TripleRectangle
+                    dimensionNameString = "tha;Ba;a"
+                Case "ISSH" '> ISectionWithHaunch
+                    dimensionNameString = "H;B;ta;s;ts;th"
+                Case "CSEC" '> CSection
+                    dimensionNameString = "A;tha1;tha2;B;thb1;thb2"
+                Case "USEC" '> USection
+                    dimensionNameString = "H;B;th;sh"
+                Case "PIPE" '> Pipe
+                    dimensionNameString = "D;t"
+                Case "POLY" '> Polygon
+                    dimensionNameString = "R;n"
+                Case "XSEC" '> XSection
+                    dimensionNameString = "A;tha;B;thb"
+                Case "ZSEC" '> ZSection
+                    dimensionNameString = "A;tha;B;thb1;thb2;C"
+                Case "SBOX" '> Box
+                    dimensionNameString = "A;tha;B;thb1;thb2"
+                Case "DBOX" '> DoubleBox
+                    dimensionNameString = "Ba;ha;Bb;hb"
+                Case "IROS" '> IRolled
+                    dimensionNameString = "H;B;t;s;R"
+                Case "IROA" '> IRolledAsymmetric
+                    dimensionNameString = "H;s;Bt;Bb;tt;tb;R"
+                Case "TUBE" '> Tube
+                    dimensionNameString = "H;B;s;R;r1"
+                Case "ANGL" '> Angle
+                    dimensionNameString = "H;B;t;R;R1"
+                Case "CHAN" '> Channel
+                    dimensionNameString = "H;B;t;s;R"
+                Case "TTEE" '> TTee
+                    dimensionNameString = "H;B;t;s;R"
+                Case "ZZEE" '> ZZee
+                    dimensionNameString = "H;B;t;s;R;R1"
+                Case "CFCH" '> ColdFormedChannel
+                    dimensionNameString = "H;B;s;r"
+                Case "CFCL" '> ColdFormedChannelWithLips
+                    dimensionNameString = "H;B;s;r;c"
+                Case "CFZE" '> ColdFormedZee
+                    dimensionNameString = "H;B;s;r"
+                Case "TRAP" '> Trapezoid
+                    dimensionNameString = "H;Bh;Bs"
+                Case "ISAH" '> ISectionWithHaunchAsymmetric
+                    dimensionNameString = "H;Bt;tt;tth;Bb;tb;tbh;s"
+                Case "TSSH" '> TSectionWithHaunch
+                    dimensionNameString = "H;Bh;Bs;Bw;th"
+                Case "SREP" '> RectangleWithPlates
+                    dimensionNameString = "tha;Ba;thb;Bb"
+                Case "DREP" '> DoubleRectangleWithPlates
+                    dimensionNameString = "Ba;ha;Bb;hb"
+                Case Else
+                    Throw New ArgumentException("Invalid section type " & sectiontype)
             End Select
 
+            oSB.AppendLine(ConCat_pv("1", catalogueLib))
+            oSB.AppendLine(ConCat_pv("2", catalogueItem))
+            oSB.AppendLine("<p3 t="""">")
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Name"))
+            oSB.AppendLine(ConCat_ht("1", "Material"))
+            oSB.AppendLine(ConCat_ht("4", "Length"))
+            oSB.AppendLine("</h>")
+            oSB.AppendLine("<row id=""0"">")
+            oSB.AppendLine(ConCat_pv("0", "Material"))
+            oSB.AppendLine(ConCat_pn("1", sectionmat))
+            oSB.AppendLine("</row>")
+
+            Dim dimensionNames As String() = Split(dimensionNameString, ";")
+            If dimensionNames.Length < dimensionValues.Length Then
+                Throw New ArgumentException("Expected the following dimensions for section type " & sectiontype & ": " & dimensionNameString)
+            End If
+
+            For i As Integer = 1 To dimensionNames.Length
+                oSB.AppendLine("<row id=""" & i.ToString() & """>")
+                oSB.AppendLine(ConCat_pv("0", dimensionNames(i - 1)))
+                oSB.AppendLine(ConCat_pv("4", dimensionValues(i - 1) / 1000))
+                oSB.AppendLine("</row>")
+            Next
+
+            oSB.AppendLine("</p3>")
         End If
-
 
         oSB.AppendLine("</obj>")
 
@@ -5755,7 +5620,7 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
                 oSB.AppendLine(ConCat_pvt("3", "1", "Linear"))
         End Select
         'load value
-         oSB.AppendLine(ConCat_pv("4", loads(iload, 3)))
+        oSB.AppendLine(ConCat_pv("4", loads(iload, 3)))
         oSB.AppendLine(ConCat_pv("5", loads(iload, 4)))
         oSB.AppendLine(ConCat_pv("6", loads(iload, 5)))
 
