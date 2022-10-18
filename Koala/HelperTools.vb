@@ -3,6 +3,13 @@ Imports Grasshopper.Kernel.Parameters
 
 Module HelperTools
 
+    Public Sub AddEnumOptions(Of T)(param As Param_Integer)
+        For Each item As [Enum] In [Enum].GetValues(GetType(T))
+            param.AddNamedValue(item.ToString(), Convert.ToInt32(item))
+            param.Description += " | " & item.ToString() & "=" & Convert.ToInt32(item).ToString()
+        Next
+    End Sub
+
     Public Sub AddOptionstoMenuDOFTransition(menuItem As Param_Integer)
         menuItem.AddNamedValue("Free", 0)
         menuItem.AddNamedValue("Rigid", 1)
@@ -1030,7 +1037,7 @@ Module HelperTools
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
                              RemDuplNodes As Boolean, Tolerance As Double, in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
-                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String))
+                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String))
         Dim i As Long, j As Long
 
 
@@ -1084,6 +1091,7 @@ Module HelperTools
         Dim SE_LineHinges(100000, 13) As String
         Dim SE_ThermalLoadBeams(100000, 11) As String
         Dim SE_ThermalLoadSurfaces(100000, 5) As String
+        Dim SE_ArbitraryProfiles(100000, 8) As String
 
         Dim SE_meshsize As Double
 
@@ -1099,6 +1107,7 @@ Module HelperTools
 
         Dim pointMomentpointCount As Long, pointMomentbeamCount As Long, lineMomentBeamCount As Long, lineMomentEdgeCount As Long, fpointmomentloadcount As Long, nlfunctionscount As Long, slabInternalEdgesCount As Long, RigidArmsCount As Long, CablesCount As Long
         Dim internalNodesBeamCount As Long = 0, linehingecount As Long = 0, thermalLoadsBeamcount As Long = 0, thermalLoadsSurfacescount As Long = 0
+        Dim arbitraryProfileCount As Long = 0
 
         Dim stopWatch As New System.Diagnostics.Stopwatch()
         Dim time_elapsed As Double
@@ -1639,6 +1648,18 @@ Module HelperTools
         End If
 
 
+
+        If (in_ArbitraryProfiles IsNot Nothing) Then
+            arbitraryProfileCount = in_ArbitraryProfiles.Count / 9
+            Rhino.RhinoApp.WriteLine("Number of Arbitrary Profiles: " & arbitraryProfileCount)
+            For i = 0 To arbitraryProfileCount - 1
+                For j = 0 To 8
+                    SE_ArbitraryProfiles(i, j) = in_ArbitraryProfiles(j + i * 9)
+                Next j
+            Next i
+        End If
+
+
         'write the XML file
         '---------------------------------------------------
         Rhino.RhinoApp.Write("Creating the XML file string in memory...")
@@ -1658,7 +1679,8 @@ lfelemnsnr, projectInfo, fileNameXMLdef, SE_layers, SE_layersCount, SE_beamLineS
 nPointSupportonBeam, SE_subsoil, nSubsoils, SE_surfaceSupport, nSurfaceSupports, SE_LoadPanels, nloadPanels,
 SE_PointMomentPointNode, pointMomentpointCount, SE_pointMomentBeam, pointMomentbeamCount, SE_lineMomentBeam, lineMomentBeamCount, SE_lineMomentEdge, lineMomentEdgeCount,
 SE_fMomentPointloads, fpointmomentloadcount, SE_NonlinearFunctions, nlfunctionscount, SE_SlabInternalEdges, slabInternalEdgesCount, SE_RigidArms, RigidArmsCount, SE_Cables,
-CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehingecount, SE_ThermalLoadBeams, thermalLoadsBeamcount, SE_ThermalLoadSurfaces, thermalLoadsSurfacescount)
+CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehingecount, SE_ThermalLoadBeams, thermalLoadsBeamcount, SE_ThermalLoadSurfaces, thermalLoadsSurfacescount,
+SE_ArbitraryProfiles, arbitraryProfileCount)
 
         Rhino.RhinoApp.Write(" Done." & Convert.ToChar(13))
 
@@ -1696,7 +1718,8 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
     pointMomentpointCount, SE_pointMomentBeam(,), pointMomentbeamCount, SE_lineMomentBeam(,), lineMomentBeamCount, SE_lineMomentEdge(,),
     lineMomentEdgeCount, SE_fMomentPointloads(,), fpointmomentloadcount, SE_NonlinearFunctions(,), nlfunctionscount, SE_SlabInternalEdges(,),
     slabInternalEdgesCount, SE_RigidArms(,), RigidArmsCount, SE_Cables(,), CablesCount, SE_nodesInternalBeam(,), internalNodesBeamCount,
-    SE_LineHinges(,), linehingecount, SE_ThermalLoadBeams(,), thermalLoadsBeamcount, SE_ThermalLoadSurfaces(,), thermalLoadsSurfacescount)
+    SE_LineHinges(,), linehingecount, SE_ThermalLoadBeams(,), thermalLoadsBeamcount, SE_ThermalLoadSurfaces(,), thermalLoadsSurfacescount,
+    SE_ArbitraryProfiles(,), arbitraryProfileCount)
 
         Dim i As Long
         Dim c As String, cid As String, t As String, tid As String
@@ -3475,6 +3498,39 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... LineHinge: " + Str(i))
                 End If
                 Call WriteLineHinge(oSB, i, SE_LineHinges)
+
+            Next
+
+            oSB.AppendLine("</table>")
+            oSB.AppendLine("</container>")
+        End If
+
+
+        If arbitraryProfileCount > 0 Then
+
+            'output surface thermal loads ------------------------------------------------------------------
+            c = "{88B256F1-527E-4CC8-B78F-87BE44CF2E04}"
+            cid = "EP_DataAddStructure.EP_ArbitraryBeam.1"
+            t = "35A77CA3-2C5B-450A-83E1-BB4277010251"
+            tid = "EP_DataAddStructure.EP_ArbitraryBeam.1"
+
+            oSB.AppendLine("")
+            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
+            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Name"))
+            oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+            oSB.AppendLine(ConCat_ht("2", "Coord. definition"))
+            oSB.AppendLine(ConCat_ht("3", "Cross-section"))
+            oSB.AppendLine(ConCat_ht("4", "Spans table"))
+            oSB.AppendLine("</h>")
+
+            For i = 0 To arbitraryProfileCount - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... arbitrary profile: " + Str(i))
+                End If
+                Call WriteArbitraryProfile(oSB, i, SE_ArbitraryProfiles)
 
             Next
 
@@ -6356,6 +6412,121 @@ CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehi
         oSB.AppendLine("</obj>")
 
     End Sub
+
+
+    Private Sub WriteArbitraryProfile(ByRef oSB, idx, aprofiles(,)) 'write 1 ArbitraryProfile to the XML stream
+        Dim tt As String
+
+        oSB.AppendLine("<obj nm=""" & aprofiles(idx, 1) & """>")
+
+        'Name
+        oSB.AppendLine(ConCat_pv("0", aprofiles(idx, 1)))
+
+        'Object reference table
+        oSB.AppendLine("<p1 t="""">")
+        oSB.AppendLine("<h>")
+        oSB.AppendLine("<h0 t=""Member Type""/>")
+        oSB.AppendLine("<h1 t=""Member Type Name""/>")
+        oSB.AppendLine("<h2 t=""Member Name""/>")
+        oSB.AppendLine("</h>")
+        oSB.AppendLine("<row id=""0"">")
+        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
+        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("2", aprofiles(idx, 0)))
+        oSB.AppendLine("</row>")
+        oSB.AppendLine("</p1>")
+
+        'Coordinate definition
+        Select Case aprofiles(idx, 3)
+            Case "Rela"
+                oSB.AppendLine(ConCat_pvt("2", "1", "Rela"))
+            Case "Abso"
+                oSB.AppendLine(ConCat_pvt("2", "0", "Abso"))
+        End Select
+
+        'Section
+        oSB.AppendLine(ConCat_pv("3", aprofiles(idx, 2)))
+
+        'Span reference table
+        oSB.AppendLine("<p4 t="""">")
+        oSB.AppendLine("<h>")
+        oSB.AppendLine("<h0 t=""length 1""/>")
+        oSB.AppendLine("<h1 t=""Type of Css(1)""/>")
+        oSB.AppendLine("<h2 t=""Cross-section1(1)""/>")
+        oSB.AppendLine("<h3 t=""Cross-section2(1)""/>")
+        oSB.AppendLine("<h4 t=""Css 1 param(1)""/>")
+        oSB.AppendLine("<h5 t=""Css 2 param(1)""/>")
+        oSB.AppendLine("<h6 t=""Alignment(1)""/>")
+        oSB.AppendLine("</h>")
+
+        Dim SpanLengths = Split(aprofiles(idx, 4), ";")
+        Dim SpanTypes = Split(aprofiles(idx, 5), ";")
+        Dim SpanCss1 = Split(aprofiles(idx, 6), ";")
+        Dim SpanCss2 = Split(aprofiles(idx, 7), ";")
+        Dim SpanAlignments = Split(aprofiles(idx, 8), ";")
+
+        Dim SpanCount As Integer = New Integer() {
+            SpanLengths.Length,
+            SpanTypes.Length,
+            SpanCss1.Length,
+            SpanCss2.Length,
+            SpanAlignments.Length
+        }.Min()
+
+        For i As Integer = 0 To SpanCount - 1
+            oSB.AppendLine("<row id=""" & i & """>")
+            ' span length
+            oSB.AppendLine(ConCat_pv("0", SpanLengths(i).Trim()))
+            ' span Css type
+            Select Case SpanTypes(i).Trim()
+                Case "Prismatic"
+                    oSB.AppendLine(ConCat_pvt("1", "0", "prismatic"))
+                Case "ParametricHaunch"
+                    oSB.AppendLine(ConCat_pvt("1", "1", "param. haunch"))
+                Case "TwoCss"
+                    oSB.AppendLine(ConCat_pvt("1", "2", "two Css"))
+            End Select
+            ' span css 1 and 2
+            oSB.AppendLine(ConCat_pn("2", SpanCss1(i).Trim()))
+            oSB.AppendLine(ConCat_pn("3", SpanCss2(i).Trim()))
+            ' haunch parameters
+            If SpanTypes(i).Trim() = "ParametricHaunch" Then
+                oSB.AppendLine(ConCat_pvt("4", "0", "from DB"))
+                oSB.AppendLine(ConCat_pvt("5", "0", "from DB"))
+            End If
+            ' span alignment
+            Select Case SpanAlignments(i).Trim()
+                Case "Undefined"
+                    oSB.AppendLine(ConCat_pvt("6", "0", "default"))
+                Case "CentreLine"
+                    oSB.AppendLine(ConCat_pvt("6", "1", "centre line"))
+                Case "TopSurface"
+                    oSB.AppendLine(ConCat_pvt("6", "2", "top surface"))
+                Case "BottomSurface"
+                    oSB.AppendLine(ConCat_pvt("6", "3", "bottom surface"))
+                Case "LeftSurface"
+                    oSB.AppendLine(ConCat_pvt("6", "4", "left surface"))
+                Case "RightSurface"
+                    oSB.AppendLine(ConCat_pvt("6", "5", "right surface"))
+                Case "TopLeft"
+                    oSB.AppendLine(ConCat_pvt("6", "6", "top left"))
+                Case "TopRight"
+                    oSB.AppendLine(ConCat_pvt("6", "7", "top right"))
+                Case "BottomLeft"
+                    oSB.AppendLine(ConCat_pvt("6", "8", "bottom left"))
+                Case "BottomRight"
+                    oSB.AppendLine(ConCat_pvt("6", "9", "bottom right"))
+            End Select
+
+            oSB.AppendLine("</row>")
+        Next
+
+        oSB.AppendLine("</p4>")
+
+        oSB.AppendLine("</obj>")
+
+    End Sub
+
 
     Function WrapIfRequired(Filename As String) As String
         Dim containsSpaces = False

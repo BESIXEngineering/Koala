@@ -3523,5 +3523,93 @@
 
     </def_table>
   </def_container>
+
+
+  <def_container id="{88B256F1-527E-4CC8-B78F-87BE44CF2E04}" clsid="{88B256F1-527E-4CC8-B78F-87BE44CF2E04}" progid="EP_DataAddStructure.EP_ArbitraryBeam.1">
+    <def_table id="35A77CA3-2C5B-450A-83E1-BB4277010251" name="XML\default" type="vertical" clsid="{88B256F1-527E-4CC8-B78F-87BE44CF2E04}" progid="EP_DataAddStructure.EP_ArbitraryBeam.1" size="17">
+
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      
+      
+      <def_property x="1" name="Reference Table" type="table" id="{8F96D00B-2125-411D-9218-EF0038D0056F}">
+
+        <def_subtable size="4" type="vertical">
+          <def_property x="0" name="Member Type" type="string" id="{3334884C-E566-404D-A135-4093CC88257D}"/>
+
+          <def_property x="1" name="Member Type Name" type="string" readonly="yes" id="{FF14758E-BC03-4650-88B5-5EA8F1016952}"/>
+
+          <def_property x="2" name="Member Name" type="string" id="{66D67076-ED1C-44EC-BA07-93E993F493CB}"/>
+        </def_subtable>
+
+      </def_property>
+
+
+      <def_property x="2" name="Coord. definition" type="enum" id="{EDA4B5AB-8A80-11D4-A414-000000000000}">
+        <def_enum size="2">
+          <it_enum v="0" t="Abso"/>
+          <it_enum v="1" t="Rela"/>
+        </def_enum>
+      </def_property>
+
+
+      <def_property x="3" name="Cross-section" type="ref" flag="131072" id="{07CA475A-E8C9-48D6-83CA-4320D1CB7B2A}">
+        <def_ref id="{2127A9B3-36BD-11D4-B337-00104BC3B531}" progid="CrossSection.EP_CrossSection.1"/>
+      </def_property>
+
+
+      <def_property x="4" name="Spans table" type="table" id="{3D7F2F63-0F38-4F4E-A7F8-D153249D862B}">
+        <def_subtable size="7" type="vertical">
+          <def_property x="0" name="length 1" type="param" id="{00000000-E640-4470-8F9F-275263C95844}"/>
+
+          <def_property x="1" name="Type of Css(1)" type="enum" id="{A3C75440-4D7E-4F42-98CC-2507E6BC1B54}">
+            <def_enum size="3">
+              <it_enum v="0" t="prismatic"/>
+              <it_enum v="1" t="param. haunch"/>
+              <it_enum v="2" t="two Css"/>
+            </def_enum>
+          </def_property>
+
+          <def_property x="2" name="Cross-section1(1)" type="ref" id="{5AA00426-3642-4D3C-A24B-78C13522C120}">
+            <def_ref id="{2127A9B3-36BD-11D4-B337-00104BC3B531}" progid="CrossSection.EP_CrossSection.1"/>
+          </def_property>
+
+          <def_property x="3" name="Cross-section2(1)" type="ref" id="{F2CF1921-FD89-422E-9310-BD6F001FF9DA}">
+            <def_ref id="{2127A9B3-36BD-11D4-B337-00104BC3B531}" progid="CrossSection.EP_CrossSection.1"/>
+          </def_property>
+
+          <def_property x="4" name="Css 1 param(1)" type="enum" id="{49ADB28E-2C1A-452A-8F92-0AA32352946E}">
+            <def_enum size="2">
+              <it_enum v="0" t="from DB"/>
+              <it_enum v="1" t="variable"/>
+            </def_enum>
+          </def_property>
+
+          <def_property x="5" name="Css 2 param(1)" type="enum" id="{5C034F83-FAF0-4D6B-92C0-5C74AACAFEF9}">
+            <def_enum size="2">
+              <it_enum v="0" t="from DB"/>
+              <it_enum v="1" t="variable"/>
+            </def_enum>
+          </def_property>
+
+          <def_property x="6" name="Alignment(1)" type="enum" id="{BEFDF51A-C4F6-479F-BCF4-CD13230DA5A9}">
+            <def_enum size="10">
+              <it_enum v="0" t="default"/>
+              <it_enum v="1" t="centre line"/>
+              <it_enum v="2" t="top surface"/>
+              <it_enum v="3" t="bottom surface"/>
+              <it_enum v="4" t="left surface"/>
+              <it_enum v="5" t="right surface"/>
+              <it_enum v="6" t="top left"/>
+              <it_enum v="7" t="top right"/>
+              <it_enum v="8" t="bottom left"/>
+              <it_enum v="9" t="bottom right"/>
+            </def_enum>
+          </def_property>
+
+        </def_subtable>
+      </def_property>
+
+    </def_table>
+  </def_container>
   
 </def_project>

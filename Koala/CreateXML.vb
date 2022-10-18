@@ -134,6 +134,9 @@ Namespace Koala
             pManager.Param(52).Optional = True
             pManager.AddTextParameter("ThermalLoadsOnSurfaces", "ThermalLoadsOnSurfaces", "List of thermal load on surfaces", GH_ParamAccess.list)
             pManager.Param(53).Optional = True
+
+            pManager.AddTextParameter("ArbitraryProfiles", "ArbitraryProfiles", "List of arbitrary profiles", GH_ParamAccess.list)
+            pManager.Param(54).Optional = True
         End Sub
 
         ''' <summary>
@@ -208,6 +211,8 @@ Namespace Koala
             Dim in_ThermalLoadBeams = New List(Of String)
             Dim in_ThermalLoadSurfaces = New List(Of String)
 
+            Dim in_ArbitraryProfiles = New List(Of String)
+
 
 
 
@@ -270,6 +275,8 @@ Namespace Koala
             DA.GetDataList(Of String)(52, in_ThermalLoadBeams)
             DA.GetDataList(Of String)(53, in_ThermalLoadSurfaces)
 
+            DA.GetDataList(Of String)(54, in_ArbitraryProfiles)
+
 
             If AutoUpdate = False Then
                 If OnDemand = False Then
@@ -284,7 +291,8 @@ Namespace Koala
                           in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, Scale, in_LinCombinations, in_NonLinCombinations, in_StabCombinations,
                           in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, projectInfo, in_layers, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
-                          in_freePointMoment, in_nonlinearfunctions, RemDuplNodes, Tolerance, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces)
+                          in_freePointMoment, in_nonlinearfunctions, RemDuplNodes, Tolerance, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
+                          in_ArbitraryProfiles)
             DA.SetData(0, FileName)
 
 

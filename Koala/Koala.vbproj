@@ -106,6 +106,7 @@
   <ItemGroup>
     <Compile Include="2Dmember.vb" />
     <Compile Include="Analysis.vb" />
+    <Compile Include="ArbitraryProfile.vb" />
     <Compile Include="BeamInternalNode.vb" />
     <Compile Include="BeamLoads.vb" />
     <Compile Include="Beams.vb" />
@@ -208,6 +209,7 @@
     <None Include="Resources\BeamPointMoment.bmp" />
     <None Include="Resources\BeamInternalNode.bmp" />
     <None Include="Resources\Cable.bmp" />
+    <Content Include="Resources\ArbitraryProfile.bmp" />
     <Content Include="Resources\CreateXML.bmp" />
     <None Include="Resources\Cross-link.bmp" />
     <Content Include="Resources\Cross-section.bmp" />
