@@ -5032,7 +5032,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine("</p1>")
         'end of reference table
         oSB.AppendLine(ConCat_pvt("2", "0", "Individual"))
-        oSB.AppendLine(ConCat_pv("3", surfacesupport(i, 1)))
+        oSB.AppendLine(ConCat_pn("3", surfacesupport(i, 1)))
         oSB.AppendLine("</obj>")
 
     End Sub
