@@ -2,14 +2,6 @@
 Imports Grasshopper.Kernel.Parameters
 
 Module HelperTools
-
-    Public Sub AddEnumOptions(Of T)(param As Param_Integer)
-        For Each item As [Enum] In [Enum].GetValues(GetType(T))
-            param.AddNamedValue(item.ToString(), Convert.ToInt32(item))
-            param.Description += " | " & item.ToString() & "=" & Convert.ToInt32(item).ToString()
-        Next
-    End Sub
-
     Public Sub AddOptionstoMenuDOFTransition(menuItem As Param_Integer)
         menuItem.AddNamedValue("Free", 0)
         menuItem.AddNamedValue("Rigid", 1)
@@ -547,7 +539,7 @@ Module HelperTools
     End Sub
 
 
-    Public Function GetStringFromuValidity(item As Integer) As String
+    Public Function GetStringFromValidity(item As Integer) As String
         Select Case item
             Case 0
                 Return "All"
@@ -1454,11 +1446,11 @@ Module HelperTools
         End If
 
         If (in_fsloads IsNot Nothing) Then
-            fsloadcount = in_fsloads.Count / 11
+            fsloadcount = in_fsloads.Count / 12
             Rhino.RhinoApp.WriteLine("Number of free surface loads: " & fsloadcount)
             For i = 0 To fsloadcount - 1
-                For j = 0 To 10
-                    SE_fsloads(i, j) = in_fsloads(j + i * 11)
+                For j = 0 To 11
+                    SE_fsloads(i, j) = in_fsloads(j + i * 12)
                 Next j
             Next i
         End If
@@ -3936,63 +3928,68 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
         Dim thickness() As String
         thickness = Split(surfaces(isurface, 3), "|")
-        Dim thicknessType As String
-        thicknessType = thickness(0)
-        Select Case thicknessType
-            Case "constant"
-                osb.AppendLine(ConCat_pvt("5", "0", "constant"))
-                Dim thck As Double
-                thck = thickness(1) / 1000
-                osb.AppendLine(ConCat_pv("7", CStr(thck))) 'thickness
-            Case "variable"
-                osb.AppendLine(ConCat_pvt("5", "1", "variable"))
-                Dim variableThicknessType As String
-                variableThicknessType = thickness(1)
 
-                Select Case variableThicknessType
-                    Case "Global X"
-                        osb.AppendLine(ConCat_pvt("6", "1", "Global X"))
-                    Case "Global Y"
-                        osb.AppendLine(ConCat_pvt("6", "2", "Global Y"))
-                    Case "Global Z"
-                        osb.AppendLine(ConCat_pvt("6", "3", "Global Z"))
-                    Case "Local X"
-                        osb.AppendLine(ConCat_pvt("6", "4", "Local X"))
-                    Case "Local Y"
-                        osb.AppendLine(ConCat_pvt("6", "5", "Local Y"))
-                    Case "Variable in two directions"
-                        osb.AppendLine(ConCat_pvt("6", "6", "Variable in two directions"))
-                    Case "Radial"
-                        osb.AppendLine(ConCat_pvt("6", "7", "Radial"))
-                    Case "Variable in 4 pt."
-                        osb.AppendLine(ConCat_pvt("6", "8", "Variable in 4 pt."))
+        If thickness.Length = 1 Then ' if we've only given a single thickness value, just consider it as a constant thickness slab
+            osb.AppendLine(ConCat_pvt("5", "0", "constant"))
+            osb.AppendLine(ConCat_pv("7", CStr(thickness(0) / 1000))) 'thickness
+        Else
+            Dim thicknessType As String
+            thicknessType = thickness(0)
+            Select Case thicknessType
+                Case "constant"
+                    osb.AppendLine(ConCat_pvt("5", "0", "constant"))
+                    Dim thck As Double
+                    thck = thickness(1) / 1000
+                    osb.AppendLine(ConCat_pv("7", CStr(thck))) 'thickness
+                Case "variable"
+                    osb.AppendLine(ConCat_pvt("5", "1", "variable"))
+                    Dim variableThicknessType As String
+                    variableThicknessType = thickness(1)
 
-                End Select
-                Dim thicknessProperties() As String
-                Dim i As Long
-                Dim thicknesses As New List(Of Double)
-                Dim thicknessNodes As New List(Of String)
-                If variableThicknessType = "Radial" Then
-                    For i = 2 To thickness.Count() - 1
-                        osb.AppendLine(ConCat_pvx("7", thickness(i) / 1000, i - 2)) 'value in mm
-                    Next
-                Else
-                    For i = 2 To thickness.Count() - 1
-                        thicknessProperties = Split(thickness(i), ";")
-                        thicknesses.Add(thicknessProperties(0))
-                        thicknessNodes.Add(thicknessProperties(1))
-                    Next
-                    For i = 0 To thicknesses.Count() - 1
-                        osb.AppendLine(ConCat_pvx("7", thicknesses(i) / 1000, i)) 'value in mm
-                    Next
-                    For i = 0 To thicknessNodes.Count() - 1
-                        osb.AppendLine(ConCat_pvx("8", thicknessNodes(i), i))
-                    Next
-                End If
+                    Select Case variableThicknessType
+                        Case "Global X"
+                            osb.AppendLine(ConCat_pvt("6", "1", "Global X"))
+                        Case "Global Y"
+                            osb.AppendLine(ConCat_pvt("6", "2", "Global Y"))
+                        Case "Global Z"
+                            osb.AppendLine(ConCat_pvt("6", "3", "Global Z"))
+                        Case "Local X"
+                            osb.AppendLine(ConCat_pvt("6", "4", "Local X"))
+                        Case "Local Y"
+                            osb.AppendLine(ConCat_pvt("6", "5", "Local Y"))
+                        Case "Variable in two directions"
+                            osb.AppendLine(ConCat_pvt("6", "6", "Variable in two directions"))
+                        Case "Radial"
+                            osb.AppendLine(ConCat_pvt("6", "7", "Radial"))
+                        Case "Variable in 4 pt."
+                            osb.AppendLine(ConCat_pvt("6", "8", "Variable in 4 pt."))
+
+                    End Select
+                    Dim thicknessProperties() As String
+                    Dim i As Long
+                    Dim thicknesses As New List(Of Double)
+                    Dim thicknessNodes As New List(Of String)
+                    If variableThicknessType = "Radial" Then
+                        For i = 2 To thickness.Count() - 1
+                            osb.AppendLine(ConCat_pvx("7", thickness(i) / 1000, i - 2)) 'value in mm
+                        Next
+                    Else
+                        For i = 2 To thickness.Count() - 1
+                            thicknessProperties = Split(thickness(i), ";")
+                            thicknesses.Add(thicknessProperties(0))
+                            thicknessNodes.Add(thicknessProperties(1))
+                        Next
+                        For i = 0 To thicknesses.Count() - 1
+                            osb.AppendLine(ConCat_pvx("7", thicknesses(i) / 1000, i)) 'value in mm
+                        Next
+                        For i = 0 To thicknessNodes.Count() - 1
+                            osb.AppendLine(ConCat_pvx("8", thicknessNodes(i), i))
+                        Next
+                    End If
 
 
-        End Select
-
+            End Select
+        End If
 
 
 
@@ -6160,28 +6157,28 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "FL" & Trim(Str(iload))))
         'direction
-        Select Case loads(iload, 4)
-            Case "X"
+        Dim direction As Koala.Direction = Koala.GetEnum(Of Koala.Direction)(loads(iload, 4))
+        Select Case direction
+            Case Koala.Direction.X
                 oSB.AppendLine(ConCat_pvt("2", "0", "X"))
-            Case "Y"
+            Case Koala.Direction.Y
                 oSB.AppendLine(ConCat_pvt("2", "1", "Y"))
-            Case "Z"
+            Case Else
                 oSB.AppendLine(ConCat_pvt("2", "2", "Z"))
         End Select
-
         'distribution
-        Select Case loads(iload, 5)
-            Case "DirectionX"
+        Dim distribution As Koala.DistributionOfSurfaceLoad = Koala.GetEnum(Of Koala.DistributionOfSurfaceLoad)(loads(iload, 5))
+        Select Case distribution
+            Case Koala.DistributionOfSurfaceLoad.DirectionX
                 oSB.AppendLine(ConCat_pvt("3", "1", "Dir X"))
-            Case "DirectionY"
+            Case Koala.DistributionOfSurfaceLoad.DirectionY
                 oSB.AppendLine(ConCat_pvt("3", "2", "Dir Y"))
             Case Else
                 oSB.AppendLine(ConCat_pvt("3", "0", "Uniform"))
         End Select
-
         'load value(s)
-        Select Case loads(iload, 5)
-            Case "DirectionX", "DirectionY"
+        Select Case distribution
+            Case Koala.DistributionOfSurfaceLoad.DirectionX, Koala.DistributionOfSurfaceLoad.DirectionY
                 oSB.AppendLine(ConCat_pv("5", loads(iload, 6) * 1000))
                 oSB.AppendLine(ConCat_pv("6", loads(iload, 7) * 1000))
             Case Else
@@ -6189,36 +6186,44 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         End Select
 
         'validity
-        Select Case loads(iload, 1)
-            Case "All"
-                oSB.AppendLine(ConCat_pvt("7", "0", "All"))
-            Case "-Z"
+        Dim validity As Koala.Validity = Koala.GetEnum(Of Koala.Validity)(loads(iload, 1))
+        Select Case validity
+            Case Koala.Validity.ZNeg
                 oSB.AppendLine(ConCat_pvt("7", "1", "-Z"))
-            Case "+Z"
+            Case Koala.Validity.ZPos
                 oSB.AppendLine(ConCat_pvt("7", "2", "+Z"))
-            Case "From-to"
+            Case Koala.Validity.FromTo
                 oSB.AppendLine(ConCat_pvt("7", "3", "From-to"))
-            Case "Z=0"
+            Case Koala.Validity.ZZero
                 oSB.AppendLine(ConCat_pvt("7", "4", "Z=0"))
-            Case "-Z"
+            Case Koala.Validity.ZNegOrZero
                 oSB.AppendLine(ConCat_pvt("7", "5", "-Z (incl. 0)"))
-            Case "+Z"
+            Case Koala.Validity.ZPosOrZero
                 oSB.AppendLine(ConCat_pvt("7", "6", "+Z (incl. 0)"))
+            Case Else
+                oSB.AppendLine(ConCat_pvt("7", "0", "All"))
         End Select
 
         'selection (loads(iload,2))
-        oSB.AppendLine(ConCat_pvt("8", "0", "Auto"))
+        Dim selection As Koala.Selection = Koala.GetEnum(Of Koala.Selection)(loads(iload, 2))
+        Select Case selection
+            Case Koala.Selection.Select
+                oSB.AppendLine(ConCat_pvt("8", "1", "Select"))
+            Case Else
+                oSB.AppendLine(ConCat_pvt("8", "0", "Auto"))
+        End Select
 
         'coordinate system
-        Select Case loads(iload, 3)
-            Case "GCS - Length"
-                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
-                oSB.AppendLine(ConCat_pvt("10", "0", "Length"))
-            Case "GCS - Projection"
+        Dim coordSys As Koala.CoordSystemFreeLoad = Koala.GetEnum(Of Koala.CoordSystemFreeLoad)(loads(iload, 3))
+        Select Case coordSys
+            Case Koala.CoordSystemFreeLoad.GCSProjection
                 oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
                 oSB.AppendLine(ConCat_pvt("10", "1", "Projection"))
-            Case "Member LCS"
+            Case Koala.CoordSystemFreeLoad.MemberLCS
                 oSB.AppendLine(ConCat_pvt("9", "1", "Member LCS"))
+            Case Else
+                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
+                oSB.AppendLine(ConCat_pvt("10", "0", "Length"))
         End Select
 
         'table of geometry
@@ -6261,11 +6266,55 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
             oSB.AppendLine("</row>")
 
-            row_id = row_id + 1
+            row_id += 1
         Next LineShape
 
         oSB.AppendLine(ConCat_closetable("11"))
-        oSB.AppendLine(ConCat_pv("12", ""))
+
+        'table of selection
+        Dim selectionNames As String = loads(iload, 11)
+
+        If Not String.IsNullOrEmpty(selectionNames) Then
+            oSB.AppendLine(ConCat_opentable("12", ""))
+
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Type"))
+            oSB.AppendLine(ConCat_ht("1", "Type human name"))
+            oSB.AppendLine(ConCat_ht("2", "Id"))
+            oSB.AppendLine(ConCat_ht("3", "Name"))
+            oSB.AppendLine("</h>")
+
+            row_id = 0
+            Dim member As String
+            For Each member In selectionNames.Split("|")
+                oSB.AppendLine(ConCat_row(row_id))
+                Dim memberParts As String() = member.Split(";")
+
+                If memberParts.Length <> 3 Then
+                    Throw New ArgumentException("Invalid FreeSurfaceLoad SelectedMember2D string")
+                End If
+
+                'different reference depending whether it's towards a surface or an opening
+                Select Case memberParts(1).ToLower.Trim
+                    Case "opening"
+                        oSB.AppendLine(ConCat_pv("0", "{EBA9B148-F564-4DB1-9E2D-F1937FFA4523}"))
+                        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_OpenSlab.1"))
+                    Case Else
+                        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
+                        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                End Select
+                oSB.AppendLine(ConCat_pv("2", memberParts(2).Trim))
+                oSB.AppendLine(ConCat_pv("3", memberParts(0).Trim))
+                oSB.AppendLine("</row>")
+                row_id += 1
+            Next member
+
+            oSB.AppendLine(ConCat_closetable("12"))
+        Else
+            ' oSB.AppendLine(ConCat_pv("12", ""))
+        End If
+
+        ' validity from and to
         oSB.AppendLine(ConCat_pv("13", loads(iload, 9)))
         oSB.AppendLine(ConCat_pv("14", loads(iload, 10)))
 

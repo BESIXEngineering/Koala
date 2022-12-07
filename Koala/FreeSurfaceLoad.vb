@@ -81,7 +81,7 @@ Namespace Koala
 
             If (Not DA.GetData(0, LoadCase)) Then Return
             If (Not DA.GetData(1, i)) Then Return
-            Validity = GetStringFromuValidity(i)
+            Validity = GetStringFromValidity(i)
             If (Not DA.GetData(2, i)) Then Return
             Selection = GetStringFromMenuSelection(i)
             If (Not DA.GetData(3, i)) Then Return
@@ -147,6 +147,7 @@ Namespace Koala
                 SE_fsloads(itemcount, 8) = BoundaryShape
                 SE_fsloads(itemcount, 9) = ValidityFrom
                 SE_fsloads(itemcount, 10) = ValidityTo
+                SE_fsloads(itemcount, 11) = ""
                 itemcount += 1
             Next
 
@@ -155,7 +156,7 @@ Namespace Koala
             FlatList.Clear()
 
             For i = 0 To itemcount - 1
-                For j = 0 To 10
+                For j = 0 To 11
                     FlatList.Add(SE_fsloads(i, j))
                 Next j
             Next i

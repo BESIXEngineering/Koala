@@ -1422,14 +1422,15 @@
              <def_property x="5" name="Edge" type="string" id="{ECDF6620-F0FD-4476-B095-3610E641C35C}"/>
            </def_subtable>
          </def_property>
-         
-         <def_property x="12" name="Selected objects" type="table" id="{74BFFF75-F689-4C05-8362-A8C74A9C4ECC}">
-          <def_subtable size="3" type="vertical">
-             <def_property x="0" name="Type" type="string" id="{14137532-7119-40F3-A0CC-3C7AC13944F3}"/>
-             <def_property x="1" name="Type human name" type="string" readonly="yes" id="{CCBCF1E6-7D6C-42FD-AC25-85247C5708FC}"/>
-             <def_property x="2" name="Name" type="string" readonly="yes" id="{188960DC-EBA4-4493-9BC9-6FC0B25CB2F0}"/>
-           </def_subtable>
-         </def_property>
+
+        <def_property x="12" name="Selected objects" type="table" id="{74BFFF75-F689-4C05-8362-A8C74A9C4ECC}">
+          <def_subtable size="4" type="vertical">
+            <def_property x="0" name="Type" type="string" id="{14137532-7119-40F3-A0CC-3C7AC13944F3}"/>
+            <def_property x="1" name="Type human name" type="string" readonly="yes" id="{CCBCF1E6-7D6C-42FD-AC25-85247C5708FC}"/>
+            <def_property x="2" name="Id" type="integer" id="{B5ECF390-6CEF-4697-AED6-D5A173D41B59}"/>
+            <def_property x="3" name="Name" type="string" readonly="yes" id="{188960DC-EBA4-4493-9BC9-6FC0B25CB2F0}"/>
+          </def_subtable>
+        </def_property>
 
         <def_property x="13" name="Validity from" type="real" id="{E1554D75-61DC-4CFD-96AB-3C84E7BE8B6A}"/>
         <def_property x="14" name="Validity to" type="real" id="{65F1B835-6639-403D-9D19-4CC7A519C8C1}"/>

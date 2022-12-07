@@ -116,6 +116,7 @@
     <Compile Include="CrossLink.vb" />
     <Compile Include="EdgeLoad.vb" />
     <Compile Include="EdgeSupport.vb" />
+    <Compile Include="Enums.vb" />
     <Compile Include="FreePointMoment.vb" />
     <Compile Include="FreeSurfaceLoad2.vb" />
     <Compile Include="FreeSurfaceLoad.Designer.vb">

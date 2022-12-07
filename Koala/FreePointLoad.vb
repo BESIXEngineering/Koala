@@ -69,7 +69,7 @@ Namespace Koala
             Dim i As Integer
             If (Not DA.GetData(0, LoadCase)) Then Return
             If (Not DA.GetData(1, i)) Then Return
-            Validity = GetStringFromuValidity(i)
+            Validity = GetStringFromValidity(i)
             If (Not DA.GetData(2, i)) Then Return
             Selection = GetStringFromMenuSelection(i)
             If (Not DA.GetData(3, i)) Then Return

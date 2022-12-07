@@ -5,29 +5,6 @@ Imports Rhino.Geometry
 
 
 Namespace Koala
-    Public Enum ArbitraryProfileCoordDefinition
-        Abso = 0
-        Rela = 1
-    End Enum
-
-    Public Enum ArbitraryProfileAlignment
-        Undefined = 0  'default
-        CentreLine = 1
-        TopSurface = 2
-        BottomSurface = 3
-        LeftSurface = 4
-        RightSurface = 5
-        TopLeft = 6
-        TopRight = 7
-        BottomLeft = 8
-        BottomRight = 9
-    End Enum
-
-    Public Enum ArbitraryProfileSpanType
-        Prismatic = 0
-        ParametricHaunch = 1
-        TwoCss = 2
-    End Enum
 
     Public Class ArbitraryProfile
         Inherits GH_Component
@@ -55,25 +32,17 @@ Namespace Koala
             Dim pIdx As Integer
 
             pManager.AddTextParameter("Beams", "Beams", "Names of the beams on which the ArbitraryProfile is placed (can be multiple beams separated by semi-colon ';')", GH_ParamAccess.item)
-
             pManager.AddTextParameter("NamePrefix", "NamePrefix", "Object name prefix", GH_ParamAccess.item, DefaultNamePrefix)
             pManager.AddTextParameter("Section", "Section", "Cross section name of the ArbitraryProfile object", GH_ParamAccess.item)
-
-            pIdx = pManager.AddIntegerParameter("CoordDefinition", "CoordDefinition", "CoordDefinition", GH_ParamAccess.item, 1)
-            AddEnumOptions(Of ArbitraryProfileCoordDefinition)(pManager.Param(pIdx))
+            pManager.AddParameter(New Param_Enum("CoordDefinition", "CoordDefinition", GH_ParamAccess.item, ArbitraryProfileCoordDefinition.Rela))
 
             pIdx = pManager.AddNumberParameter("Length", "Length", "Length of each span (if relative, should sum up to 1)", GH_ParamAccess.list)
             pManager.Param(pIdx).Optional = True
 
-            pIdx = pManager.AddIntegerParameter("TypeOfCss", "TypeOfCss", "Type of Css for each span", GH_ParamAccess.list, 0)
-            AddEnumOptions(Of ArbitraryProfileSpanType)(pManager.Param(pIdx))
-
+            pManager.AddParameter(New Param_Enum("TypeOfCss", "TypeOfCss", GH_ParamAccess.list, ArbitraryProfileSpanType.Prismatic))
             pManager.AddTextParameter("Css1", "Css1", "Name of Cross section 1 for each span", GH_ParamAccess.list)
             pManager.AddTextParameter("Css2", "Css2", "Name of Cross section 2 for each span (if type is TwoCss)", GH_ParamAccess.list)
-
-            pIdx = pManager.AddIntegerParameter("Alignment", "Alignment", "Cross section alignment for each span", GH_ParamAccess.list, 0)
-            AddEnumOptions(Of ArbitraryProfileAlignment)(pManager.Param(pIdx))
-
+            pManager.AddParameter(New Param_Enum("Alignment", "Cross section alignment for each span", GH_ParamAccess.list, ArbitraryProfileAlignment.Undefined))
         End Sub
 
         ''' <summary>

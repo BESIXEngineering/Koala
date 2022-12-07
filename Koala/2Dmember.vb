@@ -27,7 +27,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddBrepParameter("Surfaces", "Surfaces", "List of definiton curves for beams", GH_ParamAccess.list)
             pManager.AddTextParameter("Material", "Material", "Material", GH_ParamAccess.list, "C20/25")
-            pManager.AddTextParameter("Thickness", "Thickness", "Thickness", GH_ParamAccess.list) ', "0.2"
+            pManager.AddTextParameter("Thickness", "Thickness", "Thickness description comprising the type and thickness value(s) (in mm). Example: constant|100 or variable|Global X|N3;150|N4;300", GH_ParamAccess.list) ', "0.2"
             pManager.AddTextParameter("SurfLayer", "SurfLayer", "Definition of SurfLayer", GH_ParamAccess.item, "Surflayer")
             pManager.AddTextParameter("InternalNodes", "InternalNodes", "InternalNodes", GH_ParamAccess.list)
             pManager.Param(4).Optional = True
@@ -158,57 +158,57 @@ Namespace Koala
             Dim Surfacecescount = Surfaces.Count
             'check nr of z vectors
             If Surfacecescount < MemberPlanes.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many MemberPlanes are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many MemberPlanes are defined. They will be ignored.")
             ElseIf Surfacecescount > MemberPlanes.count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less MemberPlanes are defined than beams. The last defined Z vector will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less MemberPlanes are defined than members. The last defined Z vector will be used for the extra members")
             End If
             maxMemberPlanes = MemberPlanes.Count - 1
 
             'check nr of layers
             If Surfacecescount < EccentricityZs.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many EccentricityZs are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many EccentricityZs are defined. They will be ignored.")
             ElseIf Surfacecescount > EccentricityZs.count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less EccentricityZs are defined than beams. The last defined layer will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less EccentricityZs are defined than members. The last defined layer will be used for the extra members")
             End If
             maxEz = EccentricityZs.Count - 1
 
             'check nr of sections
             If Surfacecescount < FEMNLTypes.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many FEMNLTypes are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many FEMNLTypes are defined. They will be ignored.")
             ElseIf Surfacecescount > FEMNLTypes.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less FEMNLTypes are defined than beams. The last defined section will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMNLTypes are defined than members. The last defined section will be used for the extra members")
             End If
             maxFEMNLtypes = FEMNLTypes.Count - 1
 
             'check maxStructuralTypes of sections
             If Surfacecescount < SwapOrientations.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many  SwapOrientations are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many SwapOrientations are defined. They will be ignored.")
             ElseIf Surfacecescount > SwapOrientations.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less SwapOrientations are defined than beams. The last defined section will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less SwapOrientations are defined than members. The last defined section will be used for the extra members")
             End If
             maxSwapOrient = SwapOrientations.Count - 1
 
             'check maxFEMTypes of sections
             If Surfacecescount < AngleLCSs.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many  FEMtypes are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  FEMtypes are defined. They will be ignored.")
             ElseIf Surfacecescount > AngleLCSs.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less FEMtypes are defined than beams. The last defined section will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMtypes are defined than members. The last defined section will be used for the extra members")
             End If
             maxAngelLCS = AngleLCSs.Count - 1
 
             'check maxMaterials of sections
             If Surfacecescount < Material.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many  Materials are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  Materials are defined. They will be ignored.")
             ElseIf Surfacecescount > Material.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less Materials are defined than beams. The last defined section will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Materials are defined than members. The last defined section will be used for the extra members")
             End If
             maxMaterials = Material.Count - 1
 
             'check maxThickness of sections
             If Surfacecescount < Thickness.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Too many  Thicknesses are defined. They will be ignored.")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many Thicknesses are defined. They will be ignored.")
             ElseIf Surfacecescount > Thickness.Count Then
-                Rhino.RhinoApp.WriteLine("Koala2Dmembers: Less Thicknesses are defined than beams. The last defined section will be used for the extra beams")
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Thicknesses are defined than members. The last defined section will be used for the extra members")
             End If
             maxThickness = Thickness.Count - 1
 
@@ -251,8 +251,8 @@ Namespace Koala
                     SurfType = "Plate"
                 Else
                     'not supported: shell with more than 4 edges
-                    Rhino.RhinoApp.WriteLine("KoalaSurfaces: Encountered surface with " & edgecount & " (>4) edges and non-planar: not supported, will be skipped")
-                    Rhino.RhinoApp.WriteLine("KoalaSurfaces: Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Encountered surface with " & edgecount & " (>4) edges and non-planar: not supported, will be skipped")
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
                     'Continue For
                 End If
 

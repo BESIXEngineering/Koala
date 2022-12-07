@@ -1,5 +1,4 @@
 ﻿Imports System.Collections.Generic
-
 Imports Grasshopper.Kernel
 Imports Rhino.Geometry
 
@@ -28,25 +27,23 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("LoadCase", "LoadCase", "Name of load case", GH_ParamAccess.item, "LC2")
-            pManager.AddIntegerParameter("Validity", "Validity", "Validity: All,Z equals 0", GH_ParamAccess.item, 0)
-            AddOptionsToMenuValidity(pManager.Param(1))
-            pManager.AddIntegerParameter("Selection", "Selection", "Selection: Auto", GH_ParamAccess.item, 0)
-            AddOptionsToMenuSelection(pManager.Param(2))
-            pManager.AddIntegerParameter("CoordSys", "CoordSys", "Coordinate system: GCS - Length, GCS - Projection, Member LCS", GH_ParamAccess.item, 0)
-            AddOptionsToMenuCoordSysFreeLine(pManager.Param(3))
-            pManager.AddIntegerParameter("Direction", "Direction", "Direction of load: X,Y,Z", GH_ParamAccess.item, 2)
-            AddOptionsToMenuDirection(pManager.Param(4))
 
-            Dim idx As Integer = pManager.AddIntegerParameter("Distribution", "Distribution", "Distribution of the surface load: Uniform | DirectionX | DirectionY", GH_ParamAccess.item, 0)
-            AddOptionsToMenuDistributionOfSurfaceLoad(pManager.Param(idx))
+            pManager.AddParameter(New Param_Enum("Validity", "Validity", GH_ParamAccess.item, Validity.All))
+            pManager.AddParameter(New Param_Enum("Selection", "Selection", GH_ParamAccess.item, Selection.Auto))
+            pManager.AddParameter(New Param_Enum("CoordSys", "CoordSys", GH_ParamAccess.item, CoordSystemFreeLoad.GCSLength))
+            pManager.AddParameter(New Param_Enum("Direction", "Direction of load", GH_ParamAccess.item, Direction.Z))
+            pManager.AddParameter(New Param_Enum("Distribution", "Distribution of the surface load", GH_ParamAccess.item, DistributionOfSurfaceLoad.Uniform))
 
             pManager.AddNumberParameter("LoadValue1", "LoadValue1", "Value of Load in KN/m", GH_ParamAccess.item, -1)
             pManager.AddNumberParameter("LoadValue2", "LoadValue2", "Value of Load at end in KN/m (if not uniform distribution)", GH_ParamAccess.item, -1)
 
-            pManager.AddCurveParameter("Boundaries", "Boundaries", "List of lines", GH_ParamAccess.list)
+            pManager.AddCurveParameter("Boundary", "Boundary", "Boundary curve", GH_ParamAccess.item)
             pManager.AddNumberParameter("ValidityFrom", "ValidityFrom", "Validity From in m", GH_ParamAccess.item, 0)
             pManager.AddNumberParameter("ValidityTo", "ValidityTo", "Validity To in m", GH_ParamAccess.item, 0)
-            'pManager.AddTextParameter("Selected2Dmembers", "Selected2Dmembers", "Selected 2D members as list if Selection is put as Selected", GH_ParamAccess.list, {})
+
+            pManager.AddTextParameter("Members2D", "Members2D", "If Selection = Select, give the selected 2D members in format Name;TYPE;Id separated by '|'. 
+TYPE can for the moment only be SURFACE. Xml update unfortunately only works for the member Id (the object Id of the member in the Xml export). 
+Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
         End Sub
 
         ''' <summary>
@@ -66,111 +63,144 @@ Namespace Koala
             'note: only straight segments are supported in SCIA Engineer's XML today (SE 18.1.3035) > limitation of Koala as well
 
             Dim LoadCase As String = "LC1"
-            Dim Validity As String = "All"
-            Dim Selection As String = "Auto"
-            Dim CoordSys As String = "GCS - Length"
-            Dim Direction As String = "Z"
-            Dim Distribution As String = "Uniform"
+            Dim validity As Validity = Validity.All
+            Dim selection As Selection = Selection.Auto
+            Dim coordSys As CoordSystemFreeLoad = CoordSystemFreeLoad.GCSLength
+            Dim direction As Direction = Direction.Z
+            Dim distribution As DistributionOfSurfaceLoad = DistributionOfSurfaceLoad.Uniform
             Dim LoadValue1 As Double = -1.0
             Dim LoadValue2 As Double = -1.0
-            Dim Boundaries = New List(Of Curve)
+            Dim boundary As Curve = Nothing
             Dim i As Integer
 
             Dim ValidityFrom As Double = 0.0
             Dim ValidityTo As Double = 0.0
 
+            Dim selected2DMembers As String = ""
+
             If (Not DA.GetData(0, LoadCase)) Then Return
             If (Not DA.GetData(1, i)) Then Return
-            Validity = GetStringFromuValidity(i)
+            validity = CType(i, Validity)
             If (Not DA.GetData(2, i)) Then Return
-            Selection = GetStringFromMenuSelection(i)
+            selection = CType(i, Selection)
             If (Not DA.GetData(3, i)) Then Return
-            CoordSys = GetStringFromCoordSysLine(i)
+            coordSys = CType(i, CoordSystemFreeLoad)
             If (Not DA.GetData(4, i)) Then Return
-            Direction = GetStringFromDirection(i)
+            direction = CType(i, Direction)
             If (Not DA.GetData(5, i)) Then Return
-            Distribution = GetStringFromDistributionOfSurfaceLoad(i)
+            distribution = CType(i, DistributionOfSurfaceLoad)
 
             If (Not DA.GetData(6, LoadValue1)) Then Return
-            Select Case Distribution
-                Case "DirectionX", "DirectionY"
+            Select Case distribution
+                Case DistributionOfSurfaceLoad.DirectionX, DistributionOfSurfaceLoad.DirectionY
                     DA.GetData(7, LoadValue2)
                 Case Else
                     LoadValue2 = LoadValue1
             End Select
 
-            If (Not DA.GetDataList(Of Curve)(8, Boundaries)) Then Return
+            If Not DA.GetData(8, boundary) Then Return
             If (Not DA.GetData(9, ValidityFrom)) Then Return
             If (Not DA.GetData(10, ValidityTo)) Then Return
 
+            If (Not DA.GetData(11, selected2DMembers)) Then Return
+
             Dim j As Long
 
-            Dim SE_fsloads(Boundaries.Count, 11)
+            Dim SE_fsloads(11)
             Dim FlatList As New List(Of System.Object)()
             'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 or 2 values (kN/m^2), BoundaryShape
 
-            Dim itemcount As Long
-            Dim item As Rhino.Geometry.Curve
             Dim segments() As Rhino.Geometry.Curve
             Dim segment As Rhino.Geometry.Curve
 
             Dim BoundaryShape As String, LineShape As String
 
-            'initialize some variables
-            itemcount = 0
-
             'create load data
             '=================
 
-            For Each item In Boundaries
+            segments = boundary.DuplicateSegments
 
-                segments = item.DuplicateSegments
+            BoundaryShape = ""
 
-                BoundaryShape = ""
+            For Each segment In segments
 
-                For Each segment In segments
+                'Get full geometry description
+                LineShape = GetClosedBoundaryShape(segment)
 
-                    'Get full geometry description
-                    LineShape = GetClosedBoundaryShape(segment)
+                If LineShape.Split(";")(0) <> "Line" Then
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+                                      "Only straight line segments are supported for free surface loads. Different geometries will be skipped.")
+                    Continue For
+                End If
 
-                    If LineShape.Split(";")(0) <> "Line" Then
-                        Rhino.RhinoApp.WriteLine("KOALA: only straight line segments are supported for free line loads. Different geometries will be skipped.")
-                        Continue For
-                    End If
+                If BoundaryShape = "" Then
+                    BoundaryShape = LineShape
+                Else
+                    BoundaryShape = BoundaryShape & " | " & LineShape
+                End If
 
-                    If BoundaryShape = "" Then
-                        BoundaryShape = LineShape
-                    Else
-                        BoundaryShape = BoundaryShape & " | " & LineShape
-                    End If
+            Next segment
 
-                Next segment
+            ' Process the selected Member2D input.
+            ' Should be format Name;TYPE;Id
+            ' Example: S1;SURFACE;1  or  O2;OPENENING;2
+            ' Xml update only works for the member Id (the object Id of the member in the Xml export), not for the member name (which is hence redundant)
+            Dim selectedMemberString As String = ""
+            Try
+                If Not String.IsNullOrEmpty(selected2DMembers) Then
+                    Dim memberStrings As List(Of String) = New List(Of String)
 
-                SE_fsloads(itemcount, 0) = LoadCase
-                SE_fsloads(itemcount, 1) = Validity
-                SE_fsloads(itemcount, 2) = Selection
-                SE_fsloads(itemcount, 3) = CoordSys
-                SE_fsloads(itemcount, 4) = Direction
-                SE_fsloads(itemcount, 5) = Distribution
-                SE_fsloads(itemcount, 6) = LoadValue1
-                SE_fsloads(itemcount, 7) = LoadValue2
-                SE_fsloads(itemcount, 8) = BoundaryShape
-                SE_fsloads(itemcount, 9) = ValidityFrom
-                SE_fsloads(itemcount, 10) = ValidityTo
-                itemcount += 1
-            Next
+                    For Each m In Split(selected2DMembers, "|")
+                        If (String.IsNullOrWhiteSpace(m)) Then
+                            Continue For
+                        End If
+                        Dim parts As String() = Split(m, ";")
+                        ' Assume that only the name is given
+                        Dim memberString As String = ""
 
-            'Flatten data for export as simple list
+                        If parts.Length = 1 Then
+                            parts(0) = parts(0).Trim
+                            Dim id As Integer = Math.Max(1, CInt(parts(0).Substring(1)))
+                            memberString = String.Format("{0};SURFACE;{1}", parts(0), id)
+                            'If parts(0).StartsWith("o", StringComparison.OrdinalIgnoreCase) Then
+                            '    memberString = String.Format("{0};OPENING;{1}", parts(0), id)
+                            'Else
+                            '    memberString = String.Format("{0};SURFACE;{1}", parts(0), id)
+                            'End If
+                        ElseIf parts.Length = 3 Then
+                            Select Case parts(1).ToLower.Trim
+                                'Case "opening"
+                                '    memberString = String.Format("{0};OPENING;{1}", parts(0).Trim, CInt(parts(2)))
+                                Case Else
+                                    memberString = String.Format("{0};SURFACE;{1}", parts(0).Trim, CInt(parts(2)))
+                            End Select
+                        Else
+                            Throw New ArgumentException("Invalid member string format; must be in format of 'Name;SURFACE;Id'")
+                        End If
+                        memberStrings.Add(memberString)
+                    Next
+                    selectedMemberString = String.Join(" | ", memberStrings)
+                End If
 
-            FlatList.Clear()
+            Catch ex As Exception
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid member string: " & ex.Message)
+                Return
+            End Try
 
-            For i = 0 To itemcount - 1
-                For j = 0 To 10
-                    FlatList.Add(SE_fsloads(i, j))
-                Next j
-            Next i
+            SE_fsloads(0) = LoadCase
+            SE_fsloads(1) = GetEnumDescription(validity)
+            SE_fsloads(2) = GetEnumDescription(selection)
+            SE_fsloads(3) = GetEnumDescription(coordSys)
+            SE_fsloads(4) = GetEnumDescription(direction)
+            SE_fsloads(5) = GetEnumDescription(distribution)
+            SE_fsloads(6) = LoadValue1
+            SE_fsloads(7) = LoadValue2
+            SE_fsloads(8) = BoundaryShape
+            SE_fsloads(9) = ValidityFrom
+            SE_fsloads(10) = ValidityTo
+            SE_fsloads(11) = selectedMemberString
 
-            DA.SetDataList(0, FlatList)
+            DA.SetDataList(0, SE_fsloads)
 
         End Sub
 
