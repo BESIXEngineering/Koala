@@ -26,16 +26,11 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("LoadCase", "LoadCase", "Name of load case", GH_ParamAccess.item, "LC2")
-            pManager.AddIntegerParameter("Validity", "Validity", "Validity: All,Z equals 0", GH_ParamAccess.item, 0)
-            AddOptionsToMenuValidity(pManager.Param(1))
-            pManager.AddIntegerParameter("Selection", "Selection", "Selection: Auto", GH_ParamAccess.item, 0)
-            AddOptionsToMenuSelection(pManager.Param(2))
-            pManager.AddIntegerParameter("CoordSys", "CoordSys", "Coordinate system: GCS - Length, GCS - Projection or Member LCS", GH_ParamAccess.item, 0)
-            AddOptionsToMenuCoordSysFreeLine(pManager.Param(3))
-            pManager.AddIntegerParameter("Direction", "Direction", "Direction of load: X,Y,Z", GH_ParamAccess.item, 2)
-            AddOptionsToMenuDirection(pManager.Param(4))
-            pManager.AddIntegerParameter("Distribution", "Distribution", "Distribution of the load: Uniform | Trapez", GH_ParamAccess.item, 0)
-            AddOptionsToMenuDistributionOfLoad(pManager.Param(5))
+            pManager.AddParameter(New Param_Enum("Validity", "Validity", GH_ParamAccess.item, Validity.All))
+            pManager.AddParameter(New Param_Enum("Selection", "Selection", GH_ParamAccess.item, Selection.Auto))
+            pManager.AddParameter(New Param_Enum("CoordSys", "Coordinate system", GH_ParamAccess.item, CoordSystemFreeLoad.GCSLength))
+            pManager.AddParameter(New Param_Enum("Direction", "Direction of load", GH_ParamAccess.item, Direction.Z))
+            pManager.AddParameter(New Param_Enum("Distribution", "Distribution of the surface load", GH_ParamAccess.item, DistributionOfLineLoad.Uniform))
             pManager.AddNumberParameter("LoadValue1", "LoadValue1", "Value of Load in KN/m", GH_ParamAccess.item, -1.0)
             pManager.AddNumberParameter("LoadValue2", "LoadValue2", "Value of Load in KN/m", GH_ParamAccess.item, -1.0)
             pManager.AddCurveParameter("Lines", "Lines", "List of lines", GH_ParamAccess.list)
@@ -60,37 +55,29 @@ Namespace Koala
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
             Dim LoadCase As String = ""
-            Dim Validity As String = ""
-            Dim Selection As String = ""
-            Dim CoordSys As String = ""
-            Dim Direction As String = ""
-            Dim Distribution As String = ""
+            Dim validity As Validity = Validity.All
+            Dim selection As Selection = Selection.Auto
+            Dim coordSys As CoordSystemFreeLoad = CoordSystemFreeLoad.GCSLength
+            Dim direction As Direction = Direction.Z
+            Dim distribution As DistributionOfLineLoad = DistributionOfLineLoad.Uniform
             Dim LoadValue1 As Double = -1.0
             Dim LoadValue2 As Double = -1.0
             Dim Lines = New List(Of Curve)
             Dim i As Integer
-
-
-
             Dim ValidityFrom As Double = 0.0
             Dim ValidityTo As Double = 0.0
 
             If (Not DA.GetData(0, LoadCase)) Then Return
-            If (Not DA.GetData(1, i)) Then Return
-            Validity = GetStringFromValidity(i)
-            If (Not DA.GetData(2, i)) Then Return
-            Selection = GetStringFromMenuSelection(i)
-            If (Not DA.GetData(3, i)) Then Return
-            CoordSys = GetStringFromCoordSysLine(i)
-            If (Not DA.GetData(4, i)) Then Return
-            Direction = GetStringFromDirection(i)
-            DA.GetData(5, i)
-            Distribution = GetStringFromDistributionOfLoad(i)
+
+            If DA.GetData(1, i) Then validity = CType(i, Validity)
+            If DA.GetData(2, i) Then selection = CType(i, Selection)
+            If DA.GetData(3, i) Then coordSys = CType(i, CoordSystemFreeLoad)
+            If DA.GetData(4, i) Then direction = CType(i, Direction)
+            If DA.GetData(5, i) Then distribution = CType(i, DistributionOfLineLoad)
+
             If (Not DA.GetData(6, LoadValue1)) Then Return
-            Select Case Distribution
-                Case "Uniform"
-                    LoadValue2 = LoadValue1
-                Case "Trapez"
+            Select Case distribution
+                Case DistributionOfLineLoad.Trapez
                     DA.GetData(7, LoadValue2)
                 Case Else
                     LoadValue2 = LoadValue1
@@ -107,9 +94,7 @@ Namespace Koala
 
             Dim itemcount As Long
             Dim item As Rhino.Geometry.Curve
-
             Dim BoundaryShape As String
-
 
             'initialize some variables
             itemcount = 0
@@ -119,23 +104,25 @@ Namespace Koala
 
             For Each item In Lines
                 BoundaryShape = GetBoundaryShape(item)
-                If BoundaryShape.Split(";")(0) <> "Line" Then
-                    Rhino.RhinoApp.WriteLine("KOALA: only straight line segments are supported for free line loads. Different geometries will be skipped.")
+                Dim shapeType As String = BoundaryShape.Split(";")(0).ToLower
+
+                If shapeType <> "line" And shapeType <> "polyline" Then
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Only lines or polylines are supported for free line loads. Different geometries will be skipped.")
                     Continue For
                 End If
 
                 SE_flloads(itemcount, 0) = LoadCase
-                SE_flloads(itemcount, 1) = Validity
-                SE_flloads(itemcount, 2) = Selection
-                SE_flloads(itemcount, 3) = CoordSys
-                SE_flloads(itemcount, 4) = Direction
-                SE_flloads(itemcount, 5) = Distribution
+                SE_flloads(itemcount, 1) = GetEnumDescription(Validity)
+                SE_flloads(itemcount, 2) = GetEnumDescription(Selection)
+                SE_flloads(itemcount, 3) = GetEnumDescription(CoordSys)
+                SE_flloads(itemcount, 4) = GetEnumDescription(Direction)
+                SE_flloads(itemcount, 5) = GetEnumDescription(Distribution)
                 SE_flloads(itemcount, 6) = LoadValue1
                 SE_flloads(itemcount, 7) = LoadValue2
                 SE_flloads(itemcount, 8) = BoundaryShape
                 SE_flloads(itemcount, 9) = ValidityFrom
                 SE_flloads(itemcount, 10) = ValidityTo
-                itemcount = itemcount + 1
+                itemcount += 1
             Next
 
             'Flatten data for export as simple list
@@ -180,26 +167,35 @@ Namespace Koala
 
         Private Sub GetTypeAndNodes(ByRef edge As Rhino.Geometry.Curve, ByRef EdgeType As String, ByRef arrPoints As Rhino.Collections.Point3dList)
 
-            Dim arc As Rhino.Geometry.Arc
-            Dim nurbscurve As Rhino.Geometry.NurbsCurve
-
             If edge.IsArc() Then
                 EdgeType = "Arc"
                 'convert to arc
+                Dim arc As Rhino.Geometry.Arc = Nothing
                 edge.TryGetArc(arc)
                 arrPoints.Clear()
                 arrPoints.Add(arc.StartPoint)
                 arrPoints.Add(arc.MidPoint)
                 arrPoints.Add(arc.EndPoint)
+
             ElseIf edge.IsLinear() Then
                 EdgeType = "Line"
                 arrPoints.Clear()
                 arrPoints.Add(edge.PointAtStart)
                 arrPoints.Add(edge.PointAtEnd)
+
+            ElseIf edge.IsPolyline() Then
+                EdgeType = "Polyline"
+                Dim polyline As Rhino.Geometry.Polyline = Nothing
+                edge.TryGetPolyline(polyline)
+                arrPoints.Clear()
+                For Each point In polyline
+                    arrPoints.Add(point)
+                Next point
+
             Else
                 EdgeType = "Spline"
                 'convert to Nurbs curve to get the Edit points
-                nurbscurve = edge.ToNurbsCurve
+                Dim nurbscurve As Rhino.Geometry.NurbsCurve = edge.ToNurbsCurve
                 arrPoints = nurbscurve.GrevillePoints
             End If
 

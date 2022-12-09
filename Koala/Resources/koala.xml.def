@@ -1315,8 +1315,20 @@
          
          <def_property x="4" name="Coord Z" type="param" id="{07B9CEDF-76BA-49F1-BEA4-66595982516A}"/>
          
-         <def_property x="5" name="Edge" type="string" id="{ECDF6620-F0FD-4476-B095-3610E641C35C}"/>
-         
+         <def_property x="5" name="Edge" type="enum" id="{ECDF6620-F0FD-4476-B095-3610E641C35C}">
+           <def_enum size="9">
+             <it_enum v="0" t="Line"/>
+             <it_enum v="1" t="Circle arc"/>
+             <it_enum v="2" t="Circle"/>
+             <it_enum v="4" t="Circle 3pt"/>
+             <it_enum v="5" t="Parabolic arc"/>
+             <it_enum v="6" t="Bezier"/>
+             <it_enum v="7" t="Spline"/>
+             <it_enum v="8" t=""/>
+             <it_enum v="9" t="Linestrip"/>
+           </def_enum>
+         </def_property>
+           
          </def_subtable>
          </def_property>
          

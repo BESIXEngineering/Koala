@@ -861,6 +861,23 @@ Module HelperTools
         End Select
     End Function
 
+    Public Function GetExistingNode(arrPoint As Rhino.Geometry.Point3d, nodes As List(Of Koala.SENode), epsilon As Double) As Koala.SENode?
+        'Start with node not found, loop through all the nodes until one is found within tolerance
+        'Not in use now, as it's quite slow compared to within SCIA Engineer
+        GetExistingNode = Nothing
+        Rhino.RhinoApp.WriteLine("Searching node")
+        For Each node In nodes
+            If Math.Abs(arrPoint.X - node.Point.X) < epsilon Then
+                If Math.Abs(arrPoint.Y - node.Point.Y) < epsilon Then
+                    If Math.Abs(arrPoint.Z - node.Point.Z) < epsilon Then
+                        GetExistingNode = node
+                        Exit For
+                    End If
+                End If
+            End If
+        Next node
+    End Function
+
     Public Function GetExistingNode(arrPoint As Rhino.Geometry.Point3d, nodes(,) As String, nnodes As Long, epsilon As Double)
         Dim currentnode
         'Start with node not found, loop through all the nodes until one is found within tolerance
@@ -882,9 +899,7 @@ Module HelperTools
                 End If
             End If
             currentnode += 1
-
         End While
-
     End Function
 
 
@@ -6012,8 +6027,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         'a free line load consists of:
         'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), LineShape
 
-        Dim LineShape As String
-        Dim row_id As Long
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "FL" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
@@ -6059,8 +6072,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                 oSB.AppendLine(ConCat_pvt("6", "6", "+Z (incl. 0)"))
         End Select
 
-        'selection (loads(iload,2))
-        oSB.AppendLine(ConCat_pvt("7", "0", "Auto"))
+        ' selection
+        Dim selection As Koala.Selection = Koala.GetEnum(Of Koala.Selection)(loads(iload, 2))
+        Select Case selection
+            Case Koala.Selection.Select
+                oSB.AppendLine(ConCat_pvt("7", "1", "Select"))
+            Case Else
+                oSB.AppendLine(ConCat_pvt("7", "0", "Auto"))
+        End Select
 
         'coordinate system
         Select Case loads(iload, 3)
@@ -6075,7 +6094,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         End Select
 
         'table of geometry
-        LineShape = loads(iload, 8)
+
+        Dim lineParts As String() = loads(iload, 8).Split(";")
+        Dim lineType As String = lineParts(0).ToLower().Trim()
+        Dim pointCount As Long = (lineParts.Length - 1) / 3
+
+        If Not lineType.Equals("line") And Not lineType.Equals("polyline") Then
+            Throw New ArgumentException("FreeLineLoad only supports line or polyline geometry")
+        End If
 
         oSB.AppendLine(ConCat_opentable("10", ""))
 
@@ -6088,37 +6114,29 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine(ConCat_ht("5", "Edge"))
         oSB.AppendLine("</h>")
 
-        row_id = 0
-        oSB.AppendLine(ConCat_row(row_id))
-        oSB.AppendLine(ConCat_pv("0", "Head"))
-        oSB.AppendLine(ConCat_pvt("1", "0", "Standard"))
-        oSB.AppendLine(ConCat_pv("2", Trim(Split(LineShape, ";")(1) * scale))) 'first node X
-        oSB.AppendLine(ConCat_pv("3", Trim(Split(LineShape, ";")(2) * scale))) 'first node Y
-        oSB.AppendLine(ConCat_pv("4", Trim(Split(LineShape, ";")(3) * scale))) 'first node Z
-        Select Case Strings.Trim(Strings.Split(LineShape, ";")(0)) 'curve type - only "Line by 2 pts" is supported by SCIA Engineer
-            Case "Line"
-                If UILanguageNumber = "0" Then oSB.AppendLine(ConCat_pv("5", "Line")) 'English
-                If UILanguageNumber = "1" Then oSB.AppendLine(ConCat_pv("5", "Lijn")) 'Dutch
-                If UILanguageNumber = "2" Then oSB.AppendLine(ConCat_pv("5", "Ligne")) 'French
-                If UILanguageNumber = "3" Then oSB.AppendLine(ConCat_pv("5", "Linie")) 'German
-                If UILanguageNumber = "4" Then oSB.AppendLine(ConCat_pv("5", "Přímka")) 'Czech
-                If UILanguageNumber = "5" Then oSB.AppendLine(ConCat_pv("5", "Čiara")) 'Slovak
-
-            Case "Arc"
-                oSB.AppendLine(ConCat_pv("5", "Circle arc")) 'not supported in SE
-            Case "Spline"
-                oSB.AppendLine(ConCat_pv("5", "Spline")) 'not supported in SE
-        End Select
-        oSB.AppendLine("</row>")
-
-        row_id = row_id + 1
-        oSB.AppendLine(ConCat_row(row_id))
-        oSB.AppendLine(ConCat_pv("0", "End"))
-        oSB.AppendLine(ConCat_pvt("1", "0", "Standard"))
-        oSB.AppendLine(ConCat_pv("2", Trim(Split(LineShape, ";")(4) * scale))) 'second node X
-        oSB.AppendLine(ConCat_pv("3", Trim(Split(LineShape, ";")(5) * scale))) 'second node Y
-        oSB.AppendLine(ConCat_pv("4", Trim(Split(LineShape, ";")(6) * scale))) 'second node Z
-        oSB.AppendLine("</row>")
+        Dim row_id As Long = 0
+        For i As Long = 0 To pointCount - 1
+            oSB.AppendLine(ConCat_row(row_id))
+            If i = pointCount - 1 Then
+                oSB.AppendLine(ConCat_pv("0", "End"))
+            Else
+                oSB.AppendLine(ConCat_pv("0", "Head"))
+            End If
+            oSB.AppendLine(ConCat_pvt("1", "0", "Standard"))
+            oSB.AppendLine(ConCat_pv("2", Trim(lineParts(i * 3 + 1) * scale))) 'node X
+            oSB.AppendLine(ConCat_pv("3", Trim(lineParts(i * 3 + 2) * scale))) 'node Y
+            oSB.AppendLine(ConCat_pv("4", Trim(lineParts(i * 3 + 3) * scale))) 'node Z
+            Select Case lineType 'curve type - only "Line by 2 pts" or polyline is supported by SCIA Engineer
+                Case "Arc"
+                    oSB.AppendLine(ConCat_pvt("5", "1", "Circle arc")) 'not supported in SE
+                Case "Spline"
+                    oSB.AppendLine(ConCat_pvt("5", "7", "Spline")) 'not supported in SE
+                Case Else
+                    oSB.AppendLine(ConCat_pvt("5", "0", "Line"))
+            End Select
+            oSB.AppendLine("</row>")
+            row_id += 1
+        Next
 
         oSB.AppendLine(ConCat_closetable("10"))
         oSB.AppendLine(ConCat_pv("11", ""))

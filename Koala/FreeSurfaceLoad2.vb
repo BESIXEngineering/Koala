@@ -30,7 +30,7 @@ Namespace Koala
 
             pManager.AddParameter(New Param_Enum("Validity", "Validity", GH_ParamAccess.item, Validity.All))
             pManager.AddParameter(New Param_Enum("Selection", "Selection", GH_ParamAccess.item, Selection.Auto))
-            pManager.AddParameter(New Param_Enum("CoordSys", "CoordSys", GH_ParamAccess.item, CoordSystemFreeLoad.GCSLength))
+            pManager.AddParameter(New Param_Enum("CoordSys", "Coordinate system", GH_ParamAccess.item, CoordSystemFreeLoad.GCSLength))
             pManager.AddParameter(New Param_Enum("Direction", "Direction of load", GH_ParamAccess.item, Direction.Z))
             pManager.AddParameter(New Param_Enum("Distribution", "Distribution of the surface load", GH_ParamAccess.item, DistributionOfSurfaceLoad.Uniform))
 

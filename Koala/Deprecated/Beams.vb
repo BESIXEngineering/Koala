@@ -6,6 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    ''' <summary>
+    ''' Obsolete. Use "Member1D" instead which makes better use of Grasshopper's default data matching algorithm.
+    ''' </summary>
+    <System.Obsolete>
     Public Class Beams
         Inherits GH_Component
         ''' <summary>
@@ -20,6 +24,12 @@ Namespace Koala
                 "Beams description",
                 "Koala", "Structure")
         End Sub
+
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.
@@ -61,7 +71,6 @@ Namespace Koala
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
-
             Dim stopWatch As New System.Diagnostics.Stopwatch()
             Dim time_elapsed As Double
 
@@ -89,9 +98,6 @@ Namespace Koala
             Dim ezs = New List(Of Double)
             Dim BeamNamePrefix As String = "B"
 
-
-
-
             If (Not DA.GetDataList(Of Curve)(0, Curves)) Then Return
             DA.GetDataList(Of Vector3d)(1, zvectors)
             If (Not DA.GetDataList(Of String)(2, sections)) Then Return
@@ -101,7 +107,6 @@ Namespace Koala
             If (Not DA.GetData(Of Boolean)(6, RemDuplNodes)) Then Return
             DA.GetDataList(Of Integer)(7, StructuralTypes)
             DA.GetDataList(Of Integer)(8, FEMtypes)
-
             DA.GetDataList(Of Integer)(9, MemberSystemLines)
             DA.GetDataList(Of Double)(10, eys)
             DA.GetDataList(Of Double)(11, ezs)
@@ -121,7 +126,6 @@ Namespace Koala
 
             Dim nodecount As Long, beamcount As Long
             Dim curvecount As Long
-            Dim maxlayer As Long, maxsection As Long, maxzvector As Long, maxStructuralTypes As Long, maxFEMTypes As Long, maxMemberSysLines As Long, maxEy As Long, maxEz As Long
 
             Dim LineShape As String, LineType As String
 
@@ -156,61 +160,54 @@ Namespace Koala
                 Next
             End If
 
-            'check nr of z vectors
-            If curvecount < zvectors.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many Z vectors are defined. They will be ignored.")
-            ElseIf curvecount > zvectors.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less Z vectors are defined than beams. The last defined Z vector will be used for the extra beams")
-            End If
-            maxzvector = zvectors.count - 1
+            ''check nr of z vectors
+            'If curvecount < zvectors.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many Z vectors are defined. They will be ignored.")
+            'ElseIf curvecount > zvectors.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Z vectors are defined than beams. The last defined Z vector will be used for the extra beams")
+            'End If
 
-            'check nr of layers
-            If curvecount < layers.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many layers are defined. They will be ignored.")
-            ElseIf curvecount > layers.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less layers are defined than beams. The last defined layer will be used for the extra beams")
-            End If
-            maxlayer = layers.count - 1
+            ''check nr of layers
+            'If curvecount < layers.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many layers are defined. They will be ignored.")
+            'ElseIf curvecount > layers.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less layers are defined than beams. The last defined layer will be used for the extra beams")
+            'End If
 
-            'check nr of sections
-            If curvecount < sections.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many  sections are defined. They will be ignored.")
-            ElseIf curvecount > sections.count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less sections are defined than beams. The last defined section will be used for the extra beams")
-            End If
-            maxsection = sections.Count - 1
+            ''check nr of sections
+            'If curvecount < sections.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  sections are defined. They will be ignored.")
+            'ElseIf curvecount > sections.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less sections are defined than beams. The last defined section will be used for the extra beams")
+            'End If
 
-            'check maxStructuralTypes of sections
-            If curvecount < StructuralTypes.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many  StructuralTypes are defined. They will be ignored.")
-            ElseIf curvecount > StructuralTypes.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less StructuralTypes are defined than beams. The last defined section will be used for the extra beams")
-            End If
-            maxStructuralTypes = StructuralTypes.Count - 1
+            ''check maxStructuralTypes of sections
+            'If curvecount < StructuralTypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  StructuralTypes are defined. They will be ignored.")
+            'ElseIf curvecount > StructuralTypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less StructuralTypes are defined than beams. The last defined section will be used for the extra beams")
+            'End If
 
-            'check maxFEMTypes of sections
-            If curvecount < FEMtypes.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many  FEMtypes are defined. They will be ignored.")
-            ElseIf curvecount > FEMtypes.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less FEMtypes are defined than beams. The last defined section will be used for the extra beams")
-            End If
-            maxFEMTypes = FEMtypes.Count - 1
+            ''check maxFEMTypes of sections
+            'If curvecount < FEMtypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  FEMtypes are defined. They will be ignored.")
+            'ElseIf curvecount > FEMtypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMtypes are defined than beams. The last defined section will be used for the extra beams")
+            'End If
 
-            'check max of sections
-            If curvecount < eys.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many  eccentricities ey are defined. They will be ignored.")
-            ElseIf curvecount > eys.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less eccentricities ey are defined than beams. The last defined section will be used for the extra beams")
-            End If
-            maxEy = eys.Count - 1
+            ''check max of sections
+            'If curvecount < eys.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  eccentricities ey are defined. They will be ignored.")
+            'ElseIf curvecount > eys.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less eccentricities ey are defined than beams. The last defined section will be used for the extra beams")
+            'End If
 
-            'check maxStructuralTypes of sections
-            If curvecount < ezs.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Too many  eccentricities ez are defined. They will be ignored.")
-            ElseIf curvecount > ezs.Count Then
-                Rhino.RhinoApp.WriteLine("KoalaBeams: Less eccentricities ez are defined than beams. The last defined section will be used for the extra beams")
-            End If
-            maxEz = ezs.Count - 1
+            ''check maxStructuralTypes of sections
+            'If curvecount < ezs.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  eccentricities ez are defined. They will be ignored.")
+            'ElseIf curvecount > ezs.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less eccentricities ez are defined than beams. The last defined section will be used for the extra beams")
+            'End If
 
             For i = 0 To curvecount - 1
 
@@ -219,23 +216,13 @@ Namespace Koala
 
                 LineShape = LineType
                 If LineType <> "Line" And LineType <> "Arc" And LineType <> "Polyline" And LineType <> "Spline" Then 'And LineType <> "Circle" Then
-                    Rhino.RhinoApp.WriteLine("KoalaBeams: Could not recognize the geometry of the inputted curves: """ & LineType & """. Only straight lines & circle arcs are supported. Beam" & BeamNamePrefix + i.ToString() & "will not be created.")
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not recognize the geometry of the inputted curves: """ & LineType & """. Only straight lines & circle arcs are supported. Beam" & BeamNamePrefix + i.ToString() & "will not be created.")
                     Continue For
                 End If
 
                 SE_beams(i, 0) = BeamNamePrefix + (i + 1).ToString()
-
-                If i <= maxsection Then
-                    SE_beams(i, 1) = Sections(i)
-                Else
-                    SE_beams(i, 1) = Sections(maxsection)
-                End If
-
-                If i <= maxlayer Then
-                    SE_beams(i, 2) = Layers(i)
-                Else
-                    SE_beams(i, 2) = Layers(maxlayer)
-                End If
+                SE_beams(i, 1) = sections(Math.Min(sections.Count - 1, i))
+                SE_beams(i, 2) = layers(Math.Min(layers.Count - 1, i))
 
                 'create the new nodes
 
@@ -266,11 +253,7 @@ Namespace Koala
                 SE_beams(i, 3) = LineShape
 
                 ' add LCS definition if present
-                If i <= maxzvector Then
-                    ivector = i
-                Else
-                    ivector = maxzvector
-                End If
+                ivector = Math.Min(zvectors.Count - 1, i)
 
                 If ZVectors(ivector).IsZero Then 'no Z Vector defined
                     SE_beams(i, 4) = 0
@@ -282,41 +265,12 @@ Namespace Koala
                     SE_beams(i, 7) = ZVectors(ivector).Z
                 End If
 
-                If i <= maxStructuralTypes Then
-                    StructuralType = GetStringForBeamType(StructuralTypes(i))
-                Else
-                    StructuralType = GetStringForBeamType(StructuralTypes(maxStructuralTypes))
-                End If
-                SE_beams(i, 8) = StructuralType
+                SE_beams(i, 8) = GetStringForBeamType(StructuralTypes(Math.Min(StructuralTypes.Count - 1, i)))
+                SE_beams(i, 9) = GetStringForBeamFEMtype(FEMtypes(Math.Min(FEMtypes.Count - 1, i)))
+                SE_beams(i, 10) = GetStringForMemberSystemLineOrPlane(MemberSystemLines(Math.Min(MemberSystemLines.Count - 1, i)))
 
-                If i <= maxFEMTypes Then
-                    FEMtype = GetStringForBeamFEMtype(FEMtypes(i))
-                Else
-                    FEMtype = GetStringForBeamFEMtype(FEMtypes(maxFEMTypes))
-                End If
-                SE_beams(i, 9) = FEMtype
-
-                If i <= maxMemberSysLines Then
-                    MemberSystemLine = GetStringForMemberSystemLineOrPlane(MemberSystemLines(i))
-                Else
-                    MemberSystemLine = GetStringForMemberSystemLineOrPlane(MemberSystemLines(maxMemberSysLines))
-                End If
-                SE_beams(i, 10) = MemberSystemLine
-
-                If i <= maxEy Then
-                    ey = eys(i)
-                Else
-                    ey = eys(maxEz)
-                End If
-                SE_beams(i, 11) = ey
-
-                If i <= maxEz Then
-                    ez = ezs(i)
-                Else
-                    ez = ezs(maxEz)
-                End If
-                SE_beams(i, 12) = ez
-
+                SE_beams(i, 11) = eys(Math.Min(eys.Count - 1, i))
+                SE_beams(i, 12) = ezs(Math.Min(ezs.Count - 1, i))
 
                 beamcount += 1
 
@@ -354,10 +308,8 @@ Namespace Koala
                 FlatBeamList.Add(SE_beams(i, 11))
                 FlatBeamList.Add(SE_beams(i, 12))
 
-
             Next i
             DA.SetDataList(1, FlatBeamList)
-
 
             'stop stopwatch
             stopWatch.Stop()
@@ -376,8 +328,6 @@ Namespace Koala
                 'You can add image files to your project resources and access them like this:
                 ' return Resources.IconForThisComponent;
                 Return My.Resources.Beam
-
-
             End Get
         End Property
 

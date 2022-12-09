@@ -83,6 +83,44 @@ Namespace Koala
         TwoCss = 2
     End Enum
 
+    Public Enum BeamFEMType
+        <Description("standard")>
+        Standard = 0
+        <Description("axial force only")>
+        AxialForceOnly = 1
+    End Enum
+
+    Public Enum BeamType
+        <Description("general")>
+        General = 0
+        <Description("beam")>
+        Beam = 1
+        <Description("column")>
+        Column = 2
+        <Description("gable column")>
+        GableColumn = 3
+        <Description("secondary column")>
+        SecondaryColumn = 4
+        <Description("rafter")>
+        Rafter = 5
+        <Description("purlin")>
+        Purlin = 6
+        <Description("roof bracing")>
+        RoofBracing = 7
+        <Description("wall bracing")>
+        WallBracing = 8
+        <Description("girt")>
+        Girt = 9
+        <Description("truss chord")>
+        TrussChord = 10
+        <Description("truss diagonal")>
+        TrussDiagonal = 11
+        <Description("plate rib")>
+        PlateRib = 12
+        <Description("beam slab")>
+        BeamSlab = 13
+    End Enum
+
     Public Enum CoordSystemFreeLoad
         <Description("GCS - Length")>
         GCSLength = 0
@@ -98,15 +136,56 @@ Namespace Koala
         Z = 2
     End Enum
 
+    Public Enum DistributionOfLineLoad
+        Uniform = 0
+        Trapez = 1
+    End Enum
+
     Public Enum DistributionOfSurfaceLoad
         Uniform = 0
         DirectionX = 1
         DirectionY = 2
     End Enum
 
+    Public Enum MemberSystemLine
+        <Description("Centre")>
+        Centre = 1
+        <Description("Top")>
+        Top = 2
+        <Description("Bottom")>
+        Bottom = 4
+        <Description("Left")>
+        Left = 8
+        <Description("Top left")>
+        TopLeft = 10
+        <Description("Bottom left")>
+        BottomLeft = 12
+        <Description("Right")>
+        Right = 16
+        <Description("Top right")>
+        TopRight = 18
+        <Description("Bottom right")>
+        BottomRight = 20
+    End Enum
+
+    Public Enum MemberSystemPlane
+        Centre = 1
+        Top = 2
+        Bottom = 4
+    End Enum
+
     Public Enum Selection
         Auto = 0
         [Select] = 1
+    End Enum
+
+    Public Enum SlabFEMType
+        <Description("none")>
+        None = 0
+        <Description("Press only")>
+        PressOnly = 1
+        <Description("Membrane")>
+        Membrane = 2
     End Enum
 
     Public Enum Validity

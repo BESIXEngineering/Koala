@@ -6,6 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    ''' <summary>
+    ''' Obsolete. Use "Member2D" instead which makes better use of Grasshopper's default data matching algorithm.
+    ''' </summary>
+    <System.Obsolete>
     Public Class _2Dmember
         Inherits GH_Component
         ''' <summary>
@@ -20,6 +24,11 @@ Namespace Koala
                 "2Dmember description",
                 "Koala", "Structure")
         End Sub
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.
@@ -157,59 +166,59 @@ Namespace Koala
 
             Dim Surfacecescount = Surfaces.Count
             'check nr of z vectors
-            If Surfacecescount < MemberPlanes.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many MemberPlanes are defined. They will be ignored.")
-            ElseIf Surfacecescount > MemberPlanes.count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less MemberPlanes are defined than members. The last defined Z vector will be used for the extra members")
-            End If
+            'If Surfacecescount < MemberPlanes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many MemberPlanes are defined. They will be ignored.")
+            'ElseIf Surfacecescount > MemberPlanes.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less MemberPlanes are defined than members. The last defined Z vector will be used for the extra members")
+            'End If
             maxMemberPlanes = MemberPlanes.Count - 1
 
             'check nr of layers
-            If Surfacecescount < EccentricityZs.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many EccentricityZs are defined. They will be ignored.")
-            ElseIf Surfacecescount > EccentricityZs.count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less EccentricityZs are defined than members. The last defined layer will be used for the extra members")
-            End If
+            'If Surfacecescount < EccentricityZs.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many EccentricityZs are defined. They will be ignored.")
+            'ElseIf Surfacecescount > EccentricityZs.count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less EccentricityZs are defined than members. The last defined layer will be used for the extra members")
+            'End If
             maxEz = EccentricityZs.Count - 1
 
             'check nr of sections
-            If Surfacecescount < FEMNLTypes.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many FEMNLTypes are defined. They will be ignored.")
-            ElseIf Surfacecescount > FEMNLTypes.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMNLTypes are defined than members. The last defined section will be used for the extra members")
-            End If
+            'If Surfacecescount < FEMNLTypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many FEMNLTypes are defined. They will be ignored.")
+            'ElseIf Surfacecescount > FEMNLTypes.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMNLTypes are defined than members. The last defined section will be used for the extra members")
+            'End If
             maxFEMNLtypes = FEMNLTypes.Count - 1
 
             'check maxStructuralTypes of sections
-            If Surfacecescount < SwapOrientations.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many SwapOrientations are defined. They will be ignored.")
-            ElseIf Surfacecescount > SwapOrientations.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less SwapOrientations are defined than members. The last defined section will be used for the extra members")
-            End If
+            'If Surfacecescount < SwapOrientations.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many SwapOrientations are defined. They will be ignored.")
+            'ElseIf Surfacecescount > SwapOrientations.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less SwapOrientations are defined than members. The last defined section will be used for the extra members")
+            'End If
             maxSwapOrient = SwapOrientations.Count - 1
 
             'check maxFEMTypes of sections
-            If Surfacecescount < AngleLCSs.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  FEMtypes are defined. They will be ignored.")
-            ElseIf Surfacecescount > AngleLCSs.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMtypes are defined than members. The last defined section will be used for the extra members")
-            End If
+            'If Surfacecescount < AngleLCSs.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  FEMtypes are defined. They will be ignored.")
+            'ElseIf Surfacecescount > AngleLCSs.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less FEMtypes are defined than members. The last defined section will be used for the extra members")
+            'End If
             maxAngelLCS = AngleLCSs.Count - 1
 
             'check maxMaterials of sections
-            If Surfacecescount < Material.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  Materials are defined. They will be ignored.")
-            ElseIf Surfacecescount > Material.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Materials are defined than members. The last defined section will be used for the extra members")
-            End If
+            'If Surfacecescount < Material.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many  Materials are defined. They will be ignored.")
+            'ElseIf Surfacecescount > Material.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Materials are defined than members. The last defined section will be used for the extra members")
+            'End If
             maxMaterials = Material.Count - 1
 
             'check maxThickness of sections
-            If Surfacecescount < Thickness.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many Thicknesses are defined. They will be ignored.")
-            ElseIf Surfacecescount > Thickness.Count Then
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Thicknesses are defined than members. The last defined section will be used for the extra members")
-            End If
+            'If Surfacecescount < Thickness.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Too many Thicknesses are defined. They will be ignored.")
+            'ElseIf Surfacecescount > Thickness.Count Then
+            '    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Less Thicknesses are defined than members. The last defined section will be used for the extra members")
+            'End If
             maxThickness = Thickness.Count - 1
 
 
