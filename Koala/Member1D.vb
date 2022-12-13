@@ -6,11 +6,6 @@ Imports Rhino.Geometry
 
 
 Namespace Koala
-    Public Structure SENode
-        'a node consists of: Name, X, Y, Z
-        Dim Point As Rhino.Geometry.Point3d
-        Dim Name As String
-    End Structure
 
     Public Class Member1D
         Inherits GH_Component
@@ -62,8 +57,8 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Nodes", "Nodes", "Output nodes", GH_ParamAccess.tree)
-            pManager.AddTextParameter("1D Members", "1DMembers", "Output 1D members", GH_ParamAccess.list)
+            pManager.AddTextParameter("Nodes", "Nodes", "Output node data", GH_ParamAccess.tree)
+            pManager.AddTextParameter("1D Member", "1DMember", "Output 1D member data", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()

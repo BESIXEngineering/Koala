@@ -6,6 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    ''' <summary>
+    ''' Obsolete. Use "InternalEdge2D" instead which makes better use of Grasshopper's default data matching algorithm.
+    ''' </summary>
+    <System.Obsolete>
     Public Class SlabInternalEdge
         Inherits GH_Component
         ''' <summary>
@@ -20,6 +24,11 @@ Namespace Koala
                 "SlabInternalEdge description",
                 "Koala", "Structure")
         End Sub
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.

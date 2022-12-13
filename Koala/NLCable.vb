@@ -21,6 +21,12 @@ Namespace Koala
                 "Koala", "Structure")
         End Sub
 
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.quinary
+            End Get
+        End Property
+
         ''' <summary>
         ''' Registers all the input parameters for this component.
         ''' </summary>

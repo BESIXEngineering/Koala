@@ -5,6 +5,11 @@ Imports Rhino.Geometry
 
 
 Namespace Koala
+    Public Structure SENode
+        'a node consists of: Name, X, Y, Z
+        Dim Point As Rhino.Geometry.Point3d
+        Dim Name As String
+    End Structure
 
     Public Class Member0D
         Inherits GH_Component
@@ -19,7 +24,7 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("Nodes", "Nodes",
+            MyBase.New("Node", "Node",
                 "Create a point. Nodes are numbered continuously regardless of the input data tree structure.",
                 "Koala", "Structure")
         End Sub
@@ -42,7 +47,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Nodes", "Nodes", "Output nodes", GH_ParamAccess.list)
+            pManager.AddTextParameter("Node", "Node", "Output node data", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()
@@ -56,8 +61,6 @@ Namespace Koala
         ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
-            Dim i As Long, j As Long
-
             Dim point As Point3d
             Dim nodePrefix As String = "N"
 
@@ -66,7 +69,6 @@ Namespace Koala
 
             Dim SE_member(3) As String 'a node consists of: Name, X, Y, Z
 
-            'initialize some variables
             memberIdx += 1
             Dim memberName As String = String.Format("{0}{1}", nodePrefix, memberIdx)
 

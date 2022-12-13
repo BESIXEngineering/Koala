@@ -104,16 +104,19 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreateXML2.vb" />
+    <Compile Include="InternalNode1D.vb" />
+    <Compile Include="LoadPanel.vb" />
     <Compile Include="Member2D.vb" />
     <Compile Include="Deprecated\2Dmember.vb" />
     <Compile Include="Analysis.vb" />
     <Compile Include="ArbitraryProfile.vb" />
-    <Compile Include="BeamInternalNode.vb" />
+    <Compile Include="Deprecated\BeamInternalNode.vb" />
     <Compile Include="BeamLoads.vb" />
     <Compile Include="Member1D.vb" />
     <Compile Include="Deprecated\Beams.vb" />
     <Compile Include="BeamSupport.vb" />
-    <Compile Include="CreateXML.vb" />
+    <Compile Include="Deprecated\CreateXML.vb" />
     <Compile Include="Cross-Sections.vb" />
     <Compile Include="CrossLink.vb" />
     <Compile Include="EdgeLoad.vb" />
@@ -136,7 +139,7 @@
     <Compile Include="LineMomentOnEdge.vb" />
     <Compile Include="LoadCasesAndGroups.vb" />
     <Compile Include="KoalaInfo.vb" />
-    <Compile Include="LoadPanels.vb" />
+    <Compile Include="Deprecated\LoadPanels.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -162,7 +165,8 @@
     <Compile Include="NodeSupport.vb" />
     <Compile Include="NonlinearCombination.vb" />
     <Compile Include="NonlinearFunction.vb" />
-    <Compile Include="Openings.vb" />
+    <Compile Include="Opening.vb" />
+    <Compile Include="Deprecated\Openings.vb" />
     <Compile Include="PointLoadOnBeam.vb" />
     <Compile Include="PointLoadOnStructNode.vb" />
     <Compile Include="PointMomentOnBeam.vb" />
@@ -170,7 +174,8 @@
     <Compile Include="PointSupportOnBeam.vb" />
     <Compile Include="PressTensionOnlyBeamNl.vb" />
     <Compile Include="ProjectInfo.vb" />
-    <Compile Include="SlabInternalEdge.vb" />
+    <Compile Include="InternalEdge2D.vb" />
+    <Compile Include="Deprecated\SlabInternalEdge.vb" />
     <Compile Include="StabilityCombination.vb" />
     <Compile Include="Subsoil.vb" />
     <Compile Include="SurfaceLoad.vb" />

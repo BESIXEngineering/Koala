@@ -6,6 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    ''' <summary>
+    ''' Obsolete. Use "CreateXml2" instead which has improved input parameter organization.
+    ''' </summary>
+    <System.Obsolete>
     Public Class CreateXML
         Inherits GH_Component
         ''' <summary>
@@ -21,6 +25,13 @@ Namespace Koala
                 "Koala", "General")
         End Sub
 
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+
+        End Property
+
         ''' <summary>
         ''' Registers all the input parameters for this component.
         ''' </summary>
@@ -31,7 +42,7 @@ Namespace Koala
             pManager.AddIntegerParameter("UILanguage", "UILanguage", "UI language:  Right click and select from options", GH_ParamAccess.item, 0)
             pManager.Param(1).Optional = True
             AddOptionsToMenuLanguage(pManager.Param(1))
-            pManager.AddTextParameter("Materials", "Materials", "Materials: Conctrete, Steel, Timber", GH_ParamAccess.list, "Concrete")
+            pManager.AddTextParameter("Materials", "Materials", "Materials: Concrete, Steel, Timber", GH_ParamAccess.list, "Concrete")
             pManager.Param(2).Optional = True
             pManager.AddNumberParameter("MeshSize", "MeshSize", "Size of mesh", GH_ParamAccess.item, 0.15)
             pManager.Param(3).Optional = True

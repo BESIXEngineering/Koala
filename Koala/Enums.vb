@@ -47,17 +47,72 @@ Namespace Koala
             End If
         End Function
 
+        ''' <summary>
+        ''' Return the enum value of a given type matching a string.
+        ''' The string can represent the integer value of the enum, its name or its description.
+        ''' </summary>
+        ''' <typeparam name="T"></typeparam>
+        ''' <param name="name"></param>
+        ''' <returns></returns>
         Public Function GetEnum(Of T)(ByVal name As String) As [Enum]
-            For Each item As [Enum] In [Enum].GetValues(GetType(T))
-                If name = item.ToString Then Return item
-                Dim descr As String = GetEnumDescription(item)
-                If name = descr Then Return item
-            Next
+            ' Check if string represents an integer.
+            ' If so, return the matching enum.
+            ' If not find the enum with Name or Description matching the given name.
+            Dim i As Integer
+            name = name.Trim
+            If Not String.IsNullOrEmpty(name) AndAlso Integer.TryParse(name, i) Then
+                If [Enum].IsDefined(GetType(T), i) Then
+                    Return [Enum].Parse(GetType(T), name)
+                End If
+            Else
+                For Each item As [Enum] In [Enum].GetValues(GetType(T))
+                    If name = item.ToString Then Return item
+                    Dim descr As String = GetEnumDescription(item)
+                    If name = descr Then Return item
+                Next
+            End If
             Throw New ArgumentException(String.Format("Invalid {0}: '{1}'", GetType(T).Name, name))
             'Return [Enum].GetValues(GetType(T)).Cast(Of [Enum]).First
         End Function
+
+        ''' <summary>
+        ''' Check whether a string value matches an Enum.
+        ''' Match is true if the string value matches the Enum's integer value, name or description
+        ''' </summary>
+        ''' <param name="value"></param>
+        ''' <param name="enumValue"></param>
+        ''' <returns></returns>
+        Public Function MatchesEnum(ByVal value As String, ByVal enumValue As [Enum]) As Boolean
+            Dim i As Integer
+            value = value.Trim
+            If Not String.IsNullOrEmpty(value) AndAlso Integer.TryParse(value, i) Then
+                MatchesEnum = Convert.ToInt32(enumValue) = i
+            Else
+                MatchesEnum = (value = enumValue.ToString) OrElse (value = GetEnumDescription(enumValue))
+            End If
+        End Function
     End Module
 
+    Public Enum AnalysisModelStructuralType
+        <Description("Beam")>
+        Beam = 0
+        <Description("Truss XZ")>
+        TrussXZ = 1
+        <Description("Frame XZ")>
+        FrameXZ = 2
+        <Description("Truss XYZ")>
+        TrussXYZ = 3
+        <Description("Frame XYZ")>
+        FrameXYZ = 4
+        <Description("Grid XY")>
+        GridXY = 5
+        <Description("Plate XY")>
+        PlateXY = 6
+        <Description("Wall XY")>
+        WallXY = 7
+        <Description("General XYZ")>
+        GeneralXYZ = 8
+    End Enum
 
     Public Enum ArbitraryProfileCoordDefinition
         Abso = 0
@@ -65,21 +120,34 @@ Namespace Koala
     End Enum
 
     Public Enum ArbitraryProfileAlignment
-        Undefined = 0  'default
+        <Description("default")>
+        Undefined = 0
+        <Description("centre line")>
         CentreLine = 1
+        <Description("top surface")>
         TopSurface = 2
+        <Description("bottom surface")>
         BottomSurface = 3
+        <Description("left surface")>
         LeftSurface = 4
+        <Description("right surface")>
         RightSurface = 5
+        <Description("top left")>
         TopLeft = 6
+        <Description("top right")>
         TopRight = 7
+        <Description("bottom left")>
         BottomLeft = 8
+        <Description("bottom right")>
         BottomRight = 9
     End Enum
 
     Public Enum ArbitraryProfileSpanType
+        <Description("prismatic")>
         Prismatic = 0
+        <Description("param. haunch")>
         ParametricHaunch = 1
+        <Description("two Css")>
         TwoCss = 2
     End Enum
 
@@ -147,6 +215,35 @@ Namespace Koala
         DirectionY = 2
     End Enum
 
+    Public Enum LoadPanelType
+        <Description("To panel nodes")>
+        ToPanelNode = 0
+        <Description("To panel edges")>
+        ToPanelEdges = 1
+        <Description("To panel edges and beams")>
+        ToPanelEdgesAndBeams = 2
+    End Enum
+
+    Public Enum LoadPanelTransferDirection
+        <Description("X (LCS panel)")>
+        X = 0
+        <Description("Y (LCS panel)")>
+        Y = 1
+        <Description("all (LCS panel)")>
+        Both = 2
+    End Enum
+
+    Public Enum LoadPanelTransferMethod
+        <Description("Accurate(FEM),fixed link with beams")>
+        AccurateFixed = 0
+        <Description("Standard")>
+        Standard = 1
+        <Description("Accurate(FEM),hinged link with beams")>
+        AccurateHinged = 2
+        <Description("Tributary area")>
+        TributaryArea = 3
+    End Enum
+
     Public Enum MemberSystemLine
         <Description("Centre")>
         Centre = 1
@@ -186,6 +283,21 @@ Namespace Koala
         PressOnly = 1
         <Description("Membrane")>
         Membrane = 2
+    End Enum
+
+    Public Enum UILanguage
+        <Description("English")>
+        EN = 0
+        <Description("Nederlands")>
+        NL = 1
+        <Description("Français")>
+        FR = 2
+        <Description("Deutsch")>
+        DE = 3
+        <Description("Čeština")>
+        CZ = 4
+        <Description("Slovenčina")>
+        SI = 5
     End Enum
 
     Public Enum Validity

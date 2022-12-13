@@ -2,6 +2,8 @@
 Imports Grasshopper.Kernel.Parameters
 
 Module HelperTools
+#Region "Enum options"
+
     Public Sub AddOptionstoMenuDOFTransition(menuItem As Param_Integer)
         menuItem.AddNamedValue("Free", 0)
         menuItem.AddNamedValue("Rigid", 1)
@@ -860,7 +862,9 @@ Module HelperTools
                 Return "Straight"
         End Select
     End Function
+#End Region
 
+#Region "Geometry"
     Public Function GetExistingNode(arrPoint As Rhino.Geometry.Point3d, nodes As List(Of Koala.SENode), epsilon As Double) As Koala.SENode?
         'Start with node not found, loop through all the nodes until one is found within tolerance
         'Not in use now, as it's quite slow compared to within SCIA Engineer
@@ -902,6 +906,35 @@ Module HelperTools
         End While
     End Function
 
+    Public Function GetExistingNode(arrPoint, nodes(,), nnodes, epsilon)
+        Dim currentnode
+        'Start with node not found, loop through all the nodes until one is found within tolerance
+        'Not in use now, as it's quite slow compared to within SCIA Engineer
+        GetExistingNode = -1
+        currentnode = 0
+
+        If nnodes Mod 50 = 0 And nnodes > 100 Then
+            Rhino.RhinoApp.WriteLine("Searching node " & CStr(nnodes))
+            'rhino.Display.DrawEventArgs
+        End If
+
+        While GetExistingNode = -1 And currentnode < nnodes
+            If System.Math.Abs(arrPoint(0) - nodes(currentnode, 1)) < epsilon Then
+                If System.Math.Abs(arrPoint(1) - nodes(currentnode, 2)) < epsilon Then
+                    If System.Math.Abs(arrPoint(2) - nodes(currentnode, 3)) < epsilon Then
+                        GetExistingNode = currentnode
+                    Else
+                        currentnode += 1
+                    End If
+                Else
+                    currentnode += 1
+                End If
+            Else
+                currentnode += 1
+            End If
+
+        End While
+    End Function
 
     Public Sub GetTypeAndNodes(ByRef line As Rhino.Geometry.Curve, ByRef LineType As String, ByRef arrPoints As Rhino.Collections.Point3dList)
 
@@ -919,12 +952,12 @@ Module HelperTools
             arrPoints.Add(PointOnCircle)
             arrPoints.Add(circle.Center)
 
-
         ElseIf line.IsLinear() Then
             LineType = "Line"
             arrPoints.Clear()
             arrPoints.Add(line.PointAtStart)
             arrPoints.Add(line.PointAtEnd)
+
         ElseIf line.IsPolyline Then
             LineType = "Polyline"
             arrPoints.Clear()
@@ -933,7 +966,6 @@ Module HelperTools
             For i = 0 To polyline.Count - 1
                 arrPoints.Add(polyline.ElementAt(i))
             Next i
-
 
         ElseIf line.IsArc() Then
             LineType = "Arc"
@@ -951,8 +983,8 @@ Module HelperTools
             nurbscurve = line.ToNurbsCurve
             arrPoints = nurbscurve.GrevillePoints
         End If
-
     End Sub
+#End Region
 
     Private Function ConCat_ht(h, t)
         ConCat_ht = "<h" & h & " t=""" & t & """/>"
@@ -991,7 +1023,10 @@ Module HelperTools
         ConCat_row = "<row id=""" & CStr(id) & """>"
     End Function
 
-
+    Private Function ConCat_pvt_enum(Of T)(p As Integer, value As String) As String
+        Dim enumValue = Koala.GetEnum(Of T)(value)
+        ConCat_pvt_enum = ConCat_pvt(p.ToString, Convert.ToInt32(enumValue), Koala.GetEnumDescription(enumValue))
+    End Function
 
     '<Custom additional code> 
 
@@ -999,39 +1034,6 @@ Module HelperTools
     '-----------------------------------
     Public gl_UILanguage As String 'required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
     Public UILanguageNumber As Long
-
-
-    Public Function GetExistingNode(arrPoint, nodes(,), nnodes, epsilon)
-        Dim currentnode
-        'Start with node not found, loop through all the nodes until one is found within tolerance
-        'Not in use now, as it's quite slow compared to within SCIA Engineer
-        GetExistingNode = -1
-        currentnode = 0
-
-        If nnodes Mod 50 = 0 And nnodes > 100 Then
-            Rhino.RhinoApp.WriteLine("Searching node " & CStr(nnodes))
-            'rhino.Display.DrawEventArgs
-        End If
-
-        While GetExistingNode = -1 And currentnode < nnodes
-            If System.Math.Abs(arrPoint(0) - nodes(currentnode, 1)) < epsilon Then
-                If System.Math.Abs(arrPoint(1) - nodes(currentnode, 2)) < epsilon Then
-                    If System.Math.Abs(arrPoint(2) - nodes(currentnode, 3)) < epsilon Then
-                        GetExistingNode = currentnode
-                    Else
-                        currentnode += 1
-                    End If
-                Else
-                    currentnode += 1
-                End If
-            Else
-                currentnode += 1
-            End If
-
-        End While
-
-
-    End Function
 
     Private DupNodeDict As Dictionary(Of String, String) = Nothing
     Private isNodeDuplicate As Dictionary(Of String, Boolean) = Nothing
@@ -4157,48 +4159,31 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                 Else
                     osb.AppendLine(ConCat_pn("1", Trim(Split(edges(iedge), ";")(1 + inode))))
                 End If
-
-
             End While
             osb.AppendLine("</row>")
             row_id = row_id + 1
-
         Next
-
         osb.AppendLine(ConCat_closetable("2"))
 
-
-
         osb.AppendLine(ConCat_pvt("3", "5", "Load panel"))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelType)(4, loadpanels(iloadpanel, 3)))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferDirection)(5, loadpanels(iloadpanel, 4)))
 
-        Dim panelType As String
-        panelType = GetStringForPanelType(loadpanels(iloadpanel, 3))
-        osb.AppendLine(ConCat_pvt("4", loadpanels(iloadpanel, 3), panelType))
-        Dim transferDirection As String
-        transferDirection = GetStringForTransferDirection(loadpanels(iloadpanel, 4))
-        osb.AppendLine(ConCat_pvt("5", loadpanels(iloadpanel, 4), transferDirection))
         osb.AppendLine(ConCat_pv("6", "50"))
         osb.AppendLine(ConCat_pv("7", "50"))
         'osb.AppendLine(ConCat_ht("6", "Transfer in X [%]"))
         'osb.AppendLine(ConCat_ht("7", "Transfer in Y [%]"))
 
-
-        Dim transferMethod As String
-        transferMethod = GetStringForTransferMethod(loadpanels(iloadpanel, 5))
-        osb.AppendLine(ConCat_pvt("8", loadpanels(iloadpanel, 5), transferMethod))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferMethod)(8, loadpanels(iloadpanel, 5)))
         osb.AppendLine(ConCat_pvt("9", "0", "All")) 'selection of entities - -Z +Z all
-
-
 
         osb.AppendLine(ConCat_pv("10", loadpanels(iloadpanel, 6)))
         osb.AppendLine(ConCat_pv("11", loadpanels(iloadpanel, 7)))
 
-
-
-
         osb.AppendLine("</obj>")
 
     End Sub
+
     Private Sub WriteOpening(ByRef osb, iopening, openings(,)) 'write 1 opening to the XML stream
         Dim row_id As Long, inode As Long
         Dim iedge As Long
@@ -6482,8 +6467,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
 
     Private Sub WriteArbitraryProfile(ByRef oSB, idx, aprofiles(,)) 'write 1 ArbitraryProfile to the XML stream
-        Dim tt As String
-
         oSB.AppendLine("<obj nm=""" & aprofiles(idx, 1) & """>")
 
         'Name
@@ -6504,16 +6487,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine("</p1>")
 
         'Coordinate definition
-        Select Case aprofiles(idx, 3)
-            Case "Rela"
-                oSB.AppendLine(ConCat_pvt("2", "1", "Rela"))
-            Case "Abso"
-                oSB.AppendLine(ConCat_pvt("2", "0", "Abso"))
-        End Select
-
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileCoordDefinition)(2, aprofiles(idx, 3)))
         'Section
         oSB.AppendLine(ConCat_pv("3", aprofiles(idx, 2)))
-
         'Span reference table
         oSB.AppendLine("<p4 t="""">")
         oSB.AppendLine("<h>")
@@ -6545,45 +6521,17 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
             ' span length
             oSB.AppendLine(ConCat_pv("0", SpanLengths(i).Trim()))
             ' span Css type
-            Select Case SpanTypes(i).Trim()
-                Case "Prismatic"
-                    oSB.AppendLine(ConCat_pvt("1", "0", "prismatic"))
-                Case "ParametricHaunch"
-                    oSB.AppendLine(ConCat_pvt("1", "1", "param. haunch"))
-                Case "TwoCss"
-                    oSB.AppendLine(ConCat_pvt("1", "2", "two Css"))
-            End Select
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileSpanType)(1, SpanTypes(i)))
             ' span css 1 and 2
             oSB.AppendLine(ConCat_pn("2", SpanCss1(i).Trim()))
             oSB.AppendLine(ConCat_pn("3", SpanCss2(i).Trim()))
             ' haunch parameters
-            If SpanTypes(i).Trim() = "ParametricHaunch" Then
+            If Koala.MatchesEnum(SpanTypes(i), Koala.ArbitraryProfileSpanType.ParametricHaunch) Then 'SpanTypes(i).Trim() = "ParametricHaunch" Then
                 oSB.AppendLine(ConCat_pvt("4", "0", "from DB"))
                 oSB.AppendLine(ConCat_pvt("5", "0", "from DB"))
             End If
             ' span alignment
-            Select Case SpanAlignments(i).Trim()
-                Case "Undefined"
-                    oSB.AppendLine(ConCat_pvt("6", "0", "default"))
-                Case "CentreLine"
-                    oSB.AppendLine(ConCat_pvt("6", "1", "centre line"))
-                Case "TopSurface"
-                    oSB.AppendLine(ConCat_pvt("6", "2", "top surface"))
-                Case "BottomSurface"
-                    oSB.AppendLine(ConCat_pvt("6", "3", "bottom surface"))
-                Case "LeftSurface"
-                    oSB.AppendLine(ConCat_pvt("6", "4", "left surface"))
-                Case "RightSurface"
-                    oSB.AppendLine(ConCat_pvt("6", "5", "right surface"))
-                Case "TopLeft"
-                    oSB.AppendLine(ConCat_pvt("6", "6", "top left"))
-                Case "TopRight"
-                    oSB.AppendLine(ConCat_pvt("6", "7", "top right"))
-                Case "BottomLeft"
-                    oSB.AppendLine(ConCat_pvt("6", "8", "bottom left"))
-                Case "BottomRight"
-                    oSB.AppendLine(ConCat_pvt("6", "9", "bottom right"))
-            End Select
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileAlignment)(6, SpanAlignments(i)))
 
             oSB.AppendLine("</row>")
         Next

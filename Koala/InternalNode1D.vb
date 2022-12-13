@@ -6,8 +6,11 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
-    Public Class CrossLink
+    Public Class InternalNode1D
         Inherits GH_Component
+
+        Dim memberIdx As Long = 0
+
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -16,14 +19,14 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("CrossLink", "CrossLink",
-                "CrossLink description",
+            MyBase.New("Internal Node on 1D Member", "InternalNodeOn1DMember",
+                "Create an internal node on a 1D member. Nodes are numbered continuously regardless of the input data tree structure.",
                 "Koala", "Structure")
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.tertiary
+                Return GH_Exposure.primary
             End Get
         End Property
 
@@ -31,16 +34,22 @@ Namespace Koala
         ''' Registers all the input parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
-            pManager.AddIntegerParameter("Type", "Type", "Type of cross-link:  Right click and select from options", GH_ParamAccess.item, 0)
-            AddOptionsToMenuCrosslinkType(pManager.Param(0))
-            pManager.AddTextParameter("CoupledMembers", "CoupledMembers", "1stmember;2ndmember", GH_ParamAccess.list)
+            pManager.AddPointParameter("Point", "Point", "Point on the 1D member", GH_ParamAccess.item)
+            pManager.AddTextParameter("MemberName", "MemberName", "Name of the 1D member where to put internal node", GH_ParamAccess.item)
+            pManager.AddTextParameter("NodePrefix", "NodePrefix", "Prefix for nodes", GH_ParamAccess.item, "N")
+
         End Sub
 
         ''' <summary>
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("CrossLinks", "CrossLinks", "Defined cross-links", GH_ParamAccess.list)
+            pManager.AddTextParameter("Node", "Node", "Output internal node data", GH_ParamAccess.list)
+        End Sub
+
+        Protected Overrides Sub BeforeSolveInstance()
+            MyBase.BeforeSolveInstance()
+            memberIdx = 0
         End Sub
 
         ''' <summary>
@@ -49,47 +58,26 @@ Namespace Koala
         ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
+            Dim point As Point3d
+            Dim beamName As String = ""
+            Dim nodePrefix As String = "N"
 
-            Dim i As Integer
-            Dim Type As String = "Fixed"
-            Dim CoupledMembers = New List(Of String)
+            If (Not DA.GetData(0, point)) Then Return
+            If (Not DA.GetData(1, beamName)) Then Return
+            If (Not DA.GetData(2, nodePrefix)) Then Return
 
-            If (Not DA.GetData(Of Integer)(0, i)) Then Return
-            Type = GetStringForCrosslinkType(i)
-            If (Not DA.GetDataList(Of String)(1, CoupledMembers)) Then Return
+            Dim SE_member(4) As String 'a node consists of: Name, X, Y, Z
 
-            Dim SE_Crosslinks(CoupledMembers.Count, 3) As String
-            Dim FlatList As New List(Of System.Object)()
-            'a section consists of: Profile name, section definition, material
+            memberIdx += 1
+            Dim memberName As String = String.Format("{0}{1}", nodePrefix, memberIdx)
 
-            Dim item As String
-            Dim itemcount As Long
-            Dim Firtsmember As String, SecondMember As String
+            SE_member(0) = memberName
+            SE_member(1) = point.X
+            SE_member(2) = point.Y
+            SE_member(3) = point.Z
+            SE_member(4) = beamName
 
-            'initialize some variables
-            itemcount = 0
-
-            'identify section information in the strings
-            For Each item In CoupledMembers
-                If (item IsNot "") Then
-                    Firtsmember = item.Split(";")(0)
-                    SecondMember = item.Split(";")(1)
-                    SE_Crosslinks(itemcount, 0) = Type
-                    SE_Crosslinks(itemcount, 1) = Firtsmember.Trim
-                    SE_Crosslinks(itemcount, 2) = SecondMember.Trim
-                    itemcount += 1
-                End If
-            Next
-
-            'Flatten data for export as simple list
-            FlatList.Clear()
-
-            For i = 0 To itemcount - 1
-                FlatList.Add(SE_Crosslinks(i, 0))
-                FlatList.Add(SE_Crosslinks(i, 1))
-                FlatList.Add(SE_Crosslinks(i, 2))
-            Next i
-            DA.SetDataList(0, FlatList)
+            DA.SetDataList(0, SE_member)
         End Sub
 
 
@@ -101,7 +89,7 @@ Namespace Koala
             Get
                 'You can add image files to your project resources and access them like this:
                 ' return Resources.IconForThisComponent;
-                Return My.Resources.Cross_link
+                Return My.Resources.BeamInternalNode
             End Get
         End Property
 
@@ -112,7 +100,7 @@ Namespace Koala
         ''' </summary>
         Public Overrides ReadOnly Property ComponentGuid() As Guid
             Get
-                Return New Guid("91e2c185-7637-42f1-8cdc-970a7bc0a93a")
+                Return New Guid("b9e556d9-ead0-44c0-bfa3-8bee3d1bd926")
             End Get
         End Property
     End Class

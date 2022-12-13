@@ -39,7 +39,7 @@ Namespace Koala
         ''' Registers all the input parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
-            pManager.AddBrepParameter("Surfaces", "Surfaces", "Slab surface", GH_ParamAccess.item)
+            pManager.AddBrepParameter("Surface", "Surface", "Member 2D surface", GH_ParamAccess.item)
             pManager.AddTextParameter("Material", "Material", "Material", GH_ParamAccess.item, "C20/25")
             pManager.AddTextParameter("Thickness", "Thickness", "Thickness description comprising the thickness type and thickness value(s) (in mm). Example: constant|100 or variable|Global X|N3;150|N4;300", GH_ParamAccess.item)
             pManager.AddTextParameter("Layer", "Layer", "Layer name", GH_ParamAccess.item, "Surfaces")
@@ -61,8 +61,8 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Nodes", "Nodes", "Output nodes", GH_ParamAccess.tree)
-            pManager.AddTextParameter("2D Members", "2D Members", "Output 2D members", GH_ParamAccess.list)
+            pManager.AddTextParameter("Nodes", "Nodes", "Output node data", GH_ParamAccess.tree)
+            pManager.AddTextParameter("2D Member", "2DMember", "Output 2D member data", GH_ParamAccess.list)
         End Sub
 
 
@@ -132,27 +132,20 @@ Namespace Koala
             Dim basePath As GH_Path = DA.ParameterTargetPath(0)
 
             'check if the surface can be handled to SCIA Engineer: non-planar surfaces may have a maximum of 4 boundary edges
-            'get surface naked edges = unsorted list of edges
-            Dim nakededges() As Rhino.Geometry.Curve = brep.DuplicateNakedEdgeCurves(True, False)
-            'join all, take the first curve and explode back to segment; this should now be properly sorted
-            Dim boundary As Rhino.Geometry.Curve = Rhino.Geometry.Curve.JoinCurves(nakededges)(0)
+            Dim warnings As New List(Of String)
+            Dim boundary As Rhino.Geometry.Curve = GetBrepBoundary(brep)
+            Dim segments() As Rhino.Geometry.Curve = GetBoundarySegments(boundary, tolerance, warnings)
 
-            Dim surfType As String
-            Dim edgecount As Long
-            Dim segments() As Rhino.Geometry.Curve
-
-            If boundary.IsCircle() Then
-                ReDim Preserve segments(0)
-                segments.SetValue(boundary, 0)
-                edgecount = 1
-            Else
-                segments = boundary.DuplicateSegments
-                edgecount = segments.Count
+            If warnings.Any Then
+                For Each w In warnings
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, w)
+                Next w
             End If
 
             ' Dim fullSurf As Rhino.Geometry.Surface = brep.Faces(0)
+            Dim surfType As String
             Dim isPlanar As Boolean = boundary.IsPlanar(tolerance) ' (fullSurf.IsPlanar(tolerance))
-            If edgecount <= 4 And Not isPlanar Then
+            If segments.Count <= 4 And Not isPlanar Then
                 'shells, max 4 edges
                 surfType = "Shell"
             ElseIf isPlanar Then
@@ -160,7 +153,7 @@ Namespace Koala
                 surfType = "Plate"
             Else
                 'not supported: shell with more than 4 edges
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Non-planar surface with " & edgecount & " (>4) edges is not supported: will be skipped.
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Non-planar surface with " & segments.Count & " (>4) edges is not supported: will be skipped.
 Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
                 Return
             End If
@@ -173,6 +166,55 @@ Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
             SE_member(2) = material
             SE_member(3) = thickness
             SE_member(4) = surfLayer
+            SE_member(5) = ProcessSurfaceBoundary(segments, remDuplNodes, tolerance, allNodes, nodeIdx, nodePrefix, basePath, SE_NodeTree)
+            SE_member(6) = internalNodes
+            SE_member(7) = GetEnumDescription(memberPlane)
+            SE_member(8) = eccentricityZ
+            SE_member(9) = GetEnumDescription(FEMNLType)
+            SE_member(10) = If(swapOrientation, "1", "0")
+            SE_member(11) = angleLCS
+
+            DA.SetDataTree(0, SE_NodeTree)
+            DA.SetDataList(1, SE_member)
+        End Sub
+
+        Public Shared Function GetBrepBoundary(ByVal brep As Brep) As Rhino.Geometry.Curve
+            'check if the surface can be handled to SCIA Engineer: non-planar surfaces may have a maximum of 4 boundary edges
+            'get surface naked edges = unsorted list of edges
+            Dim nakededges() As Rhino.Geometry.Curve = brep.DuplicateNakedEdgeCurves(True, False)
+            'join all, take the first curve and explode back to segment; this should now be properly sorted
+            GetBrepBoundary = Rhino.Geometry.Curve.JoinCurves(nakededges)(0)
+        End Function
+
+        Public Shared Function GetBoundarySegments(ByVal boundary As Curve, ByVal tolerance As Double, ByRef warnings As List(Of String)) As Rhino.Geometry.Curve()
+            Dim segments() As Rhino.Geometry.Curve
+
+            If boundary.IsCircle() Then
+                ReDim Preserve segments(0)
+                segments.SetValue(boundary, 0)
+            Else
+                segments = boundary.DuplicateSegments
+            End If
+
+            ' Remove too short edges
+            Dim segmentCount As Integer = segments.Length
+            segments = (From s In segments
+                        Where s.GetLength() > tolerance).ToArray()
+
+            If segmentCount > segments.Length Then
+                warnings.Add("Skipping edge shorter than tolerance")
+            End If
+            GetBoundarySegments = segments
+        End Function
+
+        Public Shared Function ProcessSurfaceBoundary(ByVal segments As Rhino.Geometry.Curve(),
+                                               ByVal remDuplNodes As Boolean,
+                                               ByVal tolerance As Double,
+                                               ByRef allNodes As List(Of SENode),
+                                               ByRef nodeIdx As Long,
+                                               ByVal nodePrefix As String,
+                                               ByVal basePath As GH_Path,
+                                               ByRef SE_NodeTree As GH_Structure(Of GH_String)) As String
 
             Dim edge As Rhino.Geometry.Curve
             Dim arrPoint As Rhino.Geometry.Point3d
@@ -186,11 +228,6 @@ Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
             Dim lastNodeName As String = ""
 
             For Each edge In segments
-
-                If edge.GetLength() < tolerance Then
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Skipping edge shorter than tolerance")
-                    Continue For
-                End If
 
                 'Get type of curve segments and nodelist
                 Dim edgeType As String = ""
@@ -263,17 +300,8 @@ Tip: subdivide the brep into individual faces (with max. 4 edges per face)")
                 If closedSurface Then Exit For
             Next edge
 
-            SE_member(5) = boundaryShape
-            SE_member(6) = internalNodes
-            SE_member(7) = GetEnumDescription(memberPlane)
-            SE_member(8) = eccentricityZ
-            SE_member(9) = GetEnumDescription(FEMNLType)
-            SE_member(10) = If(swapOrientation, "1", "0")
-            SE_member(11) = angleLCS
-
-            DA.SetDataTree(0, SE_NodeTree)
-            DA.SetDataList(1, SE_member)
-        End Sub
+            ProcessSurfaceBoundary = boundaryShape
+        End Function
 
         ''' <summary>
         ''' Provides an Icon for every component that will be visible in the User Interface.
