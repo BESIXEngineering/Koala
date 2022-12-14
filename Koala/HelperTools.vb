@@ -1739,7 +1739,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine("<project xmlns=""http://www.scia.cz"">")
         oSB.AppendLine("<def uri=""" & fileNameXMLdef & """/>")
 
-        If structtype <> "" Or materials.count <> 0 Then
+        If Not String.IsNullOrEmpty(structtype) Or materials.count <> 0 Or projectInfo.Count >= 5 Then
             'output project information -----------------------------------------------------
             c = "{AC021036-C943-4B46-88E4-72CFB9D9391C}"
             cid = "EP_GraphicDsObjects.EP_BaseDataProjectHeader.1"
@@ -1752,8 +1752,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
             'header
             oSB.AppendLine("<h>")
-
-
             oSB.AppendLine(ConCat_ht("0", "Structure"))
             oSB.AppendLine(ConCat_ht("1", "Project"))
             oSB.AppendLine(ConCat_ht("2", "Part"))
@@ -1765,10 +1763,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
             oSB.AppendLine(ConCat_ht("8", "Timber"))
             oSB.AppendLine(ConCat_ht("9", "Steel fibre concrete"))
             oSB.AppendLine(ConCat_ht("10", "Functionality"))
-
-
-
-
             oSB.AppendLine("</h>")
 
             'data
@@ -1792,17 +1786,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                     oSB.AppendLine(ConCat_pvt("0", 7, "Wall XY"))
                 Case "General XYZ"
                     oSB.AppendLine(ConCat_pvt("0", 8, "General XYZ"))
-                Case Else
-                    oSB.AppendLine(ConCat_pvt("0", 8, "General XYZ"))
             End Select
 
-            If (projectInfo.Count <> 0) Then
+            If projectInfo.Count >= 5 Then
                 oSB.AppendLine(ConCat_pv("1", projectInfo(0)))
                 oSB.AppendLine(ConCat_pv("2", projectInfo(1)))
                 oSB.AppendLine(ConCat_pv("3", projectInfo(2)))
                 oSB.AppendLine(ConCat_pv("4", projectInfo(3)))
                 oSB.AppendLine(ConCat_pv("5", projectInfo(4)))
-
             Else
                 oSB.AppendLine(ConCat_pv("1", "-"))
                 oSB.AppendLine(ConCat_pv("2", "-"))
@@ -1810,10 +1801,19 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                 oSB.AppendLine(ConCat_pv("4", "-"))
                 oSB.AppendLine(ConCat_pv("5", "-"))
             End If
-            oSB.AppendLine(ConCat_pv("6", IIf(materials.Contains("Concrete"), "1", "0")))
-            oSB.AppendLine(ConCat_pv("7", IIf(materials.Contains("Steel"), "1", "0")))
-            oSB.AppendLine(ConCat_pv("8", IIf(materials.Contains("Timber"), "1", "0")))
-            oSB.AppendLine(ConCat_pv("9", IIf(materials.Contains("Fiber Concrete"), "1", "0")))
+
+            If materials.count <> 0 Then
+                oSB.AppendLine(ConCat_pv("6", IIf(materials.Contains("Concrete"), "1", "0")))
+                oSB.AppendLine(ConCat_pv("7", IIf(materials.Contains("Steel"), "1", "0")))
+                oSB.AppendLine(ConCat_pv("8", IIf(materials.Contains("Timber"), "1", "0")))
+                oSB.AppendLine(ConCat_pv("9", IIf(materials.Contains("Fiber Concrete"), "1", "0")))
+                'Else
+                '    oSB.AppendLine(ConCat_pv("6", "1"))
+                '    oSB.AppendLine(ConCat_pv("7", "1"))
+                '    oSB.AppendLine(ConCat_pv("8", "0"))
+                '    oSB.AppendLine(ConCat_pv("9", "0"))
+            End If
+
             oSB.AppendLine(ConCat_pv("10", "PrDEx_InitialStress, PrDEx_Subsoil,PrDEx_InitialDeformationsAndCurvature, PrDEx_SecondOrder, PrDEx_Nonlinearity, PrDEx_BeamLocalNonlinearity,PrDEx_SupportNonlinearity, PrDEx_StabilityAnalysis"))
             'If (projectInfo.Count <> 0) Then
             '    oSB.AppendLine(ConCat_pv("11", projectInfo(5)))
@@ -3602,9 +3602,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
     Private Sub WriteBeam(ByRef oSB, ibeam, beams(,)) 'write 1 beam to the XML stream
         'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
 
-        Dim LineShape As String, LineType As String
+        Dim LineType As String
 
-        Dim nodeStart As String, nodeEnd As String, MiddleNode As String
+        Dim nodeStart As String = "", nodeEnd As String = "", MiddleNode As String
         Dim i As Integer
 
         oSB.AppendLine("<obj nm=""" & beams(ibeam, 0) & """>")
@@ -3612,9 +3612,13 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
         Dim ShapeAndNodes As String() = beams(ibeam, 3).Split(New Char() {";"c})
         LineType = ShapeAndNodes.ElementAt(0)
-        nodeStart = DupNodeDict(ShapeAndNodes.ElementAt(1))
-        nodeEnd = DupNodeDict(ShapeAndNodes.Last())
 
+        If Not DupNodeDict.TryGetValue(ShapeAndNodes.ElementAt(1), nodeStart) Then
+            Throw New Exception("Couldn't find node " & ShapeAndNodes.ElementAt(1))
+        End If
+        If Not DupNodeDict.TryGetValue(ShapeAndNodes.Last(), nodeEnd) Then
+            Throw New Exception("Couldn't find node " & ShapeAndNodes.Last())
+        End If
 
         oSB.AppendLine(ConCat_pn("1", nodeStart)) 'Beg. node
         oSB.AppendLine(ConCat_pn("2", nodeEnd)) 'End node

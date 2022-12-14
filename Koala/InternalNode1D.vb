@@ -44,7 +44,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Node", "Node", "Output internal node data", GH_ParamAccess.list)
+            pManager.AddTextParameter("InternalNode1D", "InternalNode1D", "Output internal node data", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()

@@ -20,14 +20,14 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("CreateXML", "CreateXML",
+            MyBase.New("CreateXML *old*", "CreateXML",
                 "CreateXML description",
                 "Koala", "General")
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.hidden
+                Return GH_Exposure.obscure
             End Get
 
         End Property

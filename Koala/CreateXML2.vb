@@ -10,82 +10,6 @@ Namespace Koala
         Inherits GH_Component
         Implements IGH_VariableParameterComponent
 
-        Enum EsaObjectCategory
-            Library
-            Structure0D
-            Structure1D
-            Structure2D
-            BoundaryCondition
-            LoadCase
-            PointLoad
-            LineLoad
-            SurfaceLoad
-            ThermalLoad
-            NonLinear
-        End Enum
-
-        ''' <summary>
-        ''' The order should match the input order for the CreateXml node
-        ''' </summary>
-        Enum EsaObjectType
-            ProjectInfo
-            Layer
-            CrossSection
-
-            Node
-            Member1D
-            Member2D
-            LoadPanel
-            Opening
-            ArbitraryProfile
-            InternalNode1D
-            InternalEdge2D
-
-            NodeSupport
-            EdgeSupport
-            BeamLineSupport
-            BeamPointSupport
-            SurfaceSupport
-            Subsoil
-
-            Hinge
-            LineHinge
-            CrossLink
-            RigidArm
-
-            LoadCase
-            LoadGroup
-            LinearCombination
-            NonLinearCombination
-            StabilityCombination
-
-            PointLoadPoint
-            PointMomentPoint
-            PointLoadBeam
-            PointMomentBeam
-            FreePointLoad
-            FreePointMoment
-
-            LineLoadBeam
-            LineMomentBeam
-            LineLoadEdge
-            LineMomentEdge
-            FreeLineLoad
-
-            SurfaceLoad
-            FreeSurfaceLoad
-
-            ThermalLoad1D
-            ThermalLoad2D
-
-            NonLinearFunction
-
-            PreTensionElement
-            GapElement
-            LimitForceElement
-            Cable
-        End Enum
-
         ''' <summary>
         ''' Dictionary of variable parameter groups
         ''' </summary>
@@ -176,13 +100,16 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddBooleanParameter("Run", "Run", "Set true to create XML file", GH_ParamAccess.item, False)
             pManager.AddTextParameter("FileName", "FileName", "Output filename", GH_ParamAccess.item)
-            pManager.AddParameter(New Param_Enum("StructureType", "Type of analysis model", GH_ParamAccess.item, AnalysisModelStructuralType.GeneralXYZ))
-            pManager.AddParameter(New Param_Enum("UILanguage", "UI language", GH_ParamAccess.item, UILanguage.EN))
 
+            ' TODO: Enum param options are not maintained when reopening a saved GH file in VariableParameterComponent
             Dim idx As Integer
-            idx = pManager.AddTextParameter("Materials", "Materials", "Materials: Conctrete, Steel, Timber", GH_ParamAccess.list, "Concrete")
+            idx = pManager.AddParameter(New Param_Enum("StructureType", "Type of analysis model", GH_ParamAccess.item, AnalysisModelStructuralType.GeneralXYZ, False))
             pManager.Param(idx).Optional = True
-            idx = pManager.AddNumberParameter("MeshSize", "MeshSize", "Size of mesh", GH_ParamAccess.item, 0.15)
+            idx = pManager.AddParameter(New Param_Enum("UILanguage", "UI language", GH_ParamAccess.item, UILanguage.EN, False))
+            pManager.Param(idx).Optional = True
+            idx = pManager.AddTextParameter("Materials", "Materials", "Materials: Conctrete, Steel, Timber", GH_ParamAccess.list)
+            pManager.Param(idx).Optional = True
+            idx = pManager.AddNumberParameter("MeshSize", "MeshSize", "Size of mesh", GH_ParamAccess.item)
             pManager.Param(idx).Optional = True
             idx = pManager.AddNumberParameter("Scale", "Scale", "Scale", GH_ParamAccess.item, 1)
             pManager.Param(idx).Optional = True
@@ -207,11 +134,11 @@ Namespace Koala
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
             Dim run As Boolean = False
             Dim fileName As String = ""
-            Dim structureType As AnalysisModelStructuralType = AnalysisModelStructuralType.GeneralXYZ
+            Dim structureTypeString As String = ""
             Dim UILanguage As UILanguage = UILanguage.EN
 
             Dim materials = New List(Of String)
-            Dim meshSize As Double = 0.15
+            Dim meshSize As Double = -1 ' negative mesh size will be ignored when creating xml
 
             Dim scale As Double = 1
             Dim remDuplNodes As Boolean = False
@@ -221,7 +148,14 @@ Namespace Koala
 
             DA.GetData(0, run)
             If (Not DA.GetData(1, fileName)) Then Return
-            If (DA.GetData(2, i)) Then structureType = CType(i, AnalysisModelStructuralType)
+            If (DA.GetData(2, i)) Then
+                If Not [Enum].IsDefined(GetType(AnalysisModelStructuralType), i) Then
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid StructuralType")
+                Else
+                    structureTypeString = i.ToString
+                End If
+            End If
+
             If (DA.GetData(3, i)) Then UILanguage = CType(i, UILanguage)
 
             DA.GetDataList(4, materials)
@@ -234,7 +168,7 @@ Namespace Koala
                 Exit Sub
             End If
 
-            CreateXMLFile(fileName, structureType, materials, UILanguage, meshSize,
+            CreateXMLFile(fileName, structureTypeString, materials, GetEnumDescription(UILanguage), meshSize,
                           GetInputText(DA, EsaObjectType.CrossSection),
                           GetInputText(DA, EsaObjectType.Node),
                           GetInputText(DA, EsaObjectType.Member1D),
@@ -298,13 +232,32 @@ Namespace Koala
             End If
         End Function
 
-        Private Function AllTypesAreInput(cat As EsaObjectCategory) As Boolean
+        ''' <summary>
+        ''' Check if all object types of the category are input parameters
+        ''' </summary>
+        ''' <param name="cat"></param>
+        ''' <returns>-1 if no object type are input, 0 if some are input and 1 if all are input</returns>
+        Private Function AreTypesInput(cat As EsaObjectCategory) As Integer
+            If Not VariableParameterDict(cat).Any() Then Return -1
+
+            Dim status As Integer = 0
             For Each t As EsaObjectType In VariableParameterDict(cat)
-                If Params.IndexOfInputParam(GetEnumDescription(t)) = -1 Then
-                    Return False
+                Dim idx = Params.IndexOfInputParam(GetEnumDescription(t))
+                If idx = -1 Then
+                    If status = 0 Then
+                        status = -1
+                    ElseIf status = 1 Then
+                        Return 0
+                    End If
+                Else
+                    If status = 0 Then
+                        status = 1
+                    ElseIf status = -1 Then
+                        Return 0
+                    End If
                 End If
             Next
-            Return True
+            Return status
         End Function
         'Public Overrides Function Write(ByVal writer As GH_IO.Serialization.GH_IWriter) As Boolean
         '    Return MyBase.Write(writer)
@@ -316,9 +269,10 @@ Namespace Koala
         Protected Overrides Sub AppendAdditionalComponentMenuItems(ByVal menu As System.Windows.Forms.ToolStripDropDown)
 
             For Each cat As EsaObjectCategory In VariableParameterDict.Keys.OrderBy(Function(x) Convert.ToInt32(x))
-                Dim catIsChecked As Boolean = AllTypesAreInput(cat)
+                Dim catIsChecked As Integer = AreTypesInput(cat)
                 Dim catName As String = GetEnumDescription(cat)
-                Dim item As ToolStripMenuItem = Menu_AppendItem(menu, catName, AddressOf Menu_ToggleCategoryClicked, True, catIsChecked)
+                Dim item As ToolStripMenuItem = Menu_AppendItem(menu, catName, AddressOf Menu_ToggleCategoryClicked, True)
+                item.CheckState = If(catIsChecked = -1, CheckState.Unchecked, If(catIsChecked = 0, CheckState.Indeterminate, CheckState.Checked))
                 item.ToolTipText = "Add all objects of category " & catName
                 item.Tag = cat
 
@@ -335,35 +289,62 @@ Namespace Koala
 
         End Sub
 
+        ''' <summary>
+        ''' Add/remove a single input parameter
+        ''' </summary>
+        ''' <param name="sender"></param>
+        ''' <param name="e"></param>
         Private Sub Menu_ToggleObjectTypeClicked(sender As Object, e As EventArgs)
             Dim item As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
             Dim oType As EsaObjectType = CType(item.Tag, EsaObjectType)
             Dim remove As Boolean = item.Checked
             item.Checked = Not item.Checked
 
+
             If remove Then
                 Dim paramIdx = Params.IndexOfInputParam(GetEnumDescription(oType))
 
                 If paramIdx > -1 Then
-                    Params.UnregisterInputParameter(Params.Input(paramIdx))
+                    ExpireSolution(True)
+
+                    Dim toRemove = Params.Input(paramIdx)
+                    Dim doc As GH_Document = OnPingDocument()
+                    doc.UndoUtil.RecordGenericObjectEvent("Remove Parameter", Me)
+
+                    Params.UnregisterInputParameter(toRemove)
                     Params.OnParametersChanged()
                     VariableParameterMaintenance()
                 End If
 
             Else
-                CreateInputParameter(oType)
-                Params.OnParametersChanged()
-                VariableParameterMaintenance()
+                Dim paramName As String = ""
+                Dim paramIdx = ShouldCreateInputParameter(oType, paramName)
 
+                If paramIdx <> -1 Then
+
+                    ExpireSolution(True)
+                    Dim doc As GH_Document = OnPingDocument()
+                    doc.UndoUtil.RecordGenericObjectEvent("Add Parameter", Me)
+
+                    CreateInputParameter(paramName, paramIdx)
+
+                    Params.OnParametersChanged()
+                    VariableParameterMaintenance()
+                End If
             End If
 
         End Sub
 
+        ''' <summary>
+        ''' Add/remove all input parameters matching a category
+        ''' </summary>
+        ''' <param name="sender"></param>
+        ''' <param name="e"></param>
         Private Sub Menu_ToggleCategoryClicked(sender As Object, e As EventArgs)
             Dim item As ToolStripMenuItem = CType(sender, ToolStripMenuItem)
             Dim category As EsaObjectCategory = CType(item.Tag, EsaObjectCategory)
-            Dim remove As Boolean = item.Checked
-            item.Checked = Not item.Checked
+            Dim remove As Boolean = (item.CheckState = CheckState.Checked)
+            item.CheckState = If(remove, CheckState.Unchecked, CheckState.Checked)
 
             For Each subitem In item.DropDownItems
                 subitem.Checked = item.Checked
@@ -380,6 +361,10 @@ Namespace Koala
                 Next
 
                 If paramsToRemove.Any Then
+                    ExpireSolution(True)
+                    Dim doc As GH_Document = OnPingDocument()
+                    doc.UndoUtil.RecordGenericObjectEvent("Remove Parameters", Me)
+
                     For Each p In paramsToRemove
                         Params.UnregisterInputParameter(p)
                     Next
@@ -389,12 +374,28 @@ Namespace Koala
                 End If
 
             Else
+                Dim paramAdded As Boolean = False
                 For Each oType As EsaObjectType In VariableParameterDict(category)
-                    CreateInputParameter(oType)
+
+                    Dim paramName As String = ""
+                    Dim paramIdx = ShouldCreateInputParameter(oType, paramName)
+
+                    If paramIdx <> -1 Then
+                        If Not paramAdded Then
+                            paramAdded = True
+                            ExpireSolution(True)
+                            Dim doc As GH_Document = OnPingDocument()
+                            doc.UndoUtil.RecordGenericObjectEvent("Add Parameters", Me)
+                        End If
+
+                        CreateInputParameter(paramName, paramIdx)
+                    End If
                 Next
 
-                Params.OnParametersChanged()
-                VariableParameterMaintenance()
+                If paramAdded Then
+                    Params.OnParametersChanged()
+                    VariableParameterMaintenance()
+                End If
             End If
 
         End Sub
@@ -424,7 +425,7 @@ Namespace Koala
 
         Public Sub VariableParameterMaintenance() Implements IGH_VariableParameterComponent.VariableParameterMaintenance
             ' Perform parameter maintenance here!
-            ExpireSolution(True)
+            ' ExpireSolution(True)
         End Sub
 
         Private Function CreateInputParameter(index As Integer, name As String, Optional description As String = "") As IGH_Param
@@ -439,33 +440,41 @@ Namespace Koala
         ''' <summary>
         ''' Create input parameter if not yet existing
         ''' </summary>
-        ''' <param name="oType"></param>
-        Private Sub CreateInputParameter(oType As EsaObjectType)
-            Dim name As String = GetEnumDescription(oType)
+        Private Function CreateInputParameter(name As String, idx As Integer) As IGH_Param
             Dim description As String = "Flattened data list of " & name
+            Dim newInputParam As IGH_Param = CreateInputParameter(idx, name, description)
+            Params.RegisterInputParam(newInputParam, idx)
+            CreateInputParameter = newInputParam
+        End Function
 
+        ''' <summary>
+        ''' Determine the index at which to create the new input parameter; returns -1 if the parameter already exists.
+        ''' </summary>
+        ''' <param name="oType"></param>
+        ''' <param name="name"></param>
+        Private Function ShouldCreateInputParameter(oType As EsaObjectType, ByRef name As String) As Integer
+            name = GetEnumDescription(oType)
             Dim paramIdx = Params.IndexOfInputParam(name)
 
-            If paramIdx = -1 Then
-                paramIdx = Params.Input.Count
+            If paramIdx <> -1 Then Return -1
 
-                ' Find target index of parameter to maintain Enum order
-                Dim other As EsaObjectType
-                Dim currIdx As Integer = CInt(oType)
+            paramIdx = Params.Input.Count
 
-                For i As Integer = FixedInputParamCount To paramIdx - 1
-                    If [Enum].TryParse(Params.Input(i).Name, other) Then
-                        If (currIdx < CInt(other)) Then
-                            paramIdx = i
-                            Exit For
-                        End If
+            ' Find target index of parameter to maintain Enum order
+            Dim other As EsaObjectType
+            Dim currIdx As Integer = CInt(oType)
+
+            For i As Integer = FixedInputParamCount To paramIdx - 1
+                If [Enum].TryParse(Params.Input(i).Name, other) Then
+                    If (currIdx < CInt(other)) Then
+                        paramIdx = i
+                        Exit For
                     End If
-                Next i
+                End If
+            Next i
 
-                Dim newInputParam As IGH_Param = CreateInputParameter(paramIdx, name, description)
-                Params.RegisterInputParam(newInputParam, paramIdx)
-            End If
-        End Sub
+            Return paramIdx
+        End Function
 
 #End Region
 

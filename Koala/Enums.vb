@@ -9,7 +9,7 @@ Namespace Koala
         Public Class Param_Enum
             Inherits Param_Integer
 
-            Public Sub New(_name As String, _description As String, _access As GH_ParamAccess, _default As [Enum])
+            Public Sub New(_name As String, _description As String, _access As GH_ParamAccess, _default As [Enum], Optional setPersistant As Boolean = True)
                 MyBase.New()
                 Name = _name
                 NickName = _name
@@ -21,8 +21,9 @@ Namespace Koala
                     AddNamedValue(s, Convert.ToInt32(item))
                     Description += " | " & s & "=" & Convert.ToInt32(item).ToString()
                 Next
-                SetPersistentData(Convert.ToInt32(_default))
-
+                If setPersistant Then
+                    SetPersistentData(Convert.ToInt32(_default))
+                End If
             End Sub
         End Class
 
@@ -213,6 +214,85 @@ Namespace Koala
         Uniform = 0
         DirectionX = 1
         DirectionY = 2
+    End Enum
+
+
+    Enum EsaObjectCategory
+        Library
+        Structure0D
+        Structure1D
+        Structure2D
+        BoundaryCondition
+        LoadCase
+        PointLoad
+        LineLoad
+        SurfaceLoad
+        ThermalLoad
+        NonLinear
+    End Enum
+
+    ''' <summary>
+    ''' Different types of ESA objects that can be created using Koala
+    ''' </summary>
+    Enum EsaObjectType
+        ProjectInfo
+        Layer
+        CrossSection
+
+        Node
+        <Description("1D Member")>
+        Member1D
+        <Description("2D Member")>
+        Member2D
+        LoadPanel
+        Opening
+        ArbitraryProfile
+        InternalNode1D
+        InternalEdge2D
+
+        NodeSupport
+        EdgeSupport
+        BeamLineSupport
+        BeamPointSupport
+        SurfaceSupport
+        Subsoil
+
+        Hinge
+        LineHinge
+        CrossLink
+        RigidArm
+
+        LoadCase
+        LoadGroup
+        LinearCombination
+        NonLinearCombination
+        StabilityCombination
+
+        PointLoadPoint
+        PointMomentPoint
+        PointLoadBeam
+        PointMomentBeam
+        FreePointLoad
+        FreePointMoment
+
+        LineLoadBeam
+        LineMomentBeam
+        LineLoadEdge
+        LineMomentEdge
+        FreeLineLoad
+
+        SurfaceLoad
+        FreeSurfaceLoad
+
+        ThermalLoad1D
+        ThermalLoad2D
+
+        NonLinearFunction
+
+        PreTensionElement
+        GapElement
+        LimitForceElement
+        Cable
     End Enum
 
     Public Enum LoadPanelType
