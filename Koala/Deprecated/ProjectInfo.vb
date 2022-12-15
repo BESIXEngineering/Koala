@@ -6,6 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    ''' <summary>
+    ''' Obsolete. Use "ProjectData" instead which includes more input values.
+    ''' </summary>
+    <System.Obsolete>
     Public Class ProjectInfo
         Inherits GH_Component
         ''' <summary>
@@ -20,6 +24,12 @@ Namespace Koala
                 "Informations about project",
                 "Koala", "General")
         End Sub
+
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.

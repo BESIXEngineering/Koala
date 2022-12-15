@@ -1739,7 +1739,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
         oSB.AppendLine("<project xmlns=""http://www.scia.cz"">")
         oSB.AppendLine("<def uri=""" & fileNameXMLdef & """/>")
 
-        If Not String.IsNullOrEmpty(structtype) Or materials.count <> 0 Or projectInfo.Count >= 5 Then
+        If Not String.IsNullOrEmpty(structtype) Or materials.Count <> 0 Or projectInfo.Count >= 5 Then
             'output project information -----------------------------------------------------
             c = "{AC021036-C943-4B46-88E4-72CFB9D9391C}"
             cid = "EP_GraphicDsObjects.EP_BaseDataProjectHeader.1"
@@ -1762,7 +1762,10 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
             oSB.AppendLine(ConCat_ht("7", "Steel"))
             oSB.AppendLine(ConCat_ht("8", "Timber"))
             oSB.AppendLine(ConCat_ht("9", "Steel fibre concrete"))
-            oSB.AppendLine(ConCat_ht("10", "Functionality"))
+            oSB.AppendLine(ConCat_ht("10", "Other material"))
+            oSB.AppendLine(ConCat_ht("11", "Aluminium"))
+            oSB.AppendLine(ConCat_ht("12", "Masonry"))
+            oSB.AppendLine(ConCat_ht("13", "Functionality"))
             oSB.AppendLine("</h>")
 
             'data
@@ -1788,25 +1791,31 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                     oSB.AppendLine(ConCat_pvt("0", 8, "General XYZ"))
             End Select
 
-            If projectInfo.Count >= 5 Then
-                oSB.AppendLine(ConCat_pv("1", projectInfo(0)))
-                oSB.AppendLine(ConCat_pv("2", projectInfo(1)))
-                oSB.AppendLine(ConCat_pv("3", projectInfo(2)))
-                oSB.AppendLine(ConCat_pv("4", projectInfo(3)))
-                oSB.AppendLine(ConCat_pv("5", projectInfo(4)))
-            Else
-                oSB.AppendLine(ConCat_pv("1", "-"))
-                oSB.AppendLine(ConCat_pv("2", "-"))
-                oSB.AppendLine(ConCat_pv("3", "-"))
-                oSB.AppendLine(ConCat_pv("4", "-"))
-                oSB.AppendLine(ConCat_pv("5", "-"))
+            If projectInfo.Count > 0 Then
+                For i = 0 To Math.Min(projectInfo.Count - 1, 4)
+                    If projectInfo(i) IsNot Nothing Then
+                        oSB.AppendLine(ConCat_pv((i + 1).ToString, projectInfo(i)))
+                    End If
+                Next
             End If
 
-            If materials.count <> 0 Then
-                oSB.AppendLine(ConCat_pv("6", IIf(materials.Contains("Concrete"), "1", "0")))
-                oSB.AppendLine(ConCat_pv("7", IIf(materials.Contains("Steel"), "1", "0")))
-                oSB.AppendLine(ConCat_pv("8", IIf(materials.Contains("Timber"), "1", "0")))
-                oSB.AppendLine(ConCat_pv("9", IIf(materials.Contains("Fiber Concrete"), "1", "0")))
+            If materials.Count <> 0 Then
+                Dim materialEnums As New List(Of Koala.Material)
+                For Each material In materials
+                    If Not String.IsNullOrEmpty(material) Then
+                        Dim matEnum = Koala.GetEnum(Of Koala.Material)(material)
+                        materialEnums.Add(matEnum)
+                    End If
+                Next
+                If materialEnums.Count > 0 Then
+                    oSB.AppendLine(ConCat_pv("6", IIf(materialEnums.Contains(Koala.Material.Concrete), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("7", IIf(materialEnums.Contains(Koala.Material.Steel), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("8", IIf(materialEnums.Contains(Koala.Material.Timber), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("9", IIf(materialEnums.Contains(Koala.Material.SteelFibreConcrete), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("10", IIf(materialEnums.Contains(Koala.Material.Other), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("11", IIf(materialEnums.Contains(Koala.Material.Aluminium), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("12", IIf(materialEnums.Contains(Koala.Material.Masonry), "1", "0")))
+                End If
                 'Else
                 '    oSB.AppendLine(ConCat_pv("6", "1"))
                 '    oSB.AppendLine(ConCat_pv("7", "1"))
@@ -1814,13 +1823,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                 '    oSB.AppendLine(ConCat_pv("9", "0"))
             End If
 
-            oSB.AppendLine(ConCat_pv("10", "PrDEx_InitialStress, PrDEx_Subsoil,PrDEx_InitialDeformationsAndCurvature, PrDEx_SecondOrder, PrDEx_Nonlinearity, PrDEx_BeamLocalNonlinearity,PrDEx_SupportNonlinearity, PrDEx_StabilityAnalysis"))
+            'Don't define this in Koala, but in the esa template that you wish to update
+            'oSB.AppendLine(ConCat_pv("13", "PrDEx_InitialStress, PrDEx_Subsoil,PrDEx_InitialDeformationsAndCurvature, PrDEx_SecondOrder, PrDEx_Nonlinearity, PrDEx_BeamLocalNonlinearity,PrDEx_SupportNonlinearity, PrDEx_StabilityAnalysis"))
             'If (projectInfo.Count <> 0) Then
-            '    oSB.AppendLine(ConCat_pv("11", projectInfo(5)))
-            '    oSB.AppendLine(ConCat_pv("12", projectInfo(6)))
+            '    oSB.AppendLine(ConCat_pv("14", projectInfo(5)))
+            '    oSB.AppendLine(ConCat_pv("15", projectInfo(6)))
             'Else
-            '    oSB.AppendLine(ConCat_pv("11", "EC - EN"))
-            '    oSB.AppendLine(ConCat_pv("12", "Standard EN"))
+            '    oSB.AppendLine(ConCat_pv("14", "EC - EN"))
+            '    oSB.AppendLine(ConCat_pv("15", "Standard EN"))
             'End If
             oSB.AppendLine("</obj>")
 

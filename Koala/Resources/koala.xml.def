@@ -24,14 +24,18 @@
         <def_property x="3" name="Description" type="string" id="{EDA4B5A9-8A80-11D4-A414-000000000000}"/>
         <def_property x="4" name="Author" type="string" id="{EDA4B5AA-8A80-11D4-A414-000000000000}"/>
         <def_property x="5" name="Date" type="string" id="{EDA4B5AB-8A80-11D4-A414-000000000000}"/>
-         <def_property x="6" name="Concrete" type="bool" id="{8DC45085-8ED3-4E02-8AF3-136E0E148787}"/>
-         <def_property x="7" name="Steel" type="bool" id="{40D4047E-9E8E-421A-B774-6EC1B1B8B3EA}"/>
-         <def_property x="8" name="Timber" type="bool" id="{93BE5794-8A64-448F-A37B-C232E980C45F}"/>
-        <def_property x="9" name="Steel fibre concrete" type="bool" id="{10B6D4F8-0EB3-4D5B-8EB0-4BDED08E0AE6}"/>  
-        <def_property x="10" name="Functionality" type="string" id="{D64BCF34-ACBF-4469-BDAE-F2ACECF2626A}"/>
+        <def_property x="6" name="Concrete" type="bool" id="{8DC45085-8ED3-4E02-8AF3-136E0E148787}"/>
+        <def_property x="7" name="Steel" type="bool" id="{40D4047E-9E8E-421A-B774-6EC1B1B8B3EA}"/>
+        <def_property x="8" name="Timber" type="bool" id="{93BE5794-8A64-448F-A37B-C232E980C45F}"/>
+        <def_property x="9" name="Steel fibre concrete" type="bool" id="{10B6D4F8-0EB3-4D5B-8EB0-4BDED08E0AE6}"/>
+        <def_property x="10" name="Other material" type="bool" id="{7A2D012D-D30F-4D0E-85CE-358431C9940A}"/>
+        <def_property x="11" name="Aluminium" type="bool" id="{7A2D012E-D30F-4D0E-85CE-358431C9940A}"/>
+        <def_property x="12" name="Masonry" type="bool" id="{F40295F5-8EE9-4483-A0E5-8F45EC95CF3C}"/>
+        
+        <def_property x="13" name="Functionality" type="string" id="{D64BCF34-ACBF-4469-BDAE-F2ACECF2626A}"/>
 
-        <def_property x="11" name="National code" type="string" readonly="yes" flag="1" id="{EC57E0A3-8330-42D6-BD1E-AE1BA3E081F5}"/>
-        <def_property x="12" name="National annex" type="string" id="{7E419155-1FCD-4CED-A4C8-1CC1CBE15735}"/>
+        <def_property x="14" name="National code" type="string" readonly="yes" flag="1" id="{EC57E0A3-8330-42D6-BD1E-AE1BA3E081F5}"/>
+        <def_property x="15" name="National annex" type="string" id="{7E419155-1FCD-4CED-A4C8-1CC1CBE15735}"/>
        
       </def_table>
    </def_container>

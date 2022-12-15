@@ -173,7 +173,8 @@
     <Compile Include="PointMomentOnStructNode.vb" />
     <Compile Include="PointSupportOnBeam.vb" />
     <Compile Include="PressTensionOnlyBeamNl.vb" />
-    <Compile Include="ProjectInfo.vb" />
+    <Compile Include="ProjectData.vb" />
+    <Compile Include="Deprecated\ProjectInfo.vb" />
     <Compile Include="InternalEdge2D.vb" />
     <Compile Include="Deprecated\SlabInternalEdge.vb" />
     <Compile Include="StabilityCombination.vb" />

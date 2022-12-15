@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 Imports System.Windows.Forms
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Types
 Imports Rhino.Geometry
 
 
@@ -14,8 +15,9 @@ Namespace Koala
         ''' Dictionary of variable parameter groups
         ''' </summary>
         Private ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
+            {EsaObjectCategory.Project, New EsaObjectType() {
+                EsaObjectType.ProjectData}},
             {EsaObjectCategory.Library, New EsaObjectType() {
-                EsaObjectType.ProjectInfo,
                 EsaObjectType.Layer,
                 EsaObjectType.CrossSection}},
             {EsaObjectCategory.Structure0D, New EsaObjectType() {
@@ -73,12 +75,6 @@ Namespace Koala
                 EsaObjectType.Cable}}
         }
 
-        'Structure VariableParameterDefinition
-        '    Dim Category As VariableParameterCategory
-        '    Dim Name As String
-        'End Structure
-
-
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -100,23 +96,6 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddBooleanParameter("Run", "Run", "Set true to create XML file", GH_ParamAccess.item, False)
             pManager.AddTextParameter("FileName", "FileName", "Output filename", GH_ParamAccess.item)
-
-            ' TODO: Enum param options are not maintained when reopening a saved GH file in VariableParameterComponent
-            Dim idx As Integer
-            idx = pManager.AddParameter(New Param_Enum("StructureType", "Type of analysis model", GH_ParamAccess.item, AnalysisModelStructuralType.GeneralXYZ, False))
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddParameter(New Param_Enum("UILanguage", "UI language", GH_ParamAccess.item, UILanguage.EN, False))
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddTextParameter("Materials", "Materials", "Materials: Conctrete, Steel, Timber", GH_ParamAccess.list)
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddNumberParameter("MeshSize", "MeshSize", "Size of mesh", GH_ParamAccess.item)
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddNumberParameter("Scale", "Scale", "Scale", GH_ParamAccess.item, 1)
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddBooleanParameter("RemDuplNodes", "RemDuplNodes", "Output filename", GH_ParamAccess.item, False)
-            pManager.Param(idx).Optional = True
-            idx = pManager.AddNumberParameter("Tolerance", "Tolerance", "Tolerance for duplicity nodes", GH_ParamAccess.item, 0.001)
-            pManager.Param(idx).Optional = True
         End Sub
 
         ''' <summary>
@@ -134,41 +113,89 @@ Namespace Koala
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
             Dim run As Boolean = False
             Dim fileName As String = ""
-            Dim structureTypeString As String = ""
-            Dim UILanguage As UILanguage = UILanguage.EN
-
-            Dim materials = New List(Of String)
-            Dim meshSize As Double = -1 ' negative mesh size will be ignored when creating xml
-
-            Dim scale As Double = 1
-            Dim remDuplNodes As Boolean = False
-            Dim tolerance As Double = 0.001
-
-            Dim i As Integer = 0
 
             DA.GetData(0, run)
             If (Not DA.GetData(1, fileName)) Then Return
-            If (DA.GetData(2, i)) Then
-                If Not [Enum].IsDefined(GetType(AnalysisModelStructuralType), i) Then
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid StructuralType")
-                Else
-                    structureTypeString = i.ToString
-                End If
-            End If
-
-            If (DA.GetData(3, i)) Then UILanguage = CType(i, UILanguage)
-
-            DA.GetDataList(4, materials)
-            DA.GetData(5, meshSize)
-            DA.GetData(6, scale)
-            DA.GetData(7, remDuplNodes)
-            DA.GetData(8, tolerance)
 
             If run = False Then
                 Exit Sub
             End If
 
-            CreateXMLFile(fileName, structureTypeString, materials, GetEnumDescription(UILanguage), meshSize,
+            ' Split project data into original CreateXML input
+            Dim projectInfo As New List(Of String)
+            Dim structureTypeString As String = ""
+            Dim uilanguage As UILanguage = UILanguage.EN
+            Dim materials As New List(Of String)
+            Dim meshSize As Double = -1
+            Dim scale As Double = 1
+            Dim remDuplNodes As Boolean = False
+            Dim tolerance As Double = 0.001
+
+            Dim projectData = GetInputData(Of IGH_Goo)(DA, EsaObjectType.ProjectData)
+            Dim dataCount As Integer = projectData.Count
+            If dataCount > 0 Then
+
+                Dim stringValue As String = ""
+
+                For i As Integer = 0 To 4
+                    Dim infoValue As String = Nothing
+                    If i < dataCount AndAlso projectData(i) IsNot Nothing AndAlso projectData(i).CastTo(stringValue) Then
+                        infoValue = stringValue
+                    End If
+                    projectInfo.Add(infoValue)
+                Next
+
+                If dataCount > 5 AndAlso projectData(5) IsNot Nothing Then
+                    If projectData(5).CastTo(stringValue) AndAlso Not String.IsNullOrEmpty(stringValue) Then
+                        Dim structuralType = GetEnum(Of AnalysisModelStructuralType)(stringValue)
+                        structureTypeString = GetEnumDescription(structuralType)
+                    End If
+                End If
+
+                If dataCount > 6 AndAlso projectData(6) IsNot Nothing Then
+                    If projectData(6).CastTo(stringValue) AndAlso Not String.IsNullOrEmpty(stringValue) Then
+                        uilanguage = GetEnum(Of UILanguage)(stringValue)
+                    End If
+                End If
+
+                If dataCount > 7 AndAlso projectData(7) IsNot Nothing Then
+                    If projectData(7).CastTo(stringValue) AndAlso Not String.IsNullOrEmpty(stringValue) Then
+                        materials = (From s In Split(stringValue, ";")
+                                     Where Not String.IsNullOrWhiteSpace(s)
+                                     Select s.Trim).ToList
+                    End If
+                End If
+
+                If dataCount > 8 AndAlso projectData(8) IsNot Nothing Then
+                    If projectData(8).CastTo(stringValue) Then
+                        If Not Double.TryParse(stringValue, meshSize) Then
+                            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData mesh size")
+                        End If
+                    End If
+                End If
+
+                If dataCount > 9 AndAlso projectData(9) IsNot Nothing Then
+                    If Not projectData(9).CastTo(scale) AndAlso scale <= 0 Then
+                        scale = 1
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData scale")
+                    End If
+                End If
+
+                If dataCount > 10 AndAlso projectData(10) IsNot Nothing Then
+                    If projectData(10).CastTo(stringValue) Then
+                        remDuplNodes = stringValue = "1"
+                    End If
+                End If
+
+                If dataCount > 11 AndAlso projectData(11) IsNot Nothing Then
+                    If Not projectData(11).CastTo(tolerance) AndAlso tolerance < 0 Then
+                        tolerance = 0.001
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData tolerance")
+                    End If
+                End If
+            End If
+
+            CreateXMLFile(fileName, structureTypeString, materials, GetEnumDescription(uilanguage), meshSize,
                           GetInputText(DA, EsaObjectType.CrossSection),
                           GetInputText(DA, EsaObjectType.Node),
                           GetInputText(DA, EsaObjectType.Member1D),
@@ -195,7 +222,7 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.PreTensionElement),
                           GetInputText(DA, EsaObjectType.GapElement),
                           GetInputText(DA, EsaObjectType.LimitForceElement),
-                          GetInputText(DA, EsaObjectType.ProjectInfo),
+                          projectInfo,
                           GetInputText(DA, EsaObjectType.Layer),
                           GetInputText(DA, EsaObjectType.BeamLineSupport),
                           GetInputText(DA, EsaObjectType.BeamPointSupport),
@@ -223,12 +250,16 @@ Namespace Koala
         End Sub
 
         Private Function GetInputText(DA As IGH_DataAccess, oType As EsaObjectType) As List(Of String)
+            Return GetInputData(Of String)(DA, oType)
+        End Function
+
+        Private Function GetInputData(Of T)(DA As IGH_DataAccess, oType As EsaObjectType) As List(Of T)
             Dim paramName As String = GetEnumDescription(oType)
             Dim idx As Integer = Params.IndexOfInputParam(paramName)
 
-            GetInputText = New List(Of String)
+            GetInputData = New List(Of T)
             If idx > -1 Then
-                DA.GetDataList(idx, GetInputText)
+                DA.GetDataList(idx, GetInputData)
             End If
         End Function
 
@@ -237,7 +268,7 @@ Namespace Koala
         ''' </summary>
         ''' <param name="cat"></param>
         ''' <returns>-1 if no object type are input, 0 if some are input and 1 if all are input</returns>
-        Private Function AreTypesInput(cat As EsaObjectCategory) As Integer
+        Private Function AreEsaTypesInput(cat As EsaObjectCategory) As Integer
             If Not VariableParameterDict(cat).Any() Then Return -1
 
             Dim status As Integer = 0
@@ -269,7 +300,7 @@ Namespace Koala
         Protected Overrides Sub AppendAdditionalComponentMenuItems(ByVal menu As System.Windows.Forms.ToolStripDropDown)
 
             For Each cat As EsaObjectCategory In VariableParameterDict.Keys.OrderBy(Function(x) Convert.ToInt32(x))
-                Dim catIsChecked As Integer = AreTypesInput(cat)
+                Dim catIsChecked As Integer = AreEsaTypesInput(cat)
                 Dim catName As String = GetEnumDescription(cat)
                 Dim item As ToolStripMenuItem = Menu_AppendItem(menu, catName, AddressOf Menu_ToggleCategoryClicked, True)
                 item.CheckState = If(catIsChecked = -1, CheckState.Unchecked, If(catIsChecked = 0, CheckState.Indeterminate, CheckState.Checked))
@@ -444,6 +475,9 @@ Namespace Koala
             Dim description As String = "Flattened data list of " & name
             Dim newInputParam As IGH_Param = CreateInputParameter(idx, name, description)
             Params.RegisterInputParam(newInputParam, idx)
+            ' By default flatten the input parameter data
+            newInputParam.DataMapping = GH_DataMapping.Flatten
+
             CreateInputParameter = newInputParam
         End Function
 

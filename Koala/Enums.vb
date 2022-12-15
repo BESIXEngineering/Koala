@@ -51,6 +51,7 @@ Namespace Koala
         ''' <summary>
         ''' Return the enum value of a given type matching a string.
         ''' The string can represent the integer value of the enum, its name or its description.
+        ''' A case-insensitive match is performed.
         ''' </summary>
         ''' <typeparam name="T"></typeparam>
         ''' <param name="name"></param>
@@ -66,10 +67,11 @@ Namespace Koala
                     Return [Enum].Parse(GetType(T), name)
                 End If
             Else
+                name = name.ToLower
                 For Each item As [Enum] In [Enum].GetValues(GetType(T))
-                    If name = item.ToString Then Return item
+                    If name = item.ToString.ToLower Then Return item
                     Dim descr As String = GetEnumDescription(item)
-                    If name = descr Then Return item
+                    If name = descr.ToLower Then Return item
                 Next
             End If
             Throw New ArgumentException(String.Format("Invalid {0}: '{1}'", GetType(T).Name, name))
@@ -78,7 +80,8 @@ Namespace Koala
 
         ''' <summary>
         ''' Check whether a string value matches an Enum.
-        ''' Match is true if the string value matches the Enum's integer value, name or description
+        ''' Match is true if the string value matches the Enum's integer value, name or description.
+        ''' A case-insensitive match is performed.
         ''' </summary>
         ''' <param name="value"></param>
         ''' <param name="enumValue"></param>
@@ -89,7 +92,8 @@ Namespace Koala
             If Not String.IsNullOrEmpty(value) AndAlso Integer.TryParse(value, i) Then
                 MatchesEnum = Convert.ToInt32(enumValue) = i
             Else
-                MatchesEnum = (value = enumValue.ToString) OrElse (value = GetEnumDescription(enumValue))
+                value = value.ToLower
+                MatchesEnum = (value = enumValue.ToString.ToLower) OrElse (value = GetEnumDescription(enumValue).ToLower)
             End If
         End Function
     End Module
@@ -218,6 +222,7 @@ Namespace Koala
 
 
     Enum EsaObjectCategory
+        Project
         Library
         Structure0D
         Structure1D
@@ -235,7 +240,7 @@ Namespace Koala
     ''' Different types of ESA objects that can be created using Koala
     ''' </summary>
     Enum EsaObjectType
-        ProjectInfo
+        ProjectData
         Layer
         CrossSection
 
@@ -322,6 +327,16 @@ Namespace Koala
         AccurateHinged = 2
         <Description("Tributary area")>
         TributaryArea = 3
+    End Enum
+
+    Public Enum Material
+        Concrete
+        Steel
+        Timber
+        Aluminium
+        Masonry
+        SteelFibreConcrete
+        Other
     End Enum
 
     Public Enum MemberSystemLine
