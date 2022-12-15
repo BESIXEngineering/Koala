@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class ArbitraryProfile
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "AP"
         Public NameIndex As Integer = 0
@@ -22,7 +22,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("ArbitraryProfile", "ArbitraryProfile",
                 "Define a SCIA Arbitrary Profile for a 1D member. NOTE: SCIA XML doesn't support setting H and B parameters of ParametricHaunch spans.",
-                 "Koala", "Structure")
+                 "Structure", New EsaObjectType() {EsaObjectType.ArbitraryProfile})
         End Sub
 
         ''' <summary>

@@ -9,7 +9,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class LoadPanel
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
@@ -26,7 +26,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("Load Panel", "LoadPanel",
                 "Create a 2D load panel. Members and nodes are numbered continuously regardless of the input data tree structure.",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.LoadPanel})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure

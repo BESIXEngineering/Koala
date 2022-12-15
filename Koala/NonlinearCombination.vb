@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class NonlinearCombination
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("NonlinearCombination", "NonlinearCombination",
                 "NonlinearCombination description",
-                "Koala", "Libraries")
+                "Libraries", New EsaObjectType() {EsaObjectType.NonLinearCombination})
         End Sub
 
         ''' <summary>
@@ -36,7 +36,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("NLCombinationOutput", "NLCombinationOutput", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("NonLinearCombination", "NonLinearCombination", "NonLinearCombination data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

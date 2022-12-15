@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class NodeRigidArm
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("NodeRigidArm", "NodeRigidArm",
                 "NodeRigidArm description",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.RigidArm})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -42,7 +42,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("RigidArms", "RigidArms", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("RigidArm", "RigidArm", "RigidArm data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

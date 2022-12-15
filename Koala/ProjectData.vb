@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class ProjectData
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("ProjectData", "ProjectData",
                 "Main project data",
-                "Koala", "General")
+                "General", New EsaObjectType() {EsaObjectType.ProjectData})
         End Sub
 
         ''' <summary>

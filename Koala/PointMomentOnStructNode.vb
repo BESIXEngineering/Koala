@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class PointMomentOnStructNode
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("PointMomentOnStructNode", "PointMomentOnStructNode",
                 "PointMomentOnStructNode description",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.PointMomentNode})
         End Sub
 
         ''' <summary>
@@ -38,7 +38,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("MloadsN", "MloadsN", "defined point moments on Structural nodes", GH_ParamAccess.list)
+            pManager.AddTextParameter("PointMomentNode", "PointMomentNode", "PointMomentNode data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

@@ -8,7 +8,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class Member1D
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
@@ -24,7 +24,9 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("1D Member", "1DMember", "Create a 1D member. Members and nodes are numbered continuously regardless of the input data tree structure.", "Koala", "Structure")
+            MyBase.New("1D Member", "1DMember",
+                       "Create a 1D member. Members and nodes are numbered continuously regardless of the input data tree structure.",
+                       "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.Member1D})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure

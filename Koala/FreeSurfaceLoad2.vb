@@ -8,7 +8,7 @@ Namespace Koala
     ''' Improved implementation of the FreeSurfaceLoad component to include the option to set a non-uniform distribution.
     ''' </summary>
     Public Class FreeSurfaceLoad2
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -19,7 +19,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("FreeSurfaceLoad", "FreeSurfaceLoad",
                 "FreeSurfaceLoad with option for distributed load",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.FreeSurfaceLoad})
         End Sub
 
         ''' <summary>
@@ -50,7 +50,7 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("FreeSurfaceloads", "FreeSurfaceloads", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("FreeSurfaceLoad", "FreeSurfaceLoad", "FreeSurfaceLoad data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

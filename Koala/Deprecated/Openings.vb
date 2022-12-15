@@ -11,7 +11,7 @@ Namespace Koala
     ''' </summary>
     <System.Obsolete>
     Public Class Openings
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -22,7 +22,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("Openings", "Openings",
                 "Openings description",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.Opening})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure

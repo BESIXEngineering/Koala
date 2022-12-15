@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class LinearCombination
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("LinearCombination", "LinearCombination",
                 "LinearCombination description",
-                "Koala", "Libraries")
+                "Libraries", New EsaObjectType() {EsaObjectType.LinearCombination})
         End Sub
 
         ''' <summary>
@@ -35,7 +35,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("CombinationOutput", "CombinationOutput", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("LinearCombination", "LinearCombination", "LinearCombination data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class InternalNode1D
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Dim memberIdx As Long = 0
 
@@ -21,7 +21,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("Internal Node on 1D Member", "InternalNodeOn1DMember",
                 "Create an internal node on a 1D member. Nodes are numbered continuously regardless of the input data tree structure.",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.InternalNode1D})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -44,7 +44,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("InternalNode1D", "InternalNode1D", "Output internal node data", GH_ParamAccess.list)
+            pManager.AddTextParameter("InternalNode1D", "InternalNode1D", "InternalNode1D output data", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()

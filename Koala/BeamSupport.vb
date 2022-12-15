@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class BeamSupport
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("BeamSupport", "BeamSupport",
                 "BeamSupport description",
-                 "Koala", "Structure")
+                 "Structure", New EsaObjectType() {EsaObjectType.BeamLineSupport})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -68,7 +68,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("BeamSupports", "BeamSupports", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("BeamLineSupport", "BeamLineSupport", "BeamLineSupport data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

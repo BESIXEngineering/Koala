@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class EdgeSupport
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("EdgeSupport", "EdgeSupport",
                 "EdgeSupport description",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.EdgeSupport})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -68,7 +68,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Edgesupports", "Edgesupports", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("EdgeSupport", "EdgeSupport", "EdgeSupport data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

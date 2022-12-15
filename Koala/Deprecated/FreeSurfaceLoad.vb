@@ -10,7 +10,7 @@ Namespace Koala
     ''' </summary>
     <System.Obsolete>
     Public Class FreeSurfaceLoad
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -21,7 +21,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("FreeSurfaceLoad", "FreeSurfaceLoad",
                 "FreeSurfaceLoad description",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.FreeSurfaceLoad})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure

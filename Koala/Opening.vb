@@ -9,7 +9,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class Opening
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
@@ -27,7 +27,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("Opening", "Opening",
                 "Create an opening in a 2D member. Members and nodes are numbered continuously regardless of the input data tree structure.",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.Opening})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure

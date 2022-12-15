@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class CrossLink
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -17,8 +17,8 @@ Namespace Koala
         ''' </summary>
         Public Sub New()
             MyBase.New("CrossLink", "CrossLink",
-                "CrossLink description",
-                "Koala", "Structure")
+                "CrossLink connection between 1D members",
+                "Structure", New EsaObjectType() {EsaObjectType.CrossLink})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -40,7 +40,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("CrossLinks", "CrossLinks", "Defined cross-links", GH_ParamAccess.list)
+            pManager.AddTextParameter("CrossLinks", "CrossLinks", "CrossLink data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

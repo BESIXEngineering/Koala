@@ -5,7 +5,7 @@ Imports Grasshopper.Kernel
 Namespace Koala
 
     Public Class BeamLoads
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -16,7 +16,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("BeamLoads", "BeamLoads",
                 "BeamLoads description",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.LineLoadBeam})
         End Sub
 
         ''' <summary>
@@ -47,8 +47,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("lloads", "lloads", "", GH_ParamAccess.list)
-
+            pManager.AddTextParameter("LineLoadBeam", "LineLoadBeam", "LineLoadBeam data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

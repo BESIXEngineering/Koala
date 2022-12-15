@@ -1,5 +1,6 @@
 ﻿Imports System.Collections.Generic
 Imports System.Windows.Forms
+Imports System.Linq
 Imports Grasshopper.Kernel
 Imports Grasshopper.Kernel.Types
 Imports Rhino.Geometry
@@ -49,8 +50,8 @@ Namespace Koala
                 EsaObjectType.NonLinearCombination,
                 EsaObjectType.StabilityCombination}},
             {EsaObjectCategory.PointLoad, New EsaObjectType() {
-                EsaObjectType.PointLoadPoint,
-                EsaObjectType.PointMomentPoint,
+                EsaObjectType.PointLoadNode,
+                EsaObjectType.PointMomentNode,
                 EsaObjectType.PointLoadBeam,
                 EsaObjectType.PointMomentBeam,
                 EsaObjectType.FreePointLoad,
@@ -84,11 +85,17 @@ Namespace Koala
         ''' </summary>
         Public Sub New()
             MyBase.New("CreateXML", "CreateXML",
-                "Create the SciaXML file that can be used to update a model in SCIA Engineer",
+                "Create the SciaXML file that can be used to update a model in SCIA Engineer. 
+                Right-click the component to add additional input parameters for the various Koala objects.",
                 "Koala", "General")
         End Sub
 
-        Private ReadOnly FixedInputParamCount As Integer = 9
+        Private ReadOnly FixedInputParamCount As Integer = 2
+
+        Public Overrides Sub AddedToDocument(document As GH_Document)
+            MyBase.AddedToDocument(document)
+            If Params.Input.Count <= FixedInputParamCount Then AutoAddInput()
+        End Sub
 
         ''' <summary>
         ''' Registers all the input parameters for this component.
@@ -212,7 +219,7 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.FreeSurfaceLoad),
                           GetInputText(DA, EsaObjectType.Hinge),
                           GetInputText(DA, EsaObjectType.LineLoadEdge),
-                          GetInputText(DA, EsaObjectType.PointLoadPoint),
+                          GetInputText(DA, EsaObjectType.PointLoadNode),
                           GetInputText(DA, EsaObjectType.PointLoadBeam),
                           scale,
                           GetInputText(DA, EsaObjectType.LinearCombination),
@@ -229,7 +236,7 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.Subsoil),
                           GetInputText(DA, EsaObjectType.SurfaceSupport),
                           GetInputText(DA, EsaObjectType.LoadPanel),
-                          GetInputText(DA, EsaObjectType.PointMomentPoint),
+                          GetInputText(DA, EsaObjectType.PointMomentNode),
                           GetInputText(DA, EsaObjectType.PointMomentBeam),
                           GetInputText(DA, EsaObjectType.LineMomentBeam),
                           GetInputText(DA, EsaObjectType.LineMomentEdge),
@@ -262,6 +269,26 @@ Namespace Koala
                 DA.GetDataList(idx, GetInputData)
             End If
         End Function
+
+        ''' <summary>
+        ''' Detect all object types created in the current document and add them as input parameters
+        ''' </summary>
+        Private Sub AutoAddInput()
+            Dim doc = OnPingDocument()
+            If doc Is Nothing Then Return
+
+            Dim objectTypes As New List(Of EsaObjectType)
+
+            For Each comp In doc.Objects.OfType(Of Koala.GH_KoalaComponent)
+                For Each t In comp.ObjectTypes
+                    If Not objectTypes.Contains(t) Then objectTypes.Add(t)
+                Next
+            Next
+
+            If objectTypes.Count > 0 Then
+                AddParametersForEsaObjectTypes(objectTypes.ToArray)
+            End If
+        End Sub
 
         ''' <summary>
         ''' Check if all object types of the category are input parameters
@@ -299,13 +326,18 @@ Namespace Koala
 
         Protected Overrides Sub AppendAdditionalComponentMenuItems(ByVal menu As System.Windows.Forms.ToolStripDropDown)
 
+            Dim autoAddItem As ToolStripMenuItem = Menu_AppendItem(menu, "Autodetect input parameters", AddressOf Menu_AutoAddClicked, True)
+            Dim selectItem As ToolStripMenuItem = Menu_AppendItem(menu, "Select input parameters")
+
             For Each cat As EsaObjectCategory In VariableParameterDict.Keys.OrderBy(Function(x) Convert.ToInt32(x))
                 Dim catIsChecked As Integer = AreEsaTypesInput(cat)
                 Dim catName As String = GetEnumDescription(cat)
-                Dim item As ToolStripMenuItem = Menu_AppendItem(menu, catName, AddressOf Menu_ToggleCategoryClicked, True)
-                item.CheckState = If(catIsChecked = -1, CheckState.Unchecked, If(catIsChecked = 0, CheckState.Indeterminate, CheckState.Checked))
-                item.ToolTipText = "Add all objects of category " & catName
-                item.Tag = cat
+                Dim catItem As New ToolStripMenuItem(catName, Nothing, AddressOf Menu_ToggleCategoryClicked) With {
+                        .CheckState = If(catIsChecked = -1, CheckState.Unchecked, If(catIsChecked = 0, CheckState.Indeterminate, CheckState.Checked)),
+                        .ToolTipText = "Add all objects of category " & catName,
+                        .Tag = cat
+                    }
+                selectItem.DropDownItems.Add(catItem)
 
                 ' Add a sub item for each type in the category
                 For Each oType In VariableParameterDict(cat).OrderBy(Function(x) Convert.ToInt32(x))
@@ -314,10 +346,14 @@ Namespace Koala
                         .Checked = Params.IndexOfInputParam(subName) <> -1,
                         .Tag = oType
                     }
-                    item.DropDownItems.Add(subitem)
+                    catItem.DropDownItems.Add(subitem)
                 Next
             Next
 
+        End Sub
+
+        Private Sub Menu_AutoAddClicked(sender As Object, e As EventArgs)
+            AutoAddInput()
         End Sub
 
         ''' <summary>
@@ -331,37 +367,10 @@ Namespace Koala
             Dim remove As Boolean = item.Checked
             item.Checked = Not item.Checked
 
-
             If remove Then
-                Dim paramIdx = Params.IndexOfInputParam(GetEnumDescription(oType))
-
-                If paramIdx > -1 Then
-                    ExpireSolution(True)
-
-                    Dim toRemove = Params.Input(paramIdx)
-                    Dim doc As GH_Document = OnPingDocument()
-                    doc.UndoUtil.RecordGenericObjectEvent("Remove Parameter", Me)
-
-                    Params.UnregisterInputParameter(toRemove)
-                    Params.OnParametersChanged()
-                    VariableParameterMaintenance()
-                End If
-
+                RemoveParameterForEsaObjectType(oType)
             Else
-                Dim paramName As String = ""
-                Dim paramIdx = ShouldCreateInputParameter(oType, paramName)
-
-                If paramIdx <> -1 Then
-
-                    ExpireSolution(True)
-                    Dim doc As GH_Document = OnPingDocument()
-                    doc.UndoUtil.RecordGenericObjectEvent("Add Parameter", Me)
-
-                    CreateInputParameter(paramName, paramIdx)
-
-                    Params.OnParametersChanged()
-                    VariableParameterMaintenance()
-                End If
+                AddParameterForEsaObjectType(oType)
             End If
 
         End Sub
@@ -382,55 +391,93 @@ Namespace Koala
             Next subitem
 
             If remove Then
-
-                Dim paramsToRemove As New List(Of IGH_Param)
-                For Each oType As EsaObjectType In VariableParameterDict(category)
-                    Dim paramIdx = Params.IndexOfInputParam(GetEnumDescription(oType))
-                    If paramIdx > -1 Then
-                        paramsToRemove.Add(Params.Input(paramIdx))
-                    End If
-                Next
-
-                If paramsToRemove.Any Then
-                    ExpireSolution(True)
-                    Dim doc As GH_Document = OnPingDocument()
-                    doc.UndoUtil.RecordGenericObjectEvent("Remove Parameters", Me)
-
-                    For Each p In paramsToRemove
-                        Params.UnregisterInputParameter(p)
-                    Next
-
-                    Params.OnParametersChanged()
-                    VariableParameterMaintenance()
-                End If
-
+                RemoveParametersForEsaObjectTypes(VariableParameterDict(category))
             Else
-                Dim paramAdded As Boolean = False
-                For Each oType As EsaObjectType In VariableParameterDict(category)
-
-                    Dim paramName As String = ""
-                    Dim paramIdx = ShouldCreateInputParameter(oType, paramName)
-
-                    If paramIdx <> -1 Then
-                        If Not paramAdded Then
-                            paramAdded = True
-                            ExpireSolution(True)
-                            Dim doc As GH_Document = OnPingDocument()
-                            doc.UndoUtil.RecordGenericObjectEvent("Add Parameters", Me)
-                        End If
-
-                        CreateInputParameter(paramName, paramIdx)
-                    End If
-                Next
-
-                If paramAdded Then
-                    Params.OnParametersChanged()
-                    VariableParameterMaintenance()
-                End If
+                AddParametersForEsaObjectTypes(VariableParameterDict(category))
             End If
 
         End Sub
 
+        Private Sub AddParameterForEsaObjectType(objectType As EsaObjectType)
+            Dim paramName As String = ""
+            Dim paramIdx = ShouldCreateInputParameter(objectType, paramName)
+
+            If paramIdx <> -1 Then
+
+                ExpireSolution(True)
+                Dim doc As GH_Document = OnPingDocument()
+                doc.UndoUtil.RecordGenericObjectEvent("Add Parameter", Me)
+
+                CreateInputParameter(paramName, paramIdx)
+
+                Params.OnParametersChanged()
+                VariableParameterMaintenance()
+            End If
+        End Sub
+
+        Private Sub RemoveParameterForEsaObjectType(objectType As EsaObjectType)
+            Dim paramIdx = Params.IndexOfInputParam(GetEnumDescription(objectType))
+
+            If paramIdx > -1 Then
+                ExpireSolution(True)
+
+                Dim toRemove = Params.Input(paramIdx)
+                Dim doc As GH_Document = OnPingDocument()
+                doc.UndoUtil.RecordGenericObjectEvent("Remove Parameter", Me)
+
+                Params.UnregisterInputParameter(toRemove)
+                Params.OnParametersChanged()
+                VariableParameterMaintenance()
+            End If
+        End Sub
+
+        Private Sub AddParametersForEsaObjectTypes(objectTypes As EsaObjectType())
+            Dim paramAdded As Boolean = False
+            For Each oType As EsaObjectType In objectTypes
+
+                Dim paramName As String = ""
+                Dim paramIdx = ShouldCreateInputParameter(oType, paramName)
+
+                If paramIdx <> -1 Then
+                    If Not paramAdded Then
+                        paramAdded = True
+                        ExpireSolution(True)
+                        Dim doc As GH_Document = OnPingDocument()
+                        doc.UndoUtil.RecordGenericObjectEvent("Add Parameters", Me)
+                    End If
+
+                    CreateInputParameter(paramName, paramIdx)
+                End If
+            Next
+
+            If paramAdded Then
+                Params.OnParametersChanged()
+                VariableParameterMaintenance()
+            End If
+        End Sub
+
+        Private Sub RemoveParametersForEsaObjectTypes(objectTypes As EsaObjectType())
+            Dim paramsToRemove As New List(Of IGH_Param)
+            For Each oType As EsaObjectType In objectTypes
+                Dim paramIdx = Params.IndexOfInputParam(GetEnumDescription(oType))
+                If paramIdx > -1 Then
+                    paramsToRemove.Add(Params.Input(paramIdx))
+                End If
+            Next
+
+            If paramsToRemove.Any Then
+                ExpireSolution(True)
+                Dim doc As GH_Document = OnPingDocument()
+                doc.UndoUtil.RecordGenericObjectEvent("Remove Parameters", Me)
+
+                For Each p In paramsToRemove
+                    Params.UnregisterInputParameter(p)
+                Next
+
+                Params.OnParametersChanged()
+                VariableParameterMaintenance()
+            End If
+        End Sub
 
 #Region "Variable parameter interface"
         Public Function CanInsertParameter(side As GH_ParameterSide, index As Integer) As Boolean Implements IGH_VariableParameterComponent.CanInsertParameter

@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class LineMomentOnEdge
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("LineMomentOnEdge", "LineMomentOnEdge",
                 "LineMomentOnEdge description",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.LineMomentEdge})
         End Sub
 
         ''' <summary>
@@ -47,7 +47,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("LineMomentEdgeloads", "LineMomentEdgeloads", "Defined line moments on edges", GH_ParamAccess.list)
+            pManager.AddTextParameter("LineMomentEdge", "LineMomentEdge", "LineMomentEdge data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

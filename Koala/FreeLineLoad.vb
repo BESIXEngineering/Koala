@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class FreeLineLoad
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -17,8 +17,8 @@ Namespace Koala
         ''' </summary>
         Public Sub New()
             MyBase.New("FreeLineLoad", "FreeLineLoad",
-                "MyComponent1 description",
-                "Koala", "Load")
+                "FreeLineLoad description",
+                "Load", New EsaObjectType() {EsaObjectType.FreeLineLoad})
         End Sub
 
         ''' <summary>
@@ -44,7 +44,7 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
 
-            pManager.AddTextParameter("FreeLineloads", "FreeLineloads", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("FreeLineLoad", "FreeLineLoad", "FreeLineLoad data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

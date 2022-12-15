@@ -9,7 +9,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class InternalEdge2D
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
 
         Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
@@ -25,7 +25,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("Internal Edge on 2D Member", "InternalEdgeOn2DMember",
                 "Create an internal edge on a 2D member. Members and nodes are numbered continuously regardless of the input data tree structure.",
-                "Koala", "Structure")
+                "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.InternalEdge2D})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
@@ -51,7 +51,7 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
             pManager.AddTextParameter("Nodes", "Nodes", "Output node data", GH_ParamAccess.tree)
-            pManager.AddTextParameter("Internal Edge", "InternalEdge", "Output internal edge data", GH_ParamAccess.list)
+            pManager.AddTextParameter("Internal Edge", "InternalEdge2D", "InternalEdge2D output data", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()

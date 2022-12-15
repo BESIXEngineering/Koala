@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class Cross_Sections
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -16,9 +16,9 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("Cross_Sections", "Cross_Sections",
-                "Cross_Sections description",
-                "Koala", "Libraries")
+            MyBase.New("CrossSections", "CrossSections",
+                "CrossSections description",
+                "Libraries", New EsaObjectType() {EsaObjectType.CrossSection})
         End Sub
 
         ''' <summary>
@@ -34,7 +34,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("Sections", "Sections", "output nodes", GH_ParamAccess.list)
+            pManager.AddTextParameter("CrossSection", "CrossSection", "CrossSection data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

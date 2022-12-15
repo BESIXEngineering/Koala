@@ -7,7 +7,7 @@ Imports Rhino.Geometry
 Namespace Koala
 
     Public Class ThermalLoadOnBeam
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("ThermalLoadOnBeam", "ThermalLoadOnBeam",
                 "ThermalLoadOnBeam description",
-                "Koala", "Load")
+                "Load", New EsaObjectType() {EsaObjectType.ThermalLoad1D})
         End Sub
 
         ''' <summary>
@@ -47,7 +47,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("ThermalBeamLoads", "ThermalBeamLoads", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("ThermalLoad1D", "ThermalLoad1D", "ThermalLoad1D data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

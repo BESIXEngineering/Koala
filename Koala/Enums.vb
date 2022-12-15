@@ -239,7 +239,7 @@ Namespace Koala
     ''' <summary>
     ''' Different types of ESA objects that can be created using Koala
     ''' </summary>
-    Enum EsaObjectType
+    Public Enum EsaObjectType
         ProjectData
         Layer
         CrossSection
@@ -273,8 +273,8 @@ Namespace Koala
         NonLinearCombination
         StabilityCombination
 
-        PointLoadPoint
-        PointMomentPoint
+        PointLoadNode
+        PointMomentNode
         PointLoadBeam
         PointMomentBeam
         FreePointLoad

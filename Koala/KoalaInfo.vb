@@ -29,7 +29,7 @@ Public Class KoalaInfo
     Public Overrides ReadOnly Property AuthorName As String
         Get
             'Return a string identifying you or your company.
-            Return "Developed by Jaroslav Broz at Strawberrylab for SCIA"
+            Return "Originally developed by Jaroslav Broz at Strawberrylab for SCIA. Currently maintained by Kelvin Roovers at BESIX."
         End Get
     End Property
     Public Overrides ReadOnly Property AuthorContact As String
