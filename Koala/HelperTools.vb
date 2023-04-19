@@ -4909,12 +4909,12 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
             Case "From end"
                 oSB.AppendLine(ConCat_pvt("19", "1", "From end"))
         End Select
-        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 18)))
-        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 19)))
-        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 20)))
-        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 21)))
-        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 22)))
-        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 17)))
+        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 18)))
+        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 19)))
+        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 20)))
+        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 21)))
+        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 22)))
         oSB.AppendLine("</obj>")
 
     End Sub
