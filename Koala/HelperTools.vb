@@ -1001,6 +1001,9 @@ Module HelperTools
     Private Function ConCat_pvx(p, v, x)
         ConCat_pvx = "<p" & p & " v=""" & v & """ x=""" & x & """/>"
     End Function
+    Private Function ConCat_pnx(p, n, x)
+        ConCat_pnx = "<p" & p & " n=""" & n & """ x=""" & x & """/>"
+    End Function
 
     Private Function ConCat_pv1v2x(p, v1, v2, x)
         ConCat_pv1v2x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ x=""" & x & """/>"
@@ -4014,7 +4017,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
                             osb.AppendLine(ConCat_pvx("7", thicknesses(i) / 1000, i)) 'value in mm
                         Next
                         For i = 0 To thicknessNodes.Count() - 1
-                            osb.AppendLine(ConCat_pvx("8", thicknessNodes(i), i))
+                            osb.AppendLine(ConCat_pnx("8", thicknessNodes(i), i))
                         Next
                     End If
 

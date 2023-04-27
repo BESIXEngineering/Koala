@@ -41,7 +41,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddBrepParameter("Surface", "Surface", "Member 2D surface", GH_ParamAccess.item)
             pManager.AddTextParameter("Material", "Material", "Material", GH_ParamAccess.item, "C20/25")
-            pManager.AddTextParameter("Thickness", "Thickness", "Thickness description comprising the thickness type and thickness value(s) (in mm). Example: constant|100 or variable|Global X|N3;150|N4;300", GH_ParamAccess.item)
+            pManager.AddTextParameter("Thickness", "Thickness", "Thickness description comprising the thickness type and thickness value(s) (in mm). Example: constant|100 or variable|Global X|150;N3|300;N4", GH_ParamAccess.item)
             pManager.AddTextParameter("Layer", "Layer", "Layer name", GH_ParamAccess.item, "Surfaces")
             pManager.AddTextParameter("InternalNodes", "InternalNodes", "Names of the Internal Nodes, separated by a semicolon ';'", GH_ParamAccess.item, "")
             pManager.Param(4).Optional = True
