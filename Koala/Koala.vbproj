@@ -106,6 +106,7 @@
   <ItemGroup>
     <Compile Include="GH_KoalaComponent.vb" />
     <Compile Include="CreateXML2.vb" />
+    <Compile Include="IntegrationStrip.vb" />
     <Compile Include="InternalNode1D.vb" />
     <Compile Include="LoadPanel.vb" />
     <Compile Include="Member2D.vb" />
@@ -178,6 +179,7 @@
     <Compile Include="Deprecated\ProjectInfo.vb" />
     <Compile Include="InternalEdge2D.vb" />
     <Compile Include="Deprecated\SlabInternalEdge.vb" />
+    <Compile Include="SectionOnBeam.vb" />
     <Compile Include="StabilityCombination.vb" />
     <Compile Include="Subsoil.vb" />
     <Compile Include="SurfaceLoad.vb" />

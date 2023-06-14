@@ -251,7 +251,9 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.LineHinge),
                           GetInputText(DA, EsaObjectType.ThermalLoad1D),
                           GetInputText(DA, EsaObjectType.ThermalLoad2D),
-                          GetInputText(DA, EsaObjectType.ArbitraryProfile))
+                          GetInputText(DA, EsaObjectType.ArbitraryProfile),
+                          GetInputText(DA, EsaObjectType.IntegrationStrip),
+                          GetInputText(DA, EsaObjectType.SectionOnBeam))
 
             DA.SetData(0, fileName)
         End Sub

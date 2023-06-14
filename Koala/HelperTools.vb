@@ -1049,7 +1049,7 @@ Module HelperTools
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
                              RemDuplNodes As Boolean, Tolerance As Double, in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
-                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String))
+                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String), in_IntegationStrips As List(Of String), in_SectionOnBeams As List(Of String))
         Dim i As Long, j As Long
 
 
@@ -1104,6 +1104,8 @@ Module HelperTools
         Dim SE_ThermalLoadBeams(100000, 11) As String
         Dim SE_ThermalLoadSurfaces(100000, 5) As String
         Dim SE_ArbitraryProfiles(100000, 8) As String
+        Dim SE_IntegrationStrip(100000, 16) As String 'an integration strip consists of: ToDo Name, UniqueID, Create meshnode, 
+        Dim SE_SectionOnBeam(100000, 7) As String ' a section on beam consists of: TODO
 
         Dim SE_meshsize As Double
 
@@ -1120,6 +1122,8 @@ Module HelperTools
         Dim pointMomentpointCount As Long, pointMomentbeamCount As Long, lineMomentBeamCount As Long, lineMomentEdgeCount As Long, fpointmomentloadcount As Long, nlfunctionscount As Long, slabInternalEdgesCount As Long, RigidArmsCount As Long, CablesCount As Long
         Dim internalNodesBeamCount As Long = 0, linehingecount As Long = 0, thermalLoadsBeamcount As Long = 0, thermalLoadsSurfacescount As Long = 0
         Dim arbitraryProfileCount As Long = 0
+        Dim integrationStripCount As Long = 0
+        Dim sectionOnBeamCount As Long = 0
 
         Dim stopWatch As New System.Diagnostics.Stopwatch()
         Dim time_elapsed As Double
@@ -1672,6 +1676,29 @@ Module HelperTools
         End If
 
 
+        If (in_IntegationStrips IsNot Nothing) Then
+            Dim isNum As Int16 = 17  ' ToDo Check number
+            integrationStripCount = in_IntegationStrips.Count / isNum
+            Rhino.RhinoApp.WriteLine("Number of Integration Strips: " & integrationStripCount)
+            For i = 0 To integrationStripCount - 1
+                For j = 0 To isNum - 1
+                    SE_IntegrationStrip(i, j) = in_IntegationStrips(j + i * isNum)
+                Next j
+            Next i
+        End If
+
+
+        If (in_SectionOnBeams IsNot Nothing) Then
+            Dim isNum As Int16 = 8  ' ToDo Check number
+            sectionOnBeamCount = in_SectionOnBeams.Count / isNum
+            Rhino.RhinoApp.WriteLine("Number of Section on Beams: " & sectionOnBeamCount)
+            For i = 0 To sectionOnBeamCount - 1
+                For j = 0 To isNum - 1
+                    SE_SectionOnBeam(i, j) = in_SectionOnBeams(j + i * isNum)
+                Next j
+            Next i
+        End If
+
         'write the XML file
         '---------------------------------------------------
         Rhino.RhinoApp.Write("Creating the XML file string in memory...")
@@ -1692,7 +1719,7 @@ nPointSupportonBeam, SE_subsoil, nSubsoils, SE_surfaceSupport, nSurfaceSupports,
 SE_PointMomentPointNode, pointMomentpointCount, SE_pointMomentBeam, pointMomentbeamCount, SE_lineMomentBeam, lineMomentBeamCount, SE_lineMomentEdge, lineMomentEdgeCount,
 SE_fMomentPointloads, fpointmomentloadcount, SE_NonlinearFunctions, nlfunctionscount, SE_SlabInternalEdges, slabInternalEdgesCount, SE_RigidArms, RigidArmsCount, SE_Cables,
 CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehingecount, SE_ThermalLoadBeams, thermalLoadsBeamcount, SE_ThermalLoadSurfaces, thermalLoadsSurfacescount,
-SE_ArbitraryProfiles, arbitraryProfileCount)
+SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStripCount, SE_SectionOnBeam, sectionOnBeamCount)
 
         Rhino.RhinoApp.Write(" Done." & Convert.ToChar(13))
 
@@ -1731,7 +1758,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
     lineMomentEdgeCount, SE_fMomentPointloads(,), fpointmomentloadcount, SE_NonlinearFunctions(,), nlfunctionscount, SE_SlabInternalEdges(,),
     slabInternalEdgesCount, SE_RigidArms(,), RigidArmsCount, SE_Cables(,), CablesCount, SE_nodesInternalBeam(,), internalNodesBeamCount,
     SE_LineHinges(,), linehingecount, SE_ThermalLoadBeams(,), thermalLoadsBeamcount, SE_ThermalLoadSurfaces(,), thermalLoadsSurfacescount,
-    SE_ArbitraryProfiles(,), arbitraryProfileCount)
+    SE_ArbitraryProfiles(,), arbitraryProfileCount, SE_IntegrationStrip(,), integrationStripCount, SE_SectionOnBeam(,), sectionOnBeamCount)
 
         Dim i As Long
         Dim c As String, cid As String, t As String, tid As String
@@ -3559,6 +3586,90 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
             oSB.AppendLine("</table>")
             oSB.AppendLine("</container>")
         End If
+
+        ' Intgration strip
+        If integrationStripCount > 0 Then
+            'output beams ---------------------------------------------------------------------
+            c = "{6404DF99-5A82-478C-811A-BC16F6CF7DC9}"
+            cid = "EP_DSG_Elements.8.00.EP_CheckMember2D.1"
+            t = "78FC8556-8B69-45B2-8174-3E7534ACDCEF"
+            tid = "EP_DSG_Elements.8.00.EP_CheckMember2D.1"
+
+            oSB.AppendLine("")
+            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
+            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Name"))
+            oSB.AppendLine(ConCat_ht("1", "UniqueID"))
+            oSB.AppendLine(ConCat_ht("2", "Create meshnodes"))
+            oSB.AppendLine(ConCat_ht("3", "Effective width geometry"))
+            oSB.AppendLine(ConCat_ht("4", "Effective width definition"))
+            oSB.AppendLine(ConCat_ht("5", "Width (total)"))
+            oSB.AppendLine(ConCat_ht("6", "No. of thickness (total)"))
+            oSB.AppendLine(ConCat_ht("7", "Coord X"))
+            oSB.AppendLine(ConCat_ht("8", "Coord Y"))
+            oSB.AppendLine(ConCat_ht("9", "Coord Z"))
+            oSB.AppendLine(ConCat_ht("10", "Coord X"))
+            oSB.AppendLine(ConCat_ht("11", "Coord Y"))
+            oSB.AppendLine(ConCat_ht("12", "Coord Z"))
+            oSB.AppendLine(ConCat_ht("13", "Length"))
+            oSB.AppendLine(ConCat_ht("14", "Shape"))
+            oSB.AppendLine(ConCat_ht("15", "2D member"))
+            oSB.AppendLine(ConCat_ht("16", "Table of geometry"))
+            oSB.AppendLine(ConCat_ht("17", "Width left"))
+            oSB.AppendLine(ConCat_ht("18", "Width right"))
+            oSB.AppendLine(ConCat_ht("19", "No. of thickness left"))
+            oSB.AppendLine(ConCat_ht("20", "No. of thickness right"))
+
+            oSB.AppendLine("</h>")
+
+            For i = 0 To integrationStripCount - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... integration strip: " + Str(i))
+                End If
+                Call WriteIntegrationStrip(oSB, i, SE_IntegrationStrip)
+            Next
+
+            oSB.AppendLine("</table>")
+            oSB.AppendLine("</container>")
+        End If
+
+        ' section on beam
+        If sectionOnBeamCount > 0 Then
+            'output beams ---------------------------------------------------------------------
+            c = "{89BC3399-896D-43D0-8186-A493B1EC5FE2}"
+            cid = "DataAddScia.EP_SectionOnBeam.1"
+            t = "27125C4E-D477-4AE4-BAF7-966A7B0E288B"
+            tid = "DataAddScia.EP_SectionOnBeam.1"
+
+            oSB.AppendLine("")
+            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
+            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Reference Table"))
+            oSB.AppendLine(ConCat_ht("1", "Name"))
+            oSB.AppendLine(ConCat_ht("2", "UniqueID"))
+            oSB.AppendLine(ConCat_ht("3", "Coord. definition"))
+            oSB.AppendLine(ConCat_ht("4", "Position x"))
+            oSB.AppendLine(ConCat_ht("5", "Origin"))
+            oSB.AppendLine(ConCat_ht("6", "Repeat (n)"))
+
+            oSB.AppendLine("</h>")
+
+            For i = 0 To sectionOnBeamCount - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... section on beam: " + Str(i))
+                End If
+                Call WriteSectionOnBeam(oSB, i, SE_SectionOnBeam)
+            Next
+
+            oSB.AppendLine("</table>")
+            oSB.AppendLine("</container>")
+        End If
+
+
 
         'close XML file--------------------------------------------------------------------
         oSB.AppendLine("</project>")
@@ -6559,6 +6670,109 @@ SE_ArbitraryProfiles, arbitraryProfileCount)
 
     End Sub
 
+
+    Private Sub WriteIntegrationStrip(ByRef oSB, iIntegrationStrip, integrationStrips(,)) 'write 1 integration strip to the XML stream
+        'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
+
+        oSB.AppendLine("<obj nm=""" & integrationStrips(iIntegrationStrip, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", integrationStrips(iIntegrationStrip, 0))) 'Name
+        'oSB.AppendLine(ConCat_pv("1", integrationStrips(iIntegrationStrip, 1))) 'UniqueId
+
+        Dim mesh_str As String = integrationStrips(iIntegrationStrip, 2)
+        Dim mesh_int As Integer = Convert.ToInt32(Convert.ToBoolean(mesh_str))
+        oSB.AppendLine(ConCat_pv("2", mesh_int)) 'Create meshnodes
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.EffectiveWidthGeometry)(3, integrationStrips(iIntegrationStrip, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.EffectiveWidthDefinition)(4, integrationStrips(iIntegrationStrip, 4)))
+
+        If integrationStrips(iIntegrationStrip, 4) = "Number of thickness" Then
+            oSB.AppendLine(ConCat_pv("6", integrationStrips(iIntegrationStrip, 6))) 'No. of thickness (total)
+        Else ' = "Width"
+            oSB.AppendLine(ConCat_pv("5", integrationStrips(iIntegrationStrip, 5))) 'Width
+        End If
+
+        Dim x1 As String = integrationStrips(iIntegrationStrip, 7)
+        Dim y1 As String = integrationStrips(iIntegrationStrip, 8)
+        Dim z1 As String = integrationStrips(iIntegrationStrip, 9)
+        Dim x2 As String = integrationStrips(iIntegrationStrip, 10)
+        Dim y2 As String = integrationStrips(iIntegrationStrip, 11)
+        Dim z2 As String = integrationStrips(iIntegrationStrip, 12)
+
+        oSB.AppendLine(ConCat_pv("7", x1)) 'X
+        oSB.AppendLine(ConCat_pv("8", y1)) 'Y
+        oSB.AppendLine(ConCat_pv("9", z1)) 'Z
+        oSB.AppendLine(ConCat_pv("10", x2)) 'X
+        oSB.AppendLine(ConCat_pv("11", y2)) 'Y
+        oSB.AppendLine(ConCat_pv("12", z2)) 'Z
+
+        oSB.AppendLine(ConCat_pv("13", integrationStrips(iIntegrationStrip, 13))) 'Length
+        oSB.AppendLine(ConCat_pv("14", "Line")) 'Shape
+
+        oSB.AppendLine(ConCat_pn("15", integrationStrips(iIntegrationStrip, 14))) '2D Member
+
+        ' Reference Table
+        oSB.AppendLine(ConCat_opentable("16", ""))
+        'Table of Geometry
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("1", "Node"))
+        oSB.AppendLine(ConCat_ht("2", "Edge"))
+        oSB.AppendLine("</h>")
+        oSB.AppendLine(ConCat_row(0))
+        oSB.AppendLine(ConCat_pn("1", String.Format("[{0}; {1}; {2}]", x1, y1, z1)))
+        oSB.appendline(ConCat_pv("2", "0")) ' Line
+        oSB.AppendLine("</row>")
+        oSB.AppendLine(ConCat_row(1))
+        oSB.AppendLine(ConCat_pn("1", String.Format("[{0}; {1}; {2}]", x2, y2, z2)))
+        oSB.AppendLine("</row>")
+        oSB.AppendLine(ConCat_closetable("16"))
+
+        If (integrationStrips(iIntegrationStrip, 4) = "Number of thickness") And (integrationStrips(iIntegrationStrip, 3) = "Constant nonsymmetric") Then
+            oSB.AppendLine(ConCat_pv("19", integrationStrips(iIntegrationStrip, 15))) 'thickness Left
+            oSB.AppendLine(ConCat_pv("20", integrationStrips(iIntegrationStrip, 16))) 'Thickness rigth
+        ElseIf (integrationStrips(iIntegrationStrip, 4) = "Width") And (integrationStrips(iIntegrationStrip, 3) = "Constant nonsymmetric") Then
+            oSB.AppendLine(ConCat_pv("17", integrationStrips(iIntegrationStrip, 15))) 'width Left
+            oSB.AppendLine(ConCat_pv("18", integrationStrips(iIntegrationStrip, 16))) 'width rigth
+        End If
+
+
+        oSB.AppendLine("</obj>")
+
+    End Sub
+
+
+    Private Sub WriteSectionOnBeam(ByRef oSB, iSectionOnBeam, sectionOnBeams(,))
+        oSB.AppendLine("<obj nm=""" & sectionOnBeams(iSectionOnBeam, 1) & """>")
+
+        'write surface name as reference table
+        oSB.AppendLine("<p0 t="""">")
+        oSB.AppendLine("<h>")
+        oSB.AppendLine("<h0 t=""Member Type""/>")
+        oSB.AppendLine("<h1 t=""Member Type Name""/>")
+        oSB.AppendLine("<h2 t=""Member Name""/>")
+        oSB.AppendLine("</h>")
+        oSB.AppendLine("<row id=""0"">")
+        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
+        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("2", sectionOnBeams(iSectionOnBeam, 0)))
+        oSB.AppendLine("</row>")
+        oSB.AppendLine("</p0>")
+        'end of reference table
+
+        oSB.AppendLine(ConCat_pv("1", sectionOnBeams(iSectionOnBeam, 1))) 'Name
+        'oSB.AppendLine(ConCat_pv("1", sectionOnBeams(iSectionOnBeam, 2))) 'UniqueID
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileCoordDefinition)(3, sectionOnBeams(iSectionOnBeam, 3)))
+        oSB.AppendLine(ConCat_pv("4", sectionOnBeams(iSectionOnBeam, 4))) 'Position
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Origin)(5, sectionOnBeams(iSectionOnBeam, 5)))
+
+        Dim repeat As Int32 = Convert.ToInt32(sectionOnBeams(iSectionOnBeam, 6))
+        oSB.AppendLine(ConCat_pv("6", repeat)) 'Repeat (n)
+        If repeat > 1 Then
+            oSB.AppendLine(ConCat_pv("7", sectionOnBeams(iSectionOnBeam, 7))) 'Delta x
+        End If
+
+        oSB.AppendLine("</obj>")
+
+    End Sub
 
     Function WrapIfRequired(Filename As String) As String
         Dim containsSpaces = False

@@ -148,6 +148,11 @@ Namespace Koala
 
             pManager.AddTextParameter("ArbitraryProfiles", "ArbitraryProfiles", "List of arbitrary profiles", GH_ParamAccess.list)
             pManager.Param(54).Optional = True
+            ' added by MWO
+            pManager.AddTextParameter("IntegrationStrips", "IntegrationStrips", "List of integration strips on 2D Members", GH_ParamAccess.list)
+            pManager.Param(55).Optional = True
+            pManager.AddTextParameter("SectionOnBeams", "SectionOnBeams", "List of sections on 1D Members", GH_ParamAccess.list)
+            pManager.Param(56).Optional = True
         End Sub
 
         ''' <summary>
@@ -223,6 +228,9 @@ Namespace Koala
             Dim in_ThermalLoadSurfaces = New List(Of String)
 
             Dim in_ArbitraryProfiles = New List(Of String)
+            ' Added by MWO
+            Dim in_IntegrationStrips = New List(Of String)
+            Dim in_SectionOnBeams = New List(Of String)
 
 
 
@@ -287,6 +295,9 @@ Namespace Koala
             DA.GetDataList(Of String)(53, in_ThermalLoadSurfaces)
 
             DA.GetDataList(Of String)(54, in_ArbitraryProfiles)
+            ' Added by MWO
+            DA.GetDataList(Of String)(55, in_IntegrationStrips)
+            DA.GetDataList(Of String)(56, in_SectionOnBeams)
 
 
             If AutoUpdate = False Then
@@ -303,7 +314,7 @@ Namespace Koala
                           in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, projectInfo, in_layers, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
                           in_freePointMoment, in_nonlinearfunctions, RemDuplNodes, Tolerance, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
-                          in_ArbitraryProfiles)
+                          in_ArbitraryProfiles, in_IntegrationStrips, in_SectionOnBeams)
             DA.SetData(0, FileName)
 
 

@@ -298,6 +298,10 @@ Namespace Koala
         GapElement
         LimitForceElement
         Cable
+
+        IntegrationStrip
+
+        SectionOnBeam
     End Enum
 
     Public Enum LoadPanelType
@@ -412,5 +416,26 @@ Namespace Koala
         ZPosOrZero = 6
     End Enum
 
+    Public Enum EffectiveWidthGeometry
+        <Description("Constant symmeric")>
+        symm = 0
+        <Description("Constant nonsymmetric")>
+        nonsymm = 1
+    End Enum
+
+
+    Public Enum EffectiveWidthDefinition
+        <Description("Width")>
+        width = 0
+        <Description("Number of thickness")>
+        numberOfThickness = 1
+    End Enum
+
+    Public Enum Origin
+        <Description("From start")>
+        fromStart = 0
+        <Description("From end")>
+        fromEnd = 1
+    End Enum
 End Namespace
 
