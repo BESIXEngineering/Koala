@@ -6785,7 +6785,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         If containsSpaces = True And ContainsQuotes = False Then
             'Only wrap if it contains spaces in string and not already quoted
-            Return """" & FilePath & """"""
+            Return """" & FilePath & """"
         Else
             Return FilePath
         End If
@@ -6835,8 +6835,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             '.\ESA_XML.exe LIN 'C:\TEMP\MakaraHala\SCIAtemplate.ESA' 'C:\TEMP\MakaraHala\KoalaHall.xml' -sd -tXLSX -oC:\TEMP\MakaraHala\Output.xlsx
             myProcess.StartInfo.FileName = ESAXMLPath
 
-            'TemplateName = WrapIfRequired(TemplateName)
-            'FileName = WrapIfRequired(FileName)
+            TemplateName = WrapIfRequired(TemplateName)
+            FileName = WrapIfRequired(FileName)
 
             If Not SESavedProject = "" Then
                 Dim MultiProcesFile = System.IO.Path.GetDirectoryName(SESavedProject)

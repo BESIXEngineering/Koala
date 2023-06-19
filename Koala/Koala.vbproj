@@ -190,9 +190,9 @@
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +236,7 @@
     <None Include="Resources\LinearCombination.bmp" />
     <None Include="Resources\LimitForceBeamNL.bmp" />
     <None Include="Resources\InternalSlab.bmp" />
+    <None Include="Resources\IntegrationStrip.bmp" />
     <Content Include="Resources\koala.xml.def" />
     <None Include="Resources\Layers.bmp" />
     <None Include="Resources\LineEdgeMoment.bmp" />
@@ -259,6 +260,7 @@
     <None Include="Resources\PointMoment.bmp" />
     <None Include="Resources\NonLinearFunction.bmp" />
     <None Include="Resources\RigidArms.bmp" />
+    <None Include="Resources\SectionOnBeam.bmp" />
     <Content Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
