@@ -47,7 +47,7 @@ Namespace Koala
             pManager.AddNumberParameter("StiffnessRx", "StiffnessRx", "Stiffness for Rx in MNm/m/rad", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessRy", "StiffnessRy", "Stiffness for Ry in MNm/m/rad", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessRz", "StiffnessRz", "Stiffness for Rz in MNm/m/rad", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessRx", "StiffnessTx", "Stiffness for Tx in MN/m^2", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessTx", "StiffnessTx", "Stiffness for Tx in MN/m^2", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessTy", "StiffnessTy", "Stiffness for Ty in MN/m^2", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessTz", "StiffnessTz", "Stiffness for Tz in MN/m^2", GH_ParamAccess.item, 0.0)
             pManager.AddIntegerParameter("CoordDefinition", "CoordDefinition", "CoordDefinition - Rela | Abso", GH_ParamAccess.item, 0)
