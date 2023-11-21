@@ -231,6 +231,7 @@ Namespace Koala
             ' Added by MWO
             Dim in_IntegrationStrips = New List(Of String)
             Dim in_SectionOnBeams = New List(Of String)
+            Dim in_AveragingStrips = New List(Of String)
 
 
 
@@ -298,6 +299,7 @@ Namespace Koala
             ' Added by MWO
             DA.GetDataList(Of String)(55, in_IntegrationStrips)
             DA.GetDataList(Of String)(56, in_SectionOnBeams)
+            DA.GetDataList(Of String)(57, in_AveragingStrips)
 
 
             If AutoUpdate = False Then
@@ -314,7 +316,7 @@ Namespace Koala
                           in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, projectInfo, in_layers, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
                           in_freePointMoment, in_nonlinearfunctions, RemDuplNodes, Tolerance, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
-                          in_ArbitraryProfiles, in_IntegrationStrips, in_SectionOnBeams)
+                          in_ArbitraryProfiles, in_IntegrationStrips, in_SectionOnBeams, in_ArbitraryProfiles)
             DA.SetData(0, FileName)
 
 
