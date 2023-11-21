@@ -1049,7 +1049,7 @@ Module HelperTools
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
                              RemDuplNodes As Boolean, Tolerance As Double, in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
-                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String), in_IntegationStrips As List(Of String), in_SectionOnBeams As List(Of String))
+                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String), in_IntegationStrips As List(Of String), in_SectionOnBeams As List(Of String), in_AveragingStrips As List(Of String))
         Dim i As Long, j As Long
 
 
@@ -1106,6 +1106,7 @@ Module HelperTools
         Dim SE_ArbitraryProfiles(100000, 8) As String
         Dim SE_IntegrationStrip(100000, 16) As String 'an integration strip consists of: ToDo Name, UniqueID, Create meshnode, 
         Dim SE_SectionOnBeam(100000, 7) As String ' a section on beam consists of: TODO
+        Dim SE_AveragingStrip(100000, 13) As String ' TODO check how many inputs
 
         Dim SE_meshsize As Double
 
@@ -1124,6 +1125,7 @@ Module HelperTools
         Dim arbitraryProfileCount As Long = 0
         Dim integrationStripCount As Long = 0
         Dim sectionOnBeamCount As Long = 0
+        Dim averagingStripCount As Long = 0
 
         Dim stopWatch As New System.Diagnostics.Stopwatch()
         Dim time_elapsed As Double
@@ -1699,6 +1701,17 @@ Module HelperTools
             Next i
         End If
 
+        If (in_AveragingStrips IsNot Nothing) Then
+            Dim isNum As Int16 = 14  ' ToDo Check number
+            averagingStripCount = in_AveragingStrips.Count / isNum
+            Rhino.RhinoApp.WriteLine("Number of averagingStrip: " & sectionOnBeamCount)
+            For i = 0 To averagingStripCount - 1
+                For j = 0 To isNum - 1
+                    SE_AveragingStrip(i, j) = in_AveragingStrips(j + i * isNum)
+                Next j
+            Next i
+        End If
+
         'write the XML file
         '---------------------------------------------------
         Rhino.RhinoApp.Write("Creating the XML file string in memory...")
@@ -1719,7 +1732,7 @@ nPointSupportonBeam, SE_subsoil, nSubsoils, SE_surfaceSupport, nSurfaceSupports,
 SE_PointMomentPointNode, pointMomentpointCount, SE_pointMomentBeam, pointMomentbeamCount, SE_lineMomentBeam, lineMomentBeamCount, SE_lineMomentEdge, lineMomentEdgeCount,
 SE_fMomentPointloads, fpointmomentloadcount, SE_NonlinearFunctions, nlfunctionscount, SE_SlabInternalEdges, slabInternalEdgesCount, SE_RigidArms, RigidArmsCount, SE_Cables,
 CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehingecount, SE_ThermalLoadBeams, thermalLoadsBeamcount, SE_ThermalLoadSurfaces, thermalLoadsSurfacescount,
-SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStripCount, SE_SectionOnBeam, sectionOnBeamCount)
+SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStripCount, SE_SectionOnBeam, sectionOnBeamCount, SE_AveragingStrip, averagingStripCount)
 
         Rhino.RhinoApp.Write(" Done." & Convert.ToChar(13))
 
@@ -1758,7 +1771,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
     lineMomentEdgeCount, SE_fMomentPointloads(,), fpointmomentloadcount, SE_NonlinearFunctions(,), nlfunctionscount, SE_SlabInternalEdges(,),
     slabInternalEdgesCount, SE_RigidArms(,), RigidArmsCount, SE_Cables(,), CablesCount, SE_nodesInternalBeam(,), internalNodesBeamCount,
     SE_LineHinges(,), linehingecount, SE_ThermalLoadBeams(,), thermalLoadsBeamcount, SE_ThermalLoadSurfaces(,), thermalLoadsSurfacescount,
-    SE_ArbitraryProfiles(,), arbitraryProfileCount, SE_IntegrationStrip(,), integrationStripCount, SE_SectionOnBeam(,), sectionOnBeamCount)
+    SE_ArbitraryProfiles(,), arbitraryProfileCount, SE_IntegrationStrip(,), integrationStripCount, SE_SectionOnBeam(,), sectionOnBeamCount,
+    SE_AveragingStrip(,), averagingStripCount)
 
         Dim i As Long
         Dim c As String, cid As String, t As String, tid As String
@@ -3621,7 +3635,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine(ConCat_ht("18", "Width right"))
             oSB.AppendLine(ConCat_ht("19", "No. of thickness left"))
             oSB.AppendLine(ConCat_ht("20", "No. of thickness right"))
-
             oSB.AppendLine("</h>")
 
             For i = 0 To integrationStripCount - 1
@@ -3669,6 +3682,46 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine("</container>")
         End If
 
+        ' Averaging strip
+        If averagingStripCount > 0 Then
+            'output beams ---------------------------------------------------------------------
+            c = "{FE0D602A-29D1-45BD-8812-C65D66847842}"
+            cid = "EP_DSG_Elements.EP_RedistStrip.1"
+            t = "4849FC97-8AF4-4546-BB2E-68337ADBDEB4"
+            tid = "EP_DSG_Elements.EP_RedistStrip.1"
+
+            oSB.AppendLine("")
+            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
+            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+
+            oSB.AppendLine("<h>")
+            oSB.AppendLine(ConCat_ht("0", "Reference Table"))
+            oSB.AppendLine(ConCat_ht("1", "Name"))
+            oSB.AppendLine(ConCat_ht("2", "UniqueID"))
+            oSB.AppendLine(ConCat_ht("3", "Type"))
+            oSB.AppendLine(ConCat_ht("4", "Direction"))
+            oSB.AppendLine(ConCat_ht("5", "Width"))
+            oSB.AppendLine(ConCat_ht("6", "Length"))
+            oSB.AppendLine(ConCat_ht("7", "Angle"))
+            oSB.AppendLine(ConCat_ht("8", "Coord X"))
+            oSB.AppendLine(ConCat_ht("9", "Coord Y"))
+            oSB.AppendLine(ConCat_ht("10", "Coord Z"))
+            oSB.AppendLine(ConCat_ht("11", "Coord x"))
+            oSB.AppendLine(ConCat_ht("12", "Coord y"))
+            oSB.AppendLine(ConCat_ht("13", "Coord z"))
+
+            oSB.AppendLine("</h>")
+
+            For i = 0 To averagingStripCount - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... averaging strip: " + Str(i))
+                End If
+                Call WriteAveragingStrip(oSB, i, SE_AveragingStrip)
+            Next
+
+            oSB.AppendLine("</table>")
+            oSB.AppendLine("</container>")
+        End If
 
 
         'close XML file--------------------------------------------------------------------
@@ -6773,6 +6826,66 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
 
     End Sub
+
+    Private Sub WriteAveragingStrip(ByRef oSB, iAveragingStrip, averagingStrips(,)) 'write 1 averaging strip to the XML stream
+        'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
+
+        oSB.AppendLine("<obj nm=""" & averagingStrips(iAveragingStrip, 1) & """>") 'obj Name
+
+        ' Reference Table
+        oSB.AppendLine(ConCat_opentable("0", ""))
+        'Table of Geometry
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Member Type"))
+        oSB.AppendLine(ConCat_ht("1", "Member Type Name"))
+        'oSB.AppendLine(ConCat_ht("2", "Member Id"))
+        oSB.AppendLine(ConCat_ht("3", "Member Name"))
+        oSB.AppendLine("</h>")
+        oSB.AppendLine(ConCat_row(0))
+        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
+        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.appendline(ConCat_pv("3", averagingStrips(iAveragingStrip, 0))) ' 2D Member to check
+        oSB.AppendLine("</row>")
+        oSB.AppendLine(ConCat_closetable("0"))
+
+
+        oSB.AppendLine(ConCat_pv("1", averagingStrips(iAveragingStrip, 1))) 'Name
+        'oSB.AppendLine(ConCat_pv("2", integrationStrips(iIntegrationStrip, 1))) 'UniqueId
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.AveragingStripType)(3, averagingStrips(iAveragingStrip, 3)))  'Create Type
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.AveragingStripDirection)(4, averagingStrips(iAveragingStrip, 4)))  ' Direction
+        oSB.AppendLine(ConCat_pv("5", averagingStrips(iAveragingStrip, 5))) 'Width
+
+        Dim x1 As String = averagingStrips(iAveragingStrip, 8)
+        Dim y1 As String = averagingStrips(iAveragingStrip, 10)
+        Dim z1 As String = averagingStrips(iAveragingStrip, 12)
+
+        ' In case of Strip not a Point
+        If averagingStrips(iAveragingStrip, 9) IsNot Nothing Then
+            Dim x2 As String = averagingStrips(iAveragingStrip, 9)
+            Dim y2 As String = averagingStrips(iAveragingStrip, 11)
+            Dim z2 As String = averagingStrips(iAveragingStrip, 13)
+
+            oSB.AppendLine(ConCat_pvx("8", x1, "0")) 'X
+            oSB.AppendLine(ConCat_pvx("8", x2, "1")) 'X
+            oSB.AppendLine(ConCat_pvx("9", y1, "0")) 'Y
+            oSB.AppendLine(ConCat_pvx("9", y2, "1")) 'Y
+            oSB.AppendLine(ConCat_pvx("10", z1, "0")) 'Z
+            oSB.AppendLine(ConCat_pvx("10", z2, "1")) 'Z
+        Else  ' In case of Point not Strip
+
+            oSB.AppendLine(ConCat_pv("6", averagingStrips(iAveragingStrip, 6))) 'Length
+            oSB.AppendLine(ConCat_pv("7", averagingStrips(iAveragingStrip, 7))) 'Angle
+            oSB.AppendLine(ConCat_pv("8", x1)) 'X
+            oSB.AppendLine(ConCat_pv("9", y1)) 'Y
+            oSB.AppendLine(ConCat_pv("10", z1)) 'Z
+
+        End If
+
+        oSB.AppendLine("</obj>")
+
+    End Sub
+
+
 
     Function WrapIfRequired(Filename As String) As String
         Dim containsSpaces = False
