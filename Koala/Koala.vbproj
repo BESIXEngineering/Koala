@@ -104,6 +104,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AveragingStrip.vb" />
     <Compile Include="GH_KoalaComponent.vb" />
     <Compile Include="CreateXML2.vb" />
     <Compile Include="IntegrationStrip.vb" />

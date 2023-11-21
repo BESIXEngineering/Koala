@@ -19,7 +19,6 @@ C:\WORK\SourceCodes\Koala\KoalaUT\obj\Debug\KoalaUT.pdb
 C:\WORK\SourceCodes\Koala\KoalaUT\bin\Debug\Koala.dll
 C:\WORK\SourceCodes\Koala\KoalaUT\bin\Debug\Koala.pdb
 C:\WORK\SourceCodes\Koala\KoalaUT\bin\Debug\Koala.xml
-C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\obj\Debug\KoalaUT.vbproj.AssemblyReference.cache
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\obj\Debug\KoalaUT.Resources.resources
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\obj\Debug\KoalaUT.vbproj.GenerateResource.cache
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\obj\Debug\KoalaUT.vbproj.CoreCompileInputs.cache
@@ -40,3 +39,4 @@ C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\bin\Debug\Koala.xml
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.xml
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
 C:\Users\mwozniak\Source\Repos\Koala\KoalaUT\obj\Debug\KoalaUT.vbproj.CopyComplete
+C:\Users\mwozniak\source\repos\Koala\KoalaUT\obj\Debug\KoalaUT.vbproj.AssemblyReference.cache
