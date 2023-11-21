@@ -300,6 +300,7 @@ Namespace Koala
         Cable
 
         IntegrationStrip
+        AveragingStrip
 
         SectionOnBeam
     End Enum
@@ -437,5 +438,24 @@ Namespace Koala
         <Description("From end")>
         fromEnd = 1
     End Enum
+
+    Public Enum AveragingStripType
+        <Description("Strip")>
+        strip = 0
+        <Description("Point")>
+        point = 1
+    End Enum
+
+    Public Enum AveragingStripDirection
+        <Description("longitudinal")>
+        longitudinal = 0
+        <Description("perpendicular")>
+        perpendicular = 1
+        <Description("both")>
+        both = 2
+        <Description("none")>
+        node = 3
+    End Enum
+
 End Namespace
 
