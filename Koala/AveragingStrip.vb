@@ -32,7 +32,7 @@ Namespace Koala
             Dim rightIdx As Integer
 
             pManager.AddTextParameter("2DMemberName", "2DMemberName", "Name of the 2D member where to put integration strip", GH_ParamAccess.item)
-            pManager.AddGeometryParameter("Geometry", "Geometry Point/Strip", "Geometry Point/Strip on 2D Member", GH_ParamAccess.item)
+            pManager.AddGeometryParameter("Position", "Position", "Point or Line geometry on 2D Member", GH_ParamAccess.item)
             pManager.AddParameter(New Param_Enum("Direction", "Direction", GH_ParamAccess.item, AveragingStripDirection.longitudinal))
             pManager.AddNumberParameter("Width", "Width", "Width", GH_ParamAccess.item, 1.0)
             pManager.AddNumberParameter("Length", "Length", "Length", GH_ParamAccess.item, 1.0)
@@ -46,7 +46,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("AveragingStrips", "AveragingStrips", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("AveragingStrip", "AveragingStrip", "", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()
@@ -66,10 +66,10 @@ Namespace Koala
 
             Dim Member2D As String = ""
             Dim averagingStripGeometry As IGH_GeometricGoo = Nothing
-            Dim averaginStripLine As GH_Curve = Nothing
-            Dim averagingStripPoint As GH_Point = Nothing
-            Dim avergingStripType As AveragingStripType = Nothing
-            Dim avergingStripDirection As AveragingStripDirection = Nothing
+            Dim averaginStripLine As GH_Curve
+            Dim averagingStripPoint As GH_Point
+            ' Dim avergingStripType As AveragingStripType
+            Dim avergingStripDirection As AveragingStripDirection
             Dim directionIdx As Integer = 0
             Dim Width As Double = 0
             Dim Length As Double = 0
@@ -114,9 +114,11 @@ Namespace Koala
 
             If TypeOf averagingStripGeometry Is GH_Curve Then
 
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Warn: second point of Averaging Strip might not be set in SCIA. This is a bug...")
+
                 averaginStripLine = DirectCast(averagingStripGeometry, GH_Curve)
 
-                Dim aveLineRhino As Curve
+                Dim aveLineRhino As Curve = Nothing
                 averaginStripLine.CastTo(Of Curve)(aveLineRhino)
 
                 'get points of the line
@@ -136,18 +138,18 @@ Namespace Koala
 
                 'Dim begIdx As Integer = (NameIndex - 1) * 2
                 'Dim endIdx As Integer = (NameIndex - 1) * 2 + 1
-                Dim beginnigNode As Rhino.Geometry.Point3d = arrPoints(0)
+                Dim beginNode As Rhino.Geometry.Point3d = arrPoints(0)
                 Dim endNode As Rhino.Geometry.Point3d = arrPoints(1)
 
-                SE_averagingStrip(3) = GetEnumDescription(avergingStripType.strip)
+                SE_averagingStrip(3) = GetEnumDescription(AveragingStripType.strip)
 
-                SE_averagingStrip(8) = beginnigNode.X.ToString()
+                SE_averagingStrip(8) = beginNode.X.ToString()
                 SE_averagingStrip(9) = endNode.X.ToString()
 
-                SE_averagingStrip(10) = beginnigNode.Y.ToString()
+                SE_averagingStrip(10) = beginNode.Y.ToString()
                 SE_averagingStrip(11) = endNode.Y.ToString()
 
-                SE_averagingStrip(12) = beginnigNode.Z.ToString()
+                SE_averagingStrip(12) = beginNode.Z.ToString()
                 SE_averagingStrip(13) = endNode.Z.ToString()
 
             ElseIf TypeOf averagingStripGeometry Is GH_Point Then
@@ -156,7 +158,7 @@ Namespace Koala
                 Dim avePointRhino As Point3d
                 averagingStripGeometry.CastTo(Of Point3d)(avePointRhino)
 
-                SE_averagingStrip(3) = GetEnumDescription(avergingStripType.point)
+                SE_averagingStrip(3) = GetEnumDescription(AveragingStripType.point)
 
                 SE_averagingStrip(8) = avePointRhino.X.ToString()
                 SE_averagingStrip(10) = avePointRhino.Y.ToString()
@@ -179,6 +181,12 @@ Namespace Koala
                 'You can add image files to your project resources and access them like this:
                 ' return Resources.IconForThisComponent;
                 Return My.Resources.AveragingStrip
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.quarternary
             End Get
         End Property
 

@@ -50,7 +50,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("IntegrationStrips", "IntegrationStrips", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("IntegrationStrip", "IntegrationStrip", "", GH_ParamAccess.list)
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()
@@ -166,6 +166,12 @@ Namespace Koala
                 'You can add image files to your project resources and access them like this:
                 ' return Resources.IconForThisComponent;
                 Return My.Resources.IntegrationStrip
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.quarternary
             End Get
         End Property
 

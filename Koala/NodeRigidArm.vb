@@ -8,6 +8,10 @@ Namespace Koala
 
     Public Class NodeRigidArm
         Inherits GH_KoalaComponent
+
+        Const DefaultNamePrefix As String = "RA"
+        Public NameIndex As Integer = 0
+
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -31,7 +35,7 @@ Namespace Koala
         ''' Registers all the input parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
-            pManager.AddTextParameter("RigidArmsPrefix", "RigidArmsPrefix", "", GH_ParamAccess.item, "RA")
+            pManager.AddTextParameter("RigidArmsPrefix", "RigidArmsPrefix", "", GH_ParamAccess.item, DefaultNamePrefix)
             pManager.AddTextParameter("MasterNode", "MasterNode", "", GH_ParamAccess.item)
             pManager.AddTextParameter("SlaveNodes", "SlaveNodes", "", GH_ParamAccess.list)
             pManager.AddBooleanParameter("HingeOnMaster", "HingeOnMaster", "HingeOnMaster", GH_ParamAccess.item, False)
@@ -45,6 +49,11 @@ Namespace Koala
             pManager.AddTextParameter("RigidArm", "RigidArm", "RigidArm data", GH_ParamAccess.list)
         End Sub
 
+        Protected Overrides Sub BeforeSolveInstance()
+            NameIndex = 0
+            MyBase.BeforeSolveInstance()
+        End Sub
+
         ''' <summary>
         ''' This is the method that actually does the work.
         ''' </summary>
@@ -52,7 +61,7 @@ Namespace Koala
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
-            Dim RigidArmsPrefix As String = "RA"
+            Dim RigidArmsPrefix As String = DefaultNamePrefix
             Dim MasterNode As String = ""
             Dim HingeOnMaster As Boolean = False
             Dim HingeOnSlave As Boolean = False
@@ -69,14 +78,14 @@ Namespace Koala
             'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
 
             Dim item As String
-            Dim i As Long = 1
 
 
             'create fixed supports on first & last nodes, fully fixed
             '=====================================
             FlatList.Clear()
             For Each item In slaves
-                FlatList.Add(RigidArmsPrefix & i.ToString())
+                NameIndex += 1
+                FlatList.Add(RigidArmsPrefix & NameIndex.ToString())
                 FlatList.Add(MasterNode)
                 FlatList.Add(item)
                 FlatList.Add(HingeOnMaster)

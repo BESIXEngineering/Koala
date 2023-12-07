@@ -224,6 +224,7 @@
     <None Include="Resources\BeamInternalNode.bmp" />
     <None Include="Resources\Cable.bmp" />
     <Content Include="Resources\ArbitraryProfile.bmp" />
+    <Content Include="Resources\AveragingStrip.bmp" />
     <Content Include="Resources\CreateXML.bmp" />
     <None Include="Resources\Cross-link.bmp" />
     <Content Include="Resources\Cross-section.bmp" />

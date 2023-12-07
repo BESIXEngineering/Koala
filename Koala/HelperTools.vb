@@ -4836,11 +4836,11 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             Case "Rigid"
                 oSB.AppendLine(ConCat_pvt("3", "0", "Rigid"))
             Case "Free"
-                oSB.AppendLine(ConCat_pvt("4", "1", "Free"))
+                oSB.AppendLine(ConCat_pvt("3", "1", "Free"))
             Case "Flexible"
-                oSB.AppendLine(ConCat_pvt("4", "2", "Flexible"))
+                oSB.AppendLine(ConCat_pvt("3", "2", "Flexible"))
             Case Else
-                oSB.AppendLine(ConCat_pvt("4", "0", "Rigid"))
+                oSB.AppendLine(ConCat_pvt("3", "0", "Rigid"))
         End Select
 
         Dim parts As String() = SE_NonlinearFunctions(i, 4).Split(New Char() {"|"c})
