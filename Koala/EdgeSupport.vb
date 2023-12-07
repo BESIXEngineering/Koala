@@ -31,7 +31,7 @@ Namespace Koala
         ''' Registers all the input parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
-            pManager.AddTextParameter("ListOfMembers&Edges&Type", "ListOfSurfaces&EdgesType", "Definition of surfaces and edges:S1;SURFACE;2 O1;OPENING;1", GH_ParamAccess.list)
+            pManager.AddTextParameter("ListOfMembers&Edges&Type", "ListOfSurfaces&EdgesType", "Definition of surfaces and edges. Example: S1;SURFACE;2 or O1;OPENING;1 or NE1;INTERNAL EDGE", GH_ParamAccess.list)
             pManager.AddIntegerParameter("Rx", "Rx", "Rotation around X axis, Right click and select from options", GH_ParamAccess.item, 1)
             AddOptionstoMenuDOFRotation(pManager.Param(1))
             pManager.AddIntegerParameter("Ry", "Ry", "Rotation around y axis, Right click and select from options", GH_ParamAccess.item, 1)
@@ -149,11 +149,15 @@ Namespace Koala
                 referencetype = item.Split(";")(1)
                 referencetype = referencetype.Trim
 
-                supportedge = item.Split(";")(2)
-                supportedge = supportedge.Trim
+                If referencetype <> "INTERNAL EDGE" Then
+                    supportedge = item.Split(";")(2)
+                    supportedge = supportedge.Trim
+                Else
+                    supportedge = 1
+                End If
 
                 FlatList.Add(referenceobj)
-                FlatList.Add(referencetype)
+                    FlatList.Add(referencetype)
                 FlatList.Add(supportedge)
                 FlatList.Add(Tx)
                 FlatList.Add(Ty)

@@ -4938,7 +4938,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h>")
         oSB.AppendLine("<h0 t=""Member Type""/>")
         oSB.AppendLine("<h1 t=""Member Type Name""/>")
-        oSB.AppendLine("<h3 t=""Member Name""/>")
+        oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
 
@@ -4950,6 +4950,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             Case "OPENING"
                 oSB.AppendLine(ConCat_pv("0", "{EBA9B148-F564-4DB1-9E2D-F1937FFA4523}"))
                 oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_OpenSlab.1"))
+            Case "INTERNAL EDGE"
+                oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
+                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
             Case Else
                 oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
                 oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
