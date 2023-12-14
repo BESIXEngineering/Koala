@@ -28,8 +28,8 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
 
-            pManager.AddTextParameter("LoadCases", "LCs", "LoadCase parametrs - Name;Type;LoadGroup: LC1;SW;LG1", GH_ParamAccess.list, "LC2; Permanent; LG1")
-            pManager.AddTextParameter("LoadGroups", "LGs", "LoadGroup parametrs - Name;Type: LG1;Permanent", GH_ParamAccess.list, "LG2; Variable; Standard")
+            pManager.AddTextParameter("LoadCases", "LCs", "LoadCase parameters in format 'Name;Type;LoadGroup'; if Type=SW >> Permanent|Self weight (e.g. LC1;SW;LG1); if Type=Permanent >> Permanent|Standard (e.g. LC2;Permanent;LG1); if Type=Variable >> Variable|Static (e.g. LC2;Variable;LG2)", GH_ParamAccess.list, "LC2;Permanent;LG1")
+            pManager.AddTextParameter("LoadGroups", "LGs", "LoadGroup parameters in format 'Name;Type' if Type=Permanent (e.g. LG1;Permanent) or format 'Name;Type;Relation' if Type=Variable (e.g. LG2;Variable;EXCLUSIVE). Relation options: STANDARD, EXCLUSIVE, TOGETHER", GH_ParamAccess.list, "LG2; Variable; Standard")
 
         End Sub
 
