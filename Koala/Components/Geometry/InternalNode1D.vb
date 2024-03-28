@@ -9,8 +9,6 @@ Namespace Koala
     Public Class InternalNode1D
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
-
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -20,13 +18,13 @@ Namespace Koala
         ''' </summary>
         Public Sub New()
             MyBase.New("Internal Node on 1D Member", "InternalNodeOn1DMember",
-                "Create an internal node on a 1D member. Nodes are numbered continuously regardless of the input data tree structure.",
+                "!!! Beam internal nodes not supported by XML update; split continuous beam at node or use 'Connect Members/Nodes' command instead !!! Create an internal node on a 1D member. Nodes are numbered continuously regardless of the input data tree structure.",
                 "Structure", New EsaObjectType() {EsaObjectType.Node, EsaObjectType.InternalNode1D})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.primary
+                Return GH_Exposure.hidden ' No use to show this as XML update creates nodes but doesn't connect them to beam.
             End Get
         End Property
 
@@ -47,11 +45,6 @@ Namespace Koala
             pManager.AddTextParameter("InternalNode1D", "InternalNode1D", "InternalNode1D output data", GH_ParamAccess.list)
         End Sub
 
-        Protected Overrides Sub BeforeSolveInstance()
-            MyBase.BeforeSolveInstance()
-            memberIdx = 0
-        End Sub
-
         ''' <summary>
         ''' This is the method that actually does the work.
         ''' </summary>
@@ -68,8 +61,8 @@ Namespace Koala
 
             Dim SE_member(4) As String 'a node consists of: Name, X, Y, Z
 
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", nodePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", nodePrefix, NameIndex)
 
             SE_member(0) = memberName
             SE_member(1) = point.X

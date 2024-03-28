@@ -9,7 +9,6 @@ Namespace Koala
         Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "CM"
-        Public NameIndex As Integer = 0
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -53,10 +52,6 @@ Namespace Koala
             pManager.AddTextParameter("IntegrationStrip", "IntegrationStrip", "", GH_ParamAccess.list)
         End Sub
 
-        Protected Overrides Sub BeforeSolveInstance()
-            NameIndex = 0
-            MyBase.BeforeSolveInstance()
-        End Sub
 
         ''' <summary>
         ''' This is the method that actually does the work.

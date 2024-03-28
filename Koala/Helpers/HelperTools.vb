@@ -1,7 +1,10 @@
 ﻿Imports System.IO
+Imports Grasshopper.Kernel.Geometry.SpatialTrees
 Imports Grasshopper.Kernel.Parameters
-
+Imports Grasshopper.Kernel.Types.Transforms
+Imports Koala.Koala
 Module HelperTools
+
 #Region "Enum options"
 
     Public Sub AddOptionstoMenuDOFTransition(menuItem As Param_Integer)
@@ -864,127 +867,39 @@ Module HelperTools
     End Function
 #End Region
 
-#Region "Geometry"
-    Public Function GetExistingNode(arrPoint As Rhino.Geometry.Point3d, nodes As List(Of Koala.SENode), epsilon As Double) As Koala.SENode?
-        'Start with node not found, loop through all the nodes until one is found within tolerance
-        'Not in use now, as it's quite slow compared to within SCIA Engineer
-        GetExistingNode = Nothing
-        Rhino.RhinoApp.WriteLine("Searching node")
-        For Each node In nodes
-            If Math.Abs(arrPoint.X - node.Point.X) < epsilon Then
-                If Math.Abs(arrPoint.Y - node.Point.Y) < epsilon Then
-                    If Math.Abs(arrPoint.Z - node.Point.Z) < epsilon Then
-                        GetExistingNode = node
-                        Exit For
-                    End If
-                End If
+    Private Function UnflattenObjectData(dataIn As List(Of String), valuesPerObject As Integer, name As String) As String(,)
+        UnflattenObjectData = Nothing
+
+        If (dataIn IsNot Nothing) Then
+
+            Dim objectCount As Integer = dataIn.Count / valuesPerObject
+
+            If objectCount > 0 Then
+                Dim dataOut(objectCount - 1, valuesPerObject - 1) As String
+
+                Rhino.RhinoApp.WriteLine("Number of " & name & " objects: " & objectCount)
+                For i = 0 To objectCount - 1
+                    For j = 0 To valuesPerObject - 1
+                        dataOut(i, j) = dataIn(j + i * valuesPerObject)
+                    Next j
+                Next i
+
+                UnflattenObjectData = dataOut
             End If
-        Next node
-    End Function
-
-    Public Function GetExistingNode(arrPoint As Rhino.Geometry.Point3d, nodes(,) As String, nnodes As Long, epsilon As Double)
-        Dim currentnode
-        'Start with node not found, loop through all the nodes until one is found within tolerance
-        'Not in use now, as it's quite slow compared to within SCIA Engineer
-        GetExistingNode = -1
-        currentnode = 1
-
-        If nnodes Mod 50 = 0 And nnodes > 100 Then
-            Rhino.RhinoApp.WriteLine("Searching node " & CStr(nnodes))
-            'rhino.Display.DrawEventArgs
         End If
 
-        While GetExistingNode = -1 And currentnode <= nnodes
-            If Math.Abs(arrPoint.X - nodes(currentnode - 1, 1)) < epsilon Then
-                If Math.Abs(arrPoint.Y - nodes(currentnode - 1, 2)) < epsilon Then
-                    If Math.Abs(arrPoint.Z - nodes(currentnode - 1, 3)) < epsilon Then
-                        GetExistingNode = currentnode
-                    End If
-                End If
-            End If
-            currentnode += 1
-        End While
     End Function
 
-    Public Function GetExistingNode(arrPoint, nodes(,), nnodes, epsilon)
-        Dim currentnode
-        'Start with node not found, loop through all the nodes until one is found within tolerance
-        'Not in use now, as it's quite slow compared to within SCIA Engineer
-        GetExistingNode = -1
-        currentnode = 0
-
-        If nnodes Mod 50 = 0 And nnodes > 100 Then
-            Rhino.RhinoApp.WriteLine("Searching node " & CStr(nnodes))
-            'rhino.Display.DrawEventArgs
-        End If
-
-        While GetExistingNode = -1 And currentnode < nnodes
-            If System.Math.Abs(arrPoint(0) - nodes(currentnode, 1)) < epsilon Then
-                If System.Math.Abs(arrPoint(1) - nodes(currentnode, 2)) < epsilon Then
-                    If System.Math.Abs(arrPoint(2) - nodes(currentnode, 3)) < epsilon Then
-                        GetExistingNode = currentnode
-                    Else
-                        currentnode += 1
-                    End If
-                Else
-                    currentnode += 1
-                End If
-            Else
-                currentnode += 1
-            End If
-
-        End While
-    End Function
-
-    Public Sub GetTypeAndNodes(ByRef line As Rhino.Geometry.Curve, ByRef LineType As String, ByRef arrPoints As Rhino.Collections.Point3dList)
-
-        Dim arc As Rhino.Geometry.Arc
-        Dim nurbscurve As Rhino.Geometry.NurbsCurve
-        Dim i As Integer
-
-        If line.IsCircle Then
-            Dim circle As Rhino.Geometry.Circle
-            line.TryGetCircle(circle)
-            LineType = "Circle"
-            arrPoints.Clear()
-            Dim PointOnCircle As Rhino.Geometry.Point3d
-            PointOnCircle = circle.PointAt(0.0)
-            arrPoints.Add(PointOnCircle)
-            arrPoints.Add(circle.Center)
-
-        ElseIf line.IsLinear() Then
-            LineType = "Line"
-            arrPoints.Clear()
-            arrPoints.Add(line.PointAtStart)
-            arrPoints.Add(line.PointAtEnd)
-
-        ElseIf line.IsPolyline Then
-            LineType = "Polyline"
-            arrPoints.Clear()
-            Dim polyline As Rhino.Geometry.Polyline
-            line.TryGetPolyline(polyline)
-            For i = 0 To polyline.Count - 1
-                arrPoints.Add(polyline.ElementAt(i))
-            Next i
-
-        ElseIf line.IsArc() Then
-            LineType = "Arc"
-            'convert to arc
-            line.TryGetArc(arc)
-            arrPoints.Clear()
-            arrPoints.Add(arc.StartPoint)
-            arrPoints.Add(arc.MidPoint)
-            arrPoints.Add(arc.EndPoint)
-            'Dim arc As Rhino.Geometry.Arc
-
-        Else
-            LineType = "Spline"
-            'convert to Nurbs curve to get the Edit points
-            nurbscurve = line.ToNurbsCurve
-            arrPoints = nurbscurve.GrevillePoints
-        End If
+    Private Sub OpenContainerAndTable(ByRef oSB As Text.StringBuilder, type As Koala.EsaObjectType)
+        oSB.AppendLine("")
+        oSB.AppendLine("<container id=""" & ContainerIds(type) & """ t=""" & ContainerTypes(type) & """>")
+        oSB.AppendLine("<table id=""" & TableIds(type) & """ t=""" & TableTypes(type) & """>")
     End Sub
-#End Region
+
+    Private Sub CloseContainerAndTable(ByRef oSB As Text.StringBuilder)
+        oSB.AppendLine("</table>")
+        oSB.AppendLine("</container>")
+    End Sub
 
     Private Function ConCat_ht(h, t)
         ConCat_ht = "<h" & h & " t=""" & t & """/>"
@@ -1009,7 +924,6 @@ Module HelperTools
         ConCat_pv1v2x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ x=""" & x & """/>"
     End Function
 
-
     Private Function ConCat_pn(p, N)
         ConCat_pn = "<p" & p & " n=""" & N & """/>"
     End Function
@@ -1033,684 +947,116 @@ Module HelperTools
 
     '<Custom additional code> 
 
-    'global variables for this component
-    '-----------------------------------
-    Public gl_UILanguage As String 'required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
-    Public UILanguageNumber As Long
-
-    Private DupNodeDict As Dictionary(Of String, String) = Nothing
-    Private isNodeDuplicate As Dictionary(Of String, Boolean) = Nothing
-
-    Public Sub CreateXMLFile(FileName As String, StructureType As String, Materials As List(Of String), UILanguage As String, MeshSize As Double, in_sections As List(Of String), in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
+    Public Sub CreateXMLFile(FileName As String, StructureType As String, Materials As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
+                             projectInfo As List(Of String), in_layers As List(Of String), in_sections As List(Of String),
+                             in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
                              in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String), in_lloads As List(Of String), in_sloads As List(Of String),
                              in_fploads As List(Of String), in_flloads As List(Of String), in_fsloads As List(Of String), in_hinges As List(Of String), in_edgeLoads As List(Of String), in_pointLoadsPoints As List(Of String), in_pointLoadsBeams As List(Of String),
-                             Scale As String, in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String),
-                             in_CrossLinks As List(Of String), in_presstensionElem As List(Of String), in_gapElem As List(Of String), in_limitforceElem As List(Of String), projectInfo As List(Of String), in_layers As List(Of String),
+                             in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String),
+                             in_CrossLinks As List(Of String), in_presstensionElem As List(Of String), in_gapElem As List(Of String), in_limitforceElem As List(Of String),
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
-                             RemDuplNodes As Boolean, Tolerance As Double, in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
+                             in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
                              in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String), in_IntegationStrips As List(Of String), in_SectionOnBeams As List(Of String), in_AveragingStrips As List(Of String))
+
         Dim i As Long, j As Long
 
-
-        Dim SE_sections(1000, 3) As String 'a section consists of: Name, Definition, Material
-
-        Dim SE_nodes(100000, 3) As String 'a node consists of: Name, X, Y, Z
-        Dim SE_beams(100000, 13) As String 'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
-        'If LCSType = 0 > Standard definition of LCS with an angle > LCSParam1 is the angle in radian
-        'If LCSType = 2 > Definition of LCS through a vector for local Z > LCSParam1/2/3 are the X, Y, Z components of the vector
-
-        Dim SE_surfaces(100000, 12) As String 'a surface consists of: Name, Type, Material, Thickness, Layer, BoundaryShape, InternalNodes
-        Dim SE_openings(100000, 2) As String 'a surface consists of: Name, Reference surface, BoundaryShape
-
-        Dim SE_nodesupports(100000, 19) As String 'a nodal support consists of: Node name, X, Y, Z, RX, RY, RZ - 0 is free, 1 is blocked DOF
-        Dim SE_edgesupports(100000, 25) As String 'an edge support consists of: Reference name, reference type, edge number, X, Y, Z, RX, RY, RZ - 0 is free, 1 is blocked DOF
-        Dim SE_lcases(100000, 2) As String 'a load case consists of: Load case name, type (SW, Permanent, Variable), load group
-        Dim SE_lgroups(100000, 2) As String 'a load group consists of: Load group name, type (Permanent, Variable), relation (Standard, Exclusive, Together)
-        Dim SE_lloads(100000, 13) As String 'a beam line load consists of: Load case, Beam name, coord sys (GCS/LCS), direction (X, Y, Z), Distribution,value1 (kN/m),value2,coord,pos1,pos2
-        Dim SE_sloads(100000, 4) As String 'a surface load consists of: Load case, Surface name, coord sys (GCS/LCS), direction (X, Y, Z), value (kN/m)
-        Dim SE_fploads(100000, 10) As String 'a free point load consists of: Load case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
-        Dim SE_flloads(100000, 11) As String 'a free line load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), LineShape
-        Dim SE_fsloads(100000, 11) As String 'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution, 1 or 2 values (kN/m^2), BoundaryShape
-        Dim SE_hinges(100000, 14) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
-        Dim SE_eLoads(100000, 15) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
-        Dim SE_pointLoadPoint(100000, 6) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
-        Dim SE_pointLoadBeam(100000, 12) As String 'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
-        Dim SE_lincombinations(100000, 3) As String
-        Dim SE_nonlincombinations(100000, 4) As String
-        Dim SE_stabcombinations(100000, 2) As String
-        Dim SE_Crosslinks(100000, 3) As String
-        Dim SE_gapselem(100000, 4) As String
-        Dim SE_presstensionelems(100000, 2) As String
-        Dim SE_limforceelem(1000000, 4) As String
-        Dim SE_layers(1000000, 3) As String
-        Dim SE_layersCount As Integer = 0
-        Dim SE_beamLineSupports(100000, 23) As String 'a beam line support consists of: Reference name, reference type, edge number, X, Y, Z, RX, RY, RZ - 0 is free, 1 is blocked DOF
-        Dim SE_pointSupportOnBeam(100000, 24) As String
-        Dim SE_subsoil(100000, 9) As String
-        Dim SE_surfaceSupport(100000, 2) As String
-        Dim SE_LoadPanels(100000, 7) As String
-        Dim SE_PointMomentPointNode(100000, 5) As String
-        Dim SE_pointMomentBeam(100000, 10) As String
-        Dim SE_lineMomentBeam(100000, 10) As String
-        Dim SE_lineMomentEdge(100000, 13) As String
-        Dim SE_fMomentPointloads(100000, 10) As String
-        Dim SE_NonlinearFunctions(100000, 5) As String
-        Dim SE_SlabInternalEdges(100000, 3) As String
-        Dim SE_RigidArms(100000, 5) As String
-        Dim SE_Cables(100000, 6) As String
-        Dim SE_nodesInternalBeam(100000, 4) As String 'a node consists of: Name, X, Y, Z
-        Dim SE_LineHinges(100000, 13) As String
-        Dim SE_ThermalLoadBeams(100000, 11) As String
-        Dim SE_ThermalLoadSurfaces(100000, 5) As String
-        Dim SE_ArbitraryProfiles(100000, 8) As String
-        Dim SE_IntegrationStrip(100000, 16) As String 'an integration strip consists of: ToDo Name, UniqueID, Create meshnode, 
-        Dim SE_SectionOnBeam(100000, 7) As String ' a section on beam consists of: TODO
-        Dim SE_AveragingStrip(100000, 13) As String ' TODO check how many inputs
-
-        Dim SE_meshsize As Double
-
-        Dim beam_material As Long
-
-        Dim surface_material As Long, surface_layer As Long
-
-        Dim nodecount As Long, beamcount As Long, surfacecount As Long, openingcount As Long
-        Dim sectioncount As Long, nodesupportcount As Long, edgesupportcount As Long
-        Dim lcasecount As Long, lgroupcount As Long, lloadcount As Long, sloadcount As Long, fploadcount As Long, flloadcount As Long, fsloadcount As Long
-        Dim hingecount As Long, eloadscount As Long, pointLoadpointCount As Long, pointLoadbeamCount As Long, lincominationcount As Long, nonlincominationcount As Long
-        Dim stabcombicount As Long, crosslinkscount As Long, gapsnr As Long, ptelemnsnr As Long, lfelemnsnr As Long, nBeamLineSupport As Long, nPointSupportonBeam As Long, nSubsoils As Long, nSurfaceSupports As Long, nloadPanels As Long
-
-        Dim pointMomentpointCount As Long, pointMomentbeamCount As Long, lineMomentBeamCount As Long, lineMomentEdgeCount As Long, fpointmomentloadcount As Long, nlfunctionscount As Long, slabInternalEdgesCount As Long, RigidArmsCount As Long, CablesCount As Long
-        Dim internalNodesBeamCount As Long = 0, linehingecount As Long = 0, thermalLoadsBeamcount As Long = 0, thermalLoadsSurfacescount As Long = 0
-        Dim arbitraryProfileCount As Long = 0
-        Dim integrationStripCount As Long = 0
-        Dim sectionOnBeamCount As Long = 0
-        Dim averagingStripCount As Long = 0
+        ''If LCSType = 0 > Standard definition of LCS with an angle > LCSParam1 is the angle in radian
+        ''If LCSType = 2 > Definition of LCS through a vector for local Z > LCSParam1/2/3 are the X, Y, Z components of the vector
 
         Dim stopWatch As New System.Diagnostics.Stopwatch()
         Dim time_elapsed As Double
-        Dim oSB As System.Text.StringBuilder 'required for fast string building
         Dim objstream As String
-
-
-
-
 
         'initialize stopwatch
         stopWatch.Start()
-
-        'initialize some variables
-        beam_material = 1
-        surface_material = 1
-        surface_layer = 1
-        nodecount = 0
-        beamcount = 0
-        surfacecount = 0
-        sectioncount = 0
-        nodesupportcount = 0
-        edgesupportcount = 0
-        lcasecount = 0
-        lgroupcount = 0
-        lloadcount = 0
-        sloadcount = 0
-        fploadcount = 0
-        flloadcount = 0
-        fsloadcount = 0
-        hingecount = 0
-        eloadscount = 0
-        pointLoadbeamCount = 0
-        pointLoadpointCount = 0
-        stabcombicount = 0
-        lincominationcount = 0
-        nonlincominationcount = 0
-        crosslinkscount = 0
-        lfelemnsnr = 0
-        gapsnr = 0
-        ptelemnsnr = 0
-
-        'make some input parameters global variables for this component
-        gl_UILanguage = UILanguage
-        UILanguageNumber = GetNumberForUILangauge(gl_UILanguage)
 
         'show that it's busy
         Rhino.RhinoApp.WriteLine("")
         Rhino.RhinoApp.WriteLine("===== KOALA SCIA Engineer plugin - model creation =====")
 
         'Define the StringBuilder capacity
-        oSB = New System.Text.StringBuilder(100)
+        Dim oSB As New Text.StringBuilder(100) 'required for fast string building
 
         Rhino.RhinoApp.WriteLine("Generating model data...")
 
         'get model data (de-serialize)
         '=============================
-        If ((in_sections IsNot Nothing)) Then
-            sectioncount = in_sections.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of sections: " & sectioncount)
-            For i = 0 To sectioncount - 1
-                For j = 0 To 3
-                    SE_sections(i, j) = in_sections(j + i * 4)
-                Next j
+        ' Keep track of all unique nodes in the model
+        Dim nodeMap = New Dictionary(Of String, Node)()
+        Dim allNodes As New List(Of Node)
+
+        Dim SE_Nodes = UnflattenObjectData(in_nodes, 4, "node")
+        Dim SE_IntNodes = UnflattenObjectData(in_BeamInternalNodes, 5, "beam internal node")
+
+        If (SE_Nodes IsNot Nothing) Then
+            For i = 0 To SE_Nodes.GetLength(0) - 1
+                AddToNodeMap(nodeMap, allNodes, SE_Nodes(i, 0), SE_Nodes(i, 1), SE_Nodes(i, 2), SE_Nodes(i, 3), Nothing, Tolerance, RemDuplNodes)
             Next i
         End If
 
-
-
-        DupNodeDict = New Dictionary(Of String, String)()
-        isNodeDuplicate = New Dictionary(Of String, Boolean)()
-        If (in_nodes IsNot Nothing) Then
-
-            nodecount = in_nodes.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of nodes: " & nodecount)
-            For i = 0 To nodecount - 1
-                SE_nodes(i, 0) = in_nodes(i * 4)
-                SE_nodes(i, 1) = in_nodes(1 + i * 4) * Scale
-                SE_nodes(i, 2) = in_nodes(2 + i * 4) * Scale
-                SE_nodes(i, 3) = in_nodes(3 + i * 4) * Scale
-                If Not DupNodeDict.ContainsKey(SE_nodes(i, 0)) Then
-                    DupNodeDict.Add(SE_nodes(i, 0), SE_nodes(i, 0))
-                    isNodeDuplicate.Add(SE_nodes(i, 0), False)
-                Else
-                    Rhino.RhinoApp.WriteLine("Model contains duplicate nodes")
-                End If
-
-            Next i
-            If (RemDuplNodes) Then
-                For i = 0 To nodecount - 1
-                    For j = i + 1 To nodecount - 1
-                        If (Not isNodeDuplicate(SE_nodes(j, 0))) Then
-                            If System.Math.Abs(SE_nodes(i, 1) - SE_nodes(j, 1)) < Tolerance Then
-                                If System.Math.Abs(SE_nodes(i, 2) - SE_nodes(j, 2)) < Tolerance Then
-                                    If System.Math.Abs(SE_nodes(i, 3) - SE_nodes(j, 3)) < Tolerance Then
-                                        DupNodeDict(SE_nodes(j, 0)) = SE_nodes(i, 0)
-                                        isNodeDuplicate(SE_nodes(j, 0)) = True
-                                        Rhino.RhinoApp.WriteLine(SE_nodes(j, 0) & "is duplicate and is removed")
-                                    End If
-                                End If
-                            End If
-                        End If
-                    Next
-                Next
-            End If
-        End If
-
-
-        If (in_BeamInternalNodes IsNot Nothing) Then
-
-            internalNodesBeamCount = in_BeamInternalNodes.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of beam internal nodes: " & nodecount)
-            For i = 0 To internalNodesBeamCount - 1
-                SE_nodesInternalBeam(i, 0) = in_BeamInternalNodes(i * 5)
-                SE_nodesInternalBeam(i, 1) = in_BeamInternalNodes(1 + i * 5) * Scale
-                SE_nodesInternalBeam(i, 2) = in_BeamInternalNodes(2 + i * 5) * Scale
-                SE_nodesInternalBeam(i, 3) = in_BeamInternalNodes(3 + i * 5) * Scale
-                SE_nodesInternalBeam(i, 4) = in_BeamInternalNodes(4 + i * 5)
-
-
-            Next i
-
-
-        End If
-
-        If (in_beams IsNot Nothing) Then
-            beamcount = in_beams.Count / 13
-            Rhino.RhinoApp.WriteLine("Number of beams: " & beamcount)
-            For i = 0 To beamcount - 1
-                For j = 0 To 12
-                    SE_beams(i, j) = in_beams(j + i * 13)
-                Next j
+        If (SE_IntNodes IsNot Nothing) Then
+            For i = 0 To SE_IntNodes.GetLength(0) - 1
+                AddToNodeMap(nodeMap, allNodes, SE_IntNodes(i, 0), SE_IntNodes(i, 1), SE_IntNodes(i, 2), SE_IntNodes(i, 3), SE_IntNodes(i, 4), Tolerance, RemDuplNodes)
             Next i
         End If
 
-        If (in_surfaces IsNot Nothing) Then
-            surfacecount = in_surfaces.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of surfaces: " & surfacecount)
-            For i = 0 To surfacecount - 1
-                For j = 0 To 11
-                    SE_surfaces(i, j) = in_surfaces(j + i * 12)
-                Next j
-            Next i
-        End If
-
-
-        If (in_loadpanels IsNot Nothing) Then
-            nloadPanels = in_loadpanels.Count / 8
-            Rhino.RhinoApp.WriteLine("Number of loadpanels: " & nloadPanels)
-            For i = 0 To nloadPanels - 1
-                For j = 0 To 7
-                    SE_LoadPanels(i, j) = in_loadpanels(j + i * 8)
-                Next j
-            Next i
-        End If
-
-        If (in_openings IsNot Nothing) Then
-            openingcount = in_openings.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of openings: " & openingcount)
-            For i = 0 To openingcount - 1
-                For j = 0 To 2
-                    SE_openings(i, j) = in_openings(j + i * 3)
-                Next j
-            Next i
-        End If
-
-        If (in_slabinternalEdges IsNot Nothing) Then
-            slabInternalEdgesCount = in_slabinternalEdges.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of internal edges: " & slabInternalEdgesCount)
-            For i = 0 To slabInternalEdgesCount - 1
-                For j = 0 To 2
-                    SE_SlabInternalEdges(i, j) = in_slabinternalEdges(j + i * 3)
-                Next j
-            Next i
-        End If
-
-        If (in_RigidArms IsNot Nothing) Then
-            RigidArmsCount = in_RigidArms.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of RigidArms: " & RigidArmsCount)
-            For i = 0 To RigidArmsCount - 1
-                For j = 0 To 4
-                    SE_RigidArms(i, j) = in_RigidArms(j + i * 5)
-                Next j
-            Next i
-        End If
-
-        If (in_nodesupports IsNot Nothing) Then
-            nodesupportcount = in_nodesupports.Count / 20
-            Rhino.RhinoApp.WriteLine("Number of node supports: " & nodesupportcount)
-            For i = 0 To nodesupportcount - 1
-                For j = 0 To 19
-                    SE_nodesupports(i, j) = in_nodesupports(j + i * 20)
-                Next j
-            Next i
-        End If
-
-        If (in_edgesupports IsNot Nothing) Then
-            edgesupportcount = in_edgesupports.Count / 25
-            Rhino.RhinoApp.WriteLine("Number of edge supports: " & edgesupportcount)
-            For i = 0 To edgesupportcount - 1
-                For j = 0 To 24
-                    SE_edgesupports(i, j) = in_edgesupports(j + i * 25)
-                Next j
-            Next i
-        End If
-
-        If (in_lcases IsNot Nothing) Then
-            lcasecount = in_lcases.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of load cases: " & lcasecount)
-            For i = 0 To lcasecount - 1
-                For j = 0 To 2
-                    SE_lcases(i, j) = in_lcases(j + i * 3)
-                Next j
-            Next i
-        End If
-
-        If (in_lgroups IsNot Nothing) Then
-            lgroupcount = in_lgroups.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of load groups: " & lgroupcount)
-            For i = 0 To lgroupcount - 1
-                For j = 0 To 2
-                    SE_lgroups(i, j) = in_lgroups(j + i * 3)
-                Next j
-            Next i
-        End If
-
-        If (in_lloads IsNot Nothing) Then
-            lloadcount = in_lloads.Count / 13
-            Rhino.RhinoApp.WriteLine("Number of beam line loads: " & lloadcount)
-            For i = 0 To lloadcount - 1
-                For j = 0 To 12
-                    SE_lloads(i, j) = in_lloads(j + i * 13)
-                Next j
-            Next i
-        End If
-        If (in_edgeLoads IsNot Nothing) Then
-            eloadscount = in_edgeLoads.Count / 15
-            Rhino.RhinoApp.WriteLine("Number of edge loads: " & eloadscount)
-            For i = 0 To eloadscount - 1
-                For j = 0 To 14
-                    SE_eLoads(i, j) = in_edgeLoads(j + i * 15)
-                Next j
-            Next i
-        End If
-
-        If (in_lineMomentEdge IsNot Nothing) Then
-            lineMomentEdgeCount = in_lineMomentEdge.Count / 13
-            Rhino.RhinoApp.WriteLine("Number of edge moments: " & lineMomentEdgeCount)
-            For i = 0 To lineMomentEdgeCount - 1
-                For j = 0 To 12
-                    SE_lineMomentEdge(i, j) = in_lineMomentEdge(j + i * 13)
-                Next j
-            Next i
-        End If
-
-        If (in_pointLoadsPoints IsNot Nothing) Then
-            pointLoadpointCount = in_pointLoadsPoints.Count / 6
-            Rhino.RhinoApp.WriteLine("Number of point loads: " & pointLoadpointCount)
-            For i = 0 To pointLoadpointCount - 1
-                For j = 0 To 5
-                    SE_pointLoadPoint(i, j) = in_pointLoadsPoints(j + i * 6)
-                Next j
-            Next i
-        End If
-        If (in_pointMomentPoint IsNot Nothing) Then
-            pointMomentpointCount = in_pointMomentPoint.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of point moments: " & pointMomentpointCount)
-            For i = 0 To pointMomentpointCount - 1
-                For j = 0 To 4
-                    SE_PointMomentPointNode(i, j) = in_pointMomentPoint(j + i * 5)
-                Next j
-            Next i
-        End If
-        If (in_pointLoadsBeams IsNot Nothing) Then
-            pointLoadbeamCount = in_pointLoadsBeams.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of beam point loads: " & pointLoadbeamCount)
-            For i = 0 To pointLoadbeamCount - 1
-                For j = 0 To 11
-                    SE_pointLoadBeam(i, j) = in_pointLoadsBeams(j + i * 12)
-                Next j
-            Next i
-        End If
-
-        If (in_pointMomentBeam IsNot Nothing) Then
-            pointMomentbeamCount = in_pointMomentBeam.Count / 10
-            Rhino.RhinoApp.WriteLine("Number of beam point moments: " & pointMomentbeamCount)
-            For i = 0 To pointMomentbeamCount - 1
-                For j = 0 To 9
-                    SE_pointMomentBeam(i, j) = in_pointMomentBeam(j + i * 10)
-                Next j
-            Next i
-        End If
-
-
-        If (in_lineMomentBeam IsNot Nothing) Then
-            lineMomentBeamCount = in_lineMomentBeam.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of beam line moments: " & lineMomentBeamCount)
-            For i = 0 To lineMomentBeamCount - 1
-                For j = 0 To 10
-                    SE_lineMomentBeam(i, j) = in_lineMomentBeam(j + i * 11)
-                Next j
-            Next i
-        End If
-
-
-        If (in_sloads IsNot Nothing) Then
-            sloadcount = in_sloads.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of surface loads: " & sloadcount)
-            For i = 0 To sloadcount - 1
-                For j = 0 To 4
-                    SE_sloads(i, j) = in_sloads(j + i * 5)
-                Next j
-            Next i
-        End If
-
-        If (in_fploads IsNot Nothing) Then
-            fploadcount = in_fploads.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of free point loads: " & fploadcount)
-            For i = 0 To fploadcount - 1
-                For j = 0 To 10
-                    SE_fploads(i, j) = in_fploads(j + i * 11)
-                Next j
-            Next i
-        End If
-
-        If (in_freePointMoment IsNot Nothing) Then
-            fpointmomentloadcount = in_freePointMoment.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of free point moments: " & fpointmomentloadcount)
-            For i = 0 To fpointmomentloadcount - 1
-                For j = 0 To 10
-                    SE_fMomentPointloads(i, j) = in_freePointMoment(j + i * 11)
-                Next j
-            Next i
-        End If
-
-        If (in_flloads IsNot Nothing) Then
-            flloadcount = in_flloads.Count / 11
-            Rhino.RhinoApp.WriteLine("Number of free line loads: " & flloadcount)
-            For i = 0 To flloadcount - 1
-                For j = 0 To 10
-                    SE_flloads(i, j) = in_flloads(j + i * 11)
-                Next j
-            Next i
-        End If
-
-        If (in_fsloads IsNot Nothing) Then
-            fsloadcount = in_fsloads.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of free surface loads: " & fsloadcount)
-            For i = 0 To fsloadcount - 1
-                For j = 0 To 11
-                    SE_fsloads(i, j) = in_fsloads(j + i * 12)
-                Next j
-            Next i
-        End If
-
-
-        If (in_ThermalLoadBeams IsNot Nothing) Then
-            thermalLoadsBeamcount = in_ThermalLoadBeams.Count / 12
-            Rhino.RhinoApp.WriteLine("Number of beam thermal loads: " & thermalLoadsBeamcount)
-            For i = 0 To thermalLoadsBeamcount - 1
-                For j = 0 To 11
-                    SE_ThermalLoadBeams(i, j) = in_ThermalLoadBeams(j + i * 12)
-                Next j
-            Next i
-        End If
-
-        If (in_ThermalLoadSurfaces IsNot Nothing) Then
-            thermalLoadsSurfacescount = in_ThermalLoadSurfaces.Count / 6
-            Rhino.RhinoApp.WriteLine("Number of thermal surface loads: " & thermalLoadsSurfacescount)
-            For i = 0 To thermalLoadsSurfacescount - 1
-                For j = 0 To 5
-                    SE_ThermalLoadSurfaces(i, j) = in_ThermalLoadSurfaces(j + i * 6)
-                Next j
-            Next i
-        End If
-
-        If (in_hinges IsNot Nothing) Then
-            hingecount = in_hinges.Count / 14
-            Rhino.RhinoApp.WriteLine("Number of hinges: " & hingecount)
-            For i = 0 To hingecount - 1
-                For j = 0 To 13
-                    SE_hinges(i, j) = in_hinges(j + i * 14)
-                Next j
-            Next i
-        End If
-
-        If (in_CrossLinks IsNot Nothing) Then
-            crosslinkscount = in_CrossLinks.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of cross links: " & crosslinkscount)
-            For i = 0 To crosslinkscount - 1
-                For j = 0 To 2
-                    SE_Crosslinks(i, j) = in_CrossLinks(j + i * 4)
-                Next j
-            Next i
-        End If
-
-        If (in_LineHiges IsNot Nothing) Then
-            linehingecount = in_LineHiges.Count / 14
-            Rhino.RhinoApp.WriteLine("Number of line hinges: " & linehingecount)
-            For i = 0 To linehingecount - 1
-                For j = 0 To 13
-                    SE_LineHinges(i, j) = in_LineHiges(j + i * 14)
-                Next j
-            Next i
-        End If
-
-        SE_meshsize = MeshSize
-
-        If (in_LinCombinations IsNot Nothing) Then
-            lincominationcount = in_LinCombinations.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of linear combinations: " & lincominationcount)
-            For i = 0 To lincominationcount - 1
-                For j = 0 To 2
-                    SE_lincombinations(i, j) = in_LinCombinations(j + i * 3)
-                Next j
-            Next i
-        End If
-        If (in_NonLinCombinations IsNot Nothing) Then
-            nonlincominationcount = in_NonLinCombinations.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of non-linear combinations: " & nonlincominationcount)
-            For i = 0 To nonlincominationcount - 1
-                For j = 0 To 3
-                    SE_nonlincombinations(i, j) = in_NonLinCombinations(j + i * 4)
-                Next j
-            Next i
-        End If
-
-        If (in_StabCombinations IsNot Nothing) Then
-            stabcombicount = in_StabCombinations.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of stability combinations: " & stabcombicount)
-            For i = 0 To stabcombicount - 1
-                For j = 0 To 1
-                    SE_stabcombinations(i, j) = in_StabCombinations(j + i * 2)
-                Next j
-            Next i
-        End If
-
-        If (in_gapElem IsNot Nothing) Then
-            gapsnr = in_gapElem.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of gap elements: " & gapsnr)
-            For i = 0 To gapsnr - 1
-                For j = 0 To 3
-                    SE_gapselem(i, j) = in_gapElem(j + i * 4)
-                Next j
-            Next i
-        End If
-
-        If (in_presstensionElem IsNot Nothing) Then
-            ptelemnsnr = in_presstensionElem.Count / 2
-            Rhino.RhinoApp.WriteLine("Number of pretension elements: " & ptelemnsnr)
-            For i = 0 To ptelemnsnr - 1
-                For j = 0 To 1
-                    SE_presstensionelems(i, j) = in_presstensionElem(j + i * 2)
-                Next j
-            Next i
-        End If
-
-
-        If (in_limitforceElem IsNot Nothing) Then
-            lfelemnsnr = in_limitforceElem.Count / 4
-            Rhino.RhinoApp.WriteLine("Number of limit force elements: " & lfelemnsnr)
-            For i = 0 To lfelemnsnr - 1
-                For j = 0 To 3
-                    SE_limforceelem(i, j) = in_limitforceElem(j + i * 4)
-                Next j
-            Next i
-        End If
-
-        If ((in_layers IsNot Nothing)) Then
-            SE_layersCount = in_layers.Count / 3
-            Rhino.RhinoApp.WriteLine("Number of layers: " & SE_layersCount)
-            For i = 0 To SE_layersCount - 1
-                For j = 0 To 2
-                    SE_layers(i, j) = in_layers(j + i * 3)
-                Next j
-            Next i
-        End If
-
-        If (in_Cables IsNot Nothing) Then
-            CablesCount = in_Cables.Count / 6
-            Rhino.RhinoApp.WriteLine("Cable elements: " & CablesCount)
-            For i = 0 To CablesCount - 1
-                For j = 0 To 5
-                    SE_Cables(i, j) = in_Cables(j + i * 6)
-                Next j
-            Next i
-        End If
-
-        If ((in_BeamLineSupport IsNot Nothing)) Then
-            nBeamLineSupport = in_BeamLineSupport.Count / 23
-            Rhino.RhinoApp.WriteLine("Number of beam line supports: " & nBeamLineSupport)
-            For i = 0 To nBeamLineSupport - 1
-                For j = 0 To 22
-                    SE_beamLineSupports(i, j) = in_BeamLineSupport(j + i * 23)
-                Next j
-            Next i
-        End If
-
-        If ((in_PointSupportOnBeam IsNot Nothing)) Then
-            nPointSupportonBeam = in_PointSupportOnBeam.Count / 24
-            Rhino.RhinoApp.WriteLine("Number of point supports on beam: " & nPointSupportonBeam)
-            For i = 0 To nPointSupportonBeam - 1
-                For j = 0 To 23
-                    SE_pointSupportOnBeam(i, j) = in_PointSupportOnBeam(j + i * 24)
-                Next j
-            Next i
-        End If
-
-        If ((in_Subsoils IsNot Nothing)) Then
-            nSubsoils = in_Subsoils.Count / 9
-            Rhino.RhinoApp.WriteLine("Number of number of subsoils: " & nSubsoils)
-            For i = 0 To nSubsoils - 1
-                For j = 0 To 8
-                    SE_subsoil(i, j) = in_Subsoils(j + i * 9)
-                Next j
-            Next i
-        End If
-
-        If ((in_SurfaceSupports IsNot Nothing)) Then
-            nSurfaceSupports = in_SurfaceSupports.Count / 2
-            Rhino.RhinoApp.WriteLine("Number of surface supports: " & nSurfaceSupports)
-            For i = 0 To nSurfaceSupports - 1
-                For j = 0 To 1
-                    SE_surfaceSupport(i, j) = in_SurfaceSupports(j + i * 2)
-                Next j
-            Next i
-        End If
-
-
-        If ((in_nonlinearfunctions IsNot Nothing)) Then
-            nlfunctionscount = in_nonlinearfunctions.Count / 5
-            Rhino.RhinoApp.WriteLine("Number of non-linear functions: " & nlfunctionscount)
-            For i = 0 To nlfunctionscount - 1
-                For j = 0 To 4
-                    SE_NonlinearFunctions(i, j) = in_nonlinearfunctions(j + i * 5)
-                Next j
-            Next i
-        End If
-
-
-
-        If (in_ArbitraryProfiles IsNot Nothing) Then
-            arbitraryProfileCount = in_ArbitraryProfiles.Count / 9
-            Rhino.RhinoApp.WriteLine("Number of Arbitrary Profiles: " & arbitraryProfileCount)
-            For i = 0 To arbitraryProfileCount - 1
-                For j = 0 To 8
-                    SE_ArbitraryProfiles(i, j) = in_ArbitraryProfiles(j + i * 9)
-                Next j
-            Next i
-        End If
-
-
-        If (in_IntegationStrips IsNot Nothing) Then
-            Dim isNum As Int16 = 17  ' ToDo Check number
-            integrationStripCount = in_IntegationStrips.Count / isNum
-            Rhino.RhinoApp.WriteLine("Number of Integration Strips: " & integrationStripCount)
-            For i = 0 To integrationStripCount - 1
-                For j = 0 To isNum - 1
-                    SE_IntegrationStrip(i, j) = in_IntegationStrips(j + i * isNum)
-                Next j
-            Next i
-        End If
-
-
-        If (in_SectionOnBeams IsNot Nothing) Then
-            Dim isNum As Int16 = 8  ' ToDo Check number
-            sectionOnBeamCount = in_SectionOnBeams.Count / isNum
-            Rhino.RhinoApp.WriteLine("Number of Section on Beams: " & sectionOnBeamCount)
-            For i = 0 To sectionOnBeamCount - 1
-                For j = 0 To isNum - 1
-                    SE_SectionOnBeam(i, j) = in_SectionOnBeams(j + i * isNum)
-                Next j
-            Next i
-        End If
-
-        If (in_AveragingStrips IsNot Nothing) Then
-            Dim isNum As Int16 = 14  ' ToDo Check number
-            averagingStripCount = in_AveragingStrips.Count / isNum
-            Rhino.RhinoApp.WriteLine("Number of averagingStrip: " & sectionOnBeamCount)
-            For i = 0 To averagingStripCount - 1
-                For j = 0 To isNum - 1
-                    SE_AveragingStrip(i, j) = in_AveragingStrips(j + i * isNum)
-                Next j
-            Next i
-        End If
+        Dim model As New ModelData With {
+            .Scale = scale,
+            .MeshSize = meshSize,
+            .UILanguage = UILanguage,
+            .StructureType = StructureType,
+            .Sections = UnflattenObjectData(in_sections, 4, "section"),
+            .Materials = Materials,
+            .ProjectInfo = projectInfo,
+            .Nodes = allNodes,
+            .NodeMap = nodeMap,
+            .Beams = UnflattenObjectData(in_beams, 14, "beam"),
+            .Surfaces = UnflattenObjectData(in_surfaces, 12, "surface"),
+            .Layers = UnflattenObjectData(in_layers, 3, "layer"),
+            .LoadPanels = UnflattenObjectData(in_loadpanels, 8, "load panel"),
+            .Openings = UnflattenObjectData(in_openings, 3, "opening"),
+            .SlabInternalEdges = UnflattenObjectData(in_slabinternalEdges, 3, "slab internal edge"),
+            .RidgidArms = UnflattenObjectData(in_RigidArms, 5, "rigid arm"),
+            .NodeSupports = UnflattenObjectData(in_nodesupports, 20, "node support"),
+            .BeamPointSupports = UnflattenObjectData(in_PointSupportOnBeam, 24, "beam point support"),
+            .BeamLineSupports = UnflattenObjectData(in_BeamLineSupport, 23, "beam line support"),
+            .SurfaceSupports = UnflattenObjectData(in_SurfaceSupports, 2, "surface support"),
+            .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 25, "surface edge support"),
+            .LoadCases = UnflattenObjectData(in_lcases, 3, "load case"),
+            .LoadGroups = UnflattenObjectData(in_lgroups, 3, "load group"),
+            .NodePointLoads = UnflattenObjectData(in_pointLoadsPoints, 6, "point load"),
+            .NodePointMoments = UnflattenObjectData(in_pointMomentPoint, 5, "point moment"),
+            .BeamPointLoads = UnflattenObjectData(in_pointLoadsBeams, 12, "beam point load"),
+            .BeamPointMoments = UnflattenObjectData(in_pointMomentBeam, 10, "beam point moment"),
+            .BeamLineLoads = UnflattenObjectData(in_lloads, 13, "beam line load"),
+            .BeamLineMoments = UnflattenObjectData(in_lineMomentBeam, 11, "beam line moment"),
+            .EdgeLoads = UnflattenObjectData(in_edgeLoads, 15, "edge load"),
+            .EdgeMoments = UnflattenObjectData(in_lineMomentEdge, 13, "edge moment"),
+            .SurfaceLoads = UnflattenObjectData(in_sloads, 5, "surface load"),
+            .FreePointLoads = UnflattenObjectData(in_fploads, 11, "free point load"),
+            .FreePointMoments = UnflattenObjectData(in_freePointMoment, 11, "free point moment"),
+            .FreeLineLoads = UnflattenObjectData(in_flloads, 11, "free line load"),
+            .FreeSurfaceLoads = UnflattenObjectData(in_fsloads, 12, "free surface load"),
+            .BeamThermalLoads = UnflattenObjectData(in_ThermalLoadBeams, 12, "beam thermal load"),
+            .SurfaceThermalLoads = UnflattenObjectData(in_ThermalLoadSurfaces, 6, "thermal surface load"),
+            .Hinges = UnflattenObjectData(in_hinges, 21, "hinge"),
+            .CrossLinks = UnflattenObjectData(in_CrossLinks, 3, "cross link"),
+            .LineHinges = UnflattenObjectData(in_LineHiges, 14, "line hinge"),
+            .LinearCombinations = UnflattenObjectData(in_LinCombinations, 3, "linear combination"),
+            .NonLinearCombinations = UnflattenObjectData(in_NonLinCombinations, 4, "non-linear combination"),
+            .StabilityCombinations = UnflattenObjectData(in_StabCombinations, 2, "stability combination"),
+            .GapElements = UnflattenObjectData(in_gapElem, 4, "gap element"),
+            .PretensionElements = UnflattenObjectData(in_presstensionElem, 2, "pretension element"),
+            .LimitForceElements = UnflattenObjectData(in_limitforceElem, 4, "limit force element"),
+            .Cables = UnflattenObjectData(in_Cables, 6, "cable"),
+            .Subsoils = UnflattenObjectData(in_Subsoils, 9, "subsoil"),
+            .NonLinearFunctions = UnflattenObjectData(in_nonlinearfunctions, 5, "non-linear function"),
+            .ArbitraryProfiles = UnflattenObjectData(in_ArbitraryProfiles, 9, "arbitrary profile"),
+            .IntegrationStrips = UnflattenObjectData(in_IntegationStrips, 17, "integration strip"),
+            .AveragingStrips = UnflattenObjectData(in_AveragingStrips, 14, "averaging strip"),
+            .SectionOnBeams = UnflattenObjectData(in_SectionOnBeams, 8, "section on beam")
+        }
 
         'write the XML file
         '---------------------------------------------------
@@ -1719,28 +1065,13 @@ Module HelperTools
         Dim fileNameXMLdef As String
         fileNameXMLdef = Path.GetFileName(FileName) + ".def"
 
-        Call WriteXMLFile(oSB, Scale, StructureType, Materials, SE_sections, sectioncount, SE_nodes, nodecount, SE_beams, beamcount, SE_surfaces, surfacecount,
-SE_openings, openingcount, SE_nodesupports, nodesupportcount, SE_edgesupports, edgesupportcount,
-SE_lcases, lcasecount, SE_lgroups, lgroupcount, SE_lloads, lloadcount, SE_sloads, sloadcount,
-SE_fploads, fploadcount, SE_flloads, flloadcount, SE_fsloads, fsloadcount,
-SE_hinges, hingecount,
-SE_meshsize, SE_eLoads, eloadscount, SE_pointLoadPoint, pointLoadpointCount, SE_pointLoadBeam, pointLoadbeamCount,
-SE_lincombinations, lincominationcount, SE_nonlincombinations, nonlincominationcount, SE_stabcombinations,
-stabcombicount, SE_Crosslinks, crosslinkscount, SE_gapselem, gapsnr, SE_presstensionelems, ptelemnsnr, SE_limforceelem,
-lfelemnsnr, projectInfo, fileNameXMLdef, SE_layers, SE_layersCount, SE_beamLineSupports, nBeamLineSupport, SE_pointSupportOnBeam,
-nPointSupportonBeam, SE_subsoil, nSubsoils, SE_surfaceSupport, nSurfaceSupports, SE_LoadPanels, nloadPanels,
-SE_PointMomentPointNode, pointMomentpointCount, SE_pointMomentBeam, pointMomentbeamCount, SE_lineMomentBeam, lineMomentBeamCount, SE_lineMomentEdge, lineMomentEdgeCount,
-SE_fMomentPointloads, fpointmomentloadcount, SE_NonlinearFunctions, nlfunctionscount, SE_SlabInternalEdges, slabInternalEdgesCount, SE_RigidArms, RigidArmsCount, SE_Cables,
-CablesCount, SE_nodesInternalBeam, internalNodesBeamCount, SE_LineHinges, linehingecount, SE_ThermalLoadBeams, thermalLoadsBeamcount, SE_ThermalLoadSurfaces, thermalLoadsSurfacescount,
-SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStripCount, SE_SectionOnBeam, sectionOnBeamCount, SE_AveragingStrip, averagingStripCount)
+        Call WriteXMLFile(oSB, model, fileNameXMLdef)
 
         Rhino.RhinoApp.Write(" Done." & Convert.ToChar(13))
-
         Rhino.RhinoApp.Write("Writing to file: " & FileName & "...")
 
         objstream = oSB.ToString()
         System.IO.File.WriteAllText(FileName, objstream)
-
 
         Dim XmlDefOutputPath As String
         XmlDefOutputPath = FileName + ".def"
@@ -1756,43 +1087,23 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         Rhino.RhinoApp.WriteLine("Done in " + CStr(time_elapsed) + " ms.")
     End Sub
 
-    Private Sub WriteXMLFile(ByRef oSB, scale, structtype, materials,
-    sections(,), sectionnr, nodes(,), nnodes, beams(,), beamnr, surfaces(,), surfacenr,
-    openings(,), openingnr, nodesupports(,), nodesupportnr, edgesupports(,), edgesupportnr,
-    lcases(,), lcasenr, lgroups(,), lgroupnr, lloads(,), lloadnr, sloads(,), sloadnr,
-    fploads(,), fploadnr, flloads(,), flloadnr, fsloads(,), fsloadnr,
-    hinges(,), hingenr,
-    meshsize, eloads(,), eloadsnr, pointLoadPoint(,), pointLoadpointCount, pointLoadBeam(,),
-    pointLoadbeamCount, lincombinations(,), lincominationcount, nonlincombinations(,), nonlincominationcount,
-    stabcombi(,), stabcombncount, crosslinks(,), crosslinkscount, gapselem(,), gapsnr, presstensionelems(,), ptelemnsnr, limforceelem(,),
-    lfelemnsnr, projectInfo, fileNameXMLdef, SE_layers(,), SE_layersCount, SE_beamLineSupports(,), nbeamLineSupports, SE_pointSupportOnBeam,
-    nPointSupportonBeam, SE_subsoil(,), nSubsoils, SE_surfaceSupport(,), nSurfaceSupports, SE_Loadpanels(,), nLoadpanels, SE_PointMomentPointNode(,),
-    pointMomentpointCount, SE_pointMomentBeam(,), pointMomentbeamCount, SE_lineMomentBeam(,), lineMomentBeamCount, SE_lineMomentEdge(,),
-    lineMomentEdgeCount, SE_fMomentPointloads(,), fpointmomentloadcount, SE_NonlinearFunctions(,), nlfunctionscount, SE_SlabInternalEdges(,),
-    slabInternalEdgesCount, SE_RigidArms(,), RigidArmsCount, SE_Cables(,), CablesCount, SE_nodesInternalBeam(,), internalNodesBeamCount,
-    SE_LineHinges(,), linehingecount, SE_ThermalLoadBeams(,), thermalLoadsBeamcount, SE_ThermalLoadSurfaces(,), thermalLoadsSurfacescount,
-    SE_ArbitraryProfiles(,), arbitraryProfileCount, SE_IntegrationStrip(,), integrationStripCount, SE_SectionOnBeam(,), sectionOnBeamCount,
-    SE_AveragingStrip(,), averagingStripCount)
+
+    Private Sub WriteXMLFile(ByRef oSB As Text.StringBuilder, modelData As ModelData, fileNameXMLdef As String)
+
+        'global variables for this component
+        '-----------------------------------
+        ' required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
+        Dim UILanguageNumber As Long = GetNumberForUILangauge(modelData.UILanguage)
 
         Dim i As Long
-        Dim c As String, cid As String, t As String, tid As String
-
         'write XML header information -----------------------------------------------------
 
-        oSB.Appendline("<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>")
+        oSB.AppendLine("<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>")
         oSB.AppendLine("<project xmlns=""http://www.scia.cz"">")
         oSB.AppendLine("<def uri=""" & fileNameXMLdef & """/>")
 
-        If Not String.IsNullOrEmpty(structtype) Or materials.Count <> 0 Or projectInfo.Count >= 5 Then
-            'output project information -----------------------------------------------------
-            c = "{AC021036-C943-4B46-88E4-72CFB9D9391C}"
-            cid = "EP_GraphicDsObjects.EP_BaseDataProjectHeader.1"
-            t = "10753FD4-0179-4825-89F9-ADAEAE8699D0"
-            tid = "ProjectData.EP_ProjectData.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+        If Not String.IsNullOrEmpty(modelData.StructureType) Or modelData.Materials.Count <> 0 Or modelData.ProjectInfo.Count >= 5 Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ProjectData)
 
             'header
             oSB.AppendLine("<h>")
@@ -1814,7 +1125,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
             'data
             oSB.AppendLine("<obj id=""1"">")
-            Select Case structtype
+            Select Case modelData.StructureType
                 Case "Beam"
                     oSB.AppendLine(ConCat_pvt("0", 0, "Beam"))
                 Case "Truss XZ"
@@ -1835,17 +1146,17 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
                     oSB.AppendLine(ConCat_pvt("0", 8, "General XYZ"))
             End Select
 
-            If projectInfo.Count > 0 Then
-                For i = 0 To Math.Min(projectInfo.Count - 1, 4)
-                    If projectInfo(i) IsNot Nothing Then
-                        oSB.AppendLine(ConCat_pv((i + 1).ToString, projectInfo(i)))
+            If modelData.ProjectInfo.Count > 0 Then
+                For i = 0 To Math.Min(modelData.ProjectInfo.Count - 1, 4)
+                    If modelData.ProjectInfo(i) IsNot Nothing Then
+                        oSB.AppendLine(ConCat_pv((i + 1).ToString, modelData.ProjectInfo(i)))
                     End If
                 Next
             End If
 
-            If materials.Count <> 0 Then
+            If modelData.Materials.Count <> 0 Then
                 Dim materialEnums As New List(Of Koala.Material)
-                For Each material In materials
+                For Each material In modelData.Materials
                     If Not String.IsNullOrEmpty(material) Then
                         Dim matEnum = Koala.GetEnum(Of Koala.Material)(material)
                         materialEnums.Add(matEnum)
@@ -1878,51 +1189,25 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             'End If
             oSB.AppendLine("</obj>")
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If SE_layersCount > 0 Then
-            c = "{D3885EC4-BAE5-11D4-B3FA-00104BC3B531}"
-            cid = "EP_DSG_Elements.EP_DataLayer.1"
-            t = "06959627-BC30-413C-97DC-B412E4F7E9DA"
-            tid = "EP_DSG_Elements.EP_DataLayer.1"
+        If modelData.Layers IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Layer)
+            Call WriteLayerHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Comment"))
-            oSB.AppendLine(ConCat_ht("2", "Structural model only"))
-            oSB.AppendLine(ConCat_ht("3", "Current used activity"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To SE_layersCount - 1
+            For i = 0 To modelData.Layers.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... layer: " + Str(i))
                 End If
-                Call WriteLayer(oSB, i, SE_layers)
-
+                Call WriteLayer(oSB, i, modelData.Layers)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If meshsize > 0 Then
-
-            'output project information -----------------------------------------------------
-            c = "{31450A87-BE7E-4EA0-BFD2-4544A3E7BA53}"
-            cid = "EP_Model.10.00.EP_MeshSetup.1"
-            t = "C706BB08-BD78-41F3-8407-590DED0050F3"
-            tid = "EP_Model.10.00.EP_MeshSetup.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+        If modelData.MeshSize > 0 Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.MeshSetup)
 
             'header
             oSB.AppendLine("<h>")
@@ -1936,1801 +1221,669 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
             'data
             oSB.AppendLine("<obj id=""1"">")
-            oSB.AppendLine(ConCat_pv("1", meshsize))
+            oSB.AppendLine(ConCat_pv("1", modelData.MeshSize))
             oSB.AppendLine("</obj>")
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If sectionnr > 0 Then
-            'output sections ------------------------------------------------------------------
-            c = "{2127A9B3-36BD-11D4-B337-00104BC3B531}"
-            cid = "CrossSection.EP_CrossSection.1"
-            t = "CDB98AF7-B4FE-4360-8240-C9F4A34065B3"
-            tid = "CrossSection.EP_CssGeometry.1"
+        If modelData.Sections IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.CrossSection)
+            Call WriteSectionHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Catalog ID"))
-            oSB.AppendLine(ConCat_ht("2", "Catalog item"))
-            oSB.AppendLine(ConCat_ht("3", "Parameters"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To sectionnr - 1
-
-                Call WriteSection(oSB, sections(i, 0), sections(i, 1), sections(i, 2), sections(i, 3))
-
+            For i = 0 To modelData.Sections.GetLength(0) - 1
+                Call WriteSection(oSB, modelData.Sections(i, 0), modelData.Sections(i, 1), modelData.Sections(i, 2), modelData.Sections(i, 3))
             Next i
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If nnodes > 0 Then
-            'output nodes ---------------------------------------------------------------------
-            c = "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"
-            cid = "EP_DSG_Elements.EP_StructNode.1"
-            t = "E2CADA5A-BD04-4CE2-9F43-C09035196EF8"
-            tid = "EP_DSG_Elements.EP_StructNode.1"
+        If modelData.Nodes IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Node)
+            Call WriteNodeHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Coord X"))
-            oSB.AppendLine(ConCat_ht("2", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("3", "Coord Z"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nnodes - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... node: " + Str(i))
-                End If
-                If Not isNodeDuplicate(nodes(i, 0)) Then
-                    Call WriteNode(oSB, i, nodes)
-                End If
-
+            Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... nodes")
+            For Each node In modelData.Nodes
+                Call WriteNode(oSB, modelData, node)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
+            Call CloseContainerAndTable(oSB)
         End If
 
+        If modelData.Beams IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Member1D)
+            Call WriteBeamHeaders(oSB)
 
-        If internalNodesBeamCount > 0 Then
-            'output nodes ---------------------------------------------------------------------
-            c = "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"
-            cid = "EP_DSG_Elements.EP_StructNode.1"
-            t = "FCFB763E-A640-42FF-A2DC-2D5FA1A420BF"
-            tid = "EP_DSG_Elements.EP_StructNode.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Coord X"))
-            oSB.AppendLine(ConCat_ht("2", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("3", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("4", "Linked node"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To internalNodesBeamCount - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... node: " + Str(i))
-                End If
-
-                Call WriteInternalBeamNode(oSB, i, SE_nodesInternalBeam)
-
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
-        End If
-
-        If beamnr > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"
-            cid = "EP_DSG_Elements.EP_Beam.1"
-            t = "0884F792-2361-4B07-A8D6-828706CB2FE1"
-            tid = "EP_DSG_Elements.EP_Beam.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Beg. node"))
-            oSB.AppendLine(ConCat_ht("2", "End node"))
-            oSB.AppendLine(ConCat_ht("3", "Layer"))
-            oSB.AppendLine(ConCat_ht("4", "Cross-section"))
-            oSB.AppendLine(ConCat_ht("5", "FEM type"))
-            oSB.AppendLine(ConCat_ht("6", "Member system-line at"))
-            oSB.AppendLine(ConCat_ht("7", "ey"))
-            oSB.AppendLine(ConCat_ht("8", "ez"))
-            oSB.AppendLine(ConCat_ht("9", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("10", "Type"))
-            oSB.AppendLine(ConCat_ht("11", "LCS"))
-            oSB.AppendLine(ConCat_ht("12", "LCS Rotation"))
-            oSB.AppendLine(ConCat_ht("13", "X"))
-            oSB.AppendLine(ConCat_ht("14", "Y"))
-            oSB.AppendLine(ConCat_ht("15", "Z"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To beamnr - 1
+            For i = 0 To modelData.Beams.GetLength(0) - 1
                 If i > 0 And (i Mod 500 = 0) Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam: " + Str(i))
                 End If
-                Call WriteBeam(oSB, i, beams)
+                Call WriteBeam(oSB, i, modelData)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If ptelemnsnr > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{02AC59F3-478B-44C3-A350-E78DA69D7520}"
-            cid = "DataAddSupport.EP_NonlinearityInitStress.1"
-            t = "7E7FED2A-5579-4B4C-B0A9-4AD2F7E49F66"
-            tid = "DataAddSupport.EP_NonlinearityInitStress.1"
+        If modelData.Surfaces IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Member2D)
+            Call WriteSurfaceHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-
-            oSB.AppendLine("</h>")
-            For i = 0 To ptelemnsnr - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam: " + Str(i))
-                End If
-                Call WritePressTensionOnlyBeamNL(oSB, i, presstensionelems)
-            Next
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If gapsnr > 0 Then
-
-            'output beams ---------------------------------------------------------------------
-            c = "{02AC59F3-478B-44C3-A350-E78DA69D7520}"
-            cid = "DataAddSupport.EP_NonlinearityInitStress.1"
-            t = "5E881A0B-B102-4B8A-B77D-84ACAB22C003"
-            tid = "DataAddSupport.EP_NonlinearityInitStress.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "Type"))
-            oSB.AppendLine(ConCat_ht("4", "Displacement"))
-            oSB.AppendLine(ConCat_ht("5", "Position"))
-            oSB.AppendLine("</h>")
-            For i = 0 To gapsnr - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam: " + Str(i))
-                End If
-                Call WriteGapLocalBeamNL(oSB, i, gapselem)
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If CablesCount > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{02AC59F3-478B-44C3-A350-E78DA69D7520}"
-            cid = "DataAddSupport.EP_NonlinearityInitStress.1"
-            t = "80F27A2A-A741-4C59-8421-C791B85B068F"
-            tid = "DataAddSupport.EP_NonlinearityInitStress.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "Initial mesh"))
-            oSB.AppendLine(ConCat_ht("4", "Self weight"))
-            oSB.AppendLine(ConCat_ht("5", "Normal force"))
-            oSB.AppendLine(ConCat_ht("6", "Pn"))
-            oSB.AppendLine(ConCat_ht("7", "Alpha x"))
-            oSB.AppendLine("</h>")
-            For i = 0 To CablesCount - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam: " + Str(i))
-                End If
-                Call WriteCableBeamNL(oSB, i, SE_Cables)
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If lfelemnsnr > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{02AC59F3-478B-44C3-A350-E78DA69D7520}"
-            cid = "DataAddSupport.EP_NonlinearityInitStress.1"
-            t = "5604D64C-4042-4F4D-84C3-9F948AAD465E"
-            tid = "DataAddSupport.EP_NonlinearityInitStress.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Type"))
-            oSB.AppendLine(ConCat_ht("5", "Marginal force"))
-            oSB.AppendLine("</h>")
-            For i = 0 To lfelemnsnr - 1
-                If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam: " + Str(i))
-                End If
-                Call WriteLimitForceBeamNL(oSB, i, limforceelem)
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-
-
-        If surfacenr > 0 Then
-            'output surfaces ------------------------------------------------------------------
-            c = "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"
-            cid = "EP_DSG_Elements.EP_Plane.1"
-            t = "2F3C64B3-BAF2-4E26-ACF1-CB6DDBD6BC0F"
-            tid = "EP_DSG_Elements.EP_Plane.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Layer"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "Material"))
-            oSB.AppendLine(ConCat_ht("4", "FEM nonlinear model"))
-            oSB.AppendLine(ConCat_ht("5", "Thickness type"))
-            oSB.AppendLine(ConCat_ht("6", "Direction"))
-            oSB.AppendLine(ConCat_ht("7", "Thickness"))
-            oSB.AppendLine(ConCat_ht("8", "Point 1"))
-            oSB.AppendLine(ConCat_ht("9", "Member system-plane at"))
-            oSB.AppendLine(ConCat_ht("10", "Eccentricity z"))
-            oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("12", "Internal nodes"))
-            oSB.AppendLine(ConCat_ht("13", "Swap orientation"))
-            oSB.AppendLine(ConCat_ht("14", "LCS angle"))
-            oSB.AppendLine(ConCat_ht("15", "Element type"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To surfacenr - 1
+            For i = 0 To modelData.Surfaces.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface: " + Str(i))
                 End If
-                Call WriteSurface(oSB, i, surfaces)
-
+                Call WriteSurface(oSB, i, modelData)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If nLoadpanels > 0 Then
-            'output load panels ------------------------------------------------------------------
-            c = "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"
-            cid = "EP_DSG_Elements.EP_Plane.1"
-            t = "BEA3B878-D1E8-4381-9A87-169EDCF7D602"
-            tid = "EP_DSG_Elements.EP_Plane.1"
+        If modelData.LoadPanels IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadPanel)
+            Call WriteLoadPanelHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Layer"))
-            oSB.AppendLine(ConCat_ht("2", "Table of geometry"))
-
-            oSB.AppendLine(ConCat_ht("3", "Element type"))
-            oSB.AppendLine(ConCat_ht("4", "Panel type"))
-            oSB.AppendLine(ConCat_ht("5", "Load transfer direction"))
-            oSB.AppendLine(ConCat_ht("6", "Transfer in X [%]"))
-            oSB.AppendLine(ConCat_ht("7", "Transfer in Y [%]"))
-            oSB.AppendLine(ConCat_ht("8", "Load transfer method"))
-            oSB.AppendLine(ConCat_ht("9", "Selection of entities"))
-            oSB.AppendLine(ConCat_ht("10", "Swap orientation"))
-            oSB.AppendLine(ConCat_ht("11", "LCS angle"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nLoadpanels - 1
+            For i = 0 To modelData.LoadPanels.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface: " + Str(i))
                 End If
-                Call WriteLoadPanels(oSB, i, SE_Loadpanels)
-
+                Call WriteLoadPanels(oSB, i, modelData)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If openingnr > 0 Then
-            'output openings ------------------------------------------------------------------
-            c = "{EBA9B148-F564-4DB1-9E2D-F1937FFA4523}"
-            cid = "EP_DSG_Elements.EP_OpenSlab.1"
-            t = "55C2A44E-E3D4-429B-A955-4E5BC1C4C5EA"
-            tid = "EP_DSG_Elements.EP_OpenSlab.1"
+        If modelData.Openings IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Opening)
+            Call WriteOpeningHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Reference table"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "2D Member"))
-            oSB.AppendLine(ConCat_ht("3", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("4", "Material"))
-            oSB.AppendLine(ConCat_ht("5", "Thickness"))
-            oSB.AppendLine(ConCat_ht("6", "Table of geometry"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To openingnr - 1
+            For i = 0 To modelData.Openings.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... opening: " + Str(i))
                 End If
-                Call WriteOpening(oSB, i, openings)
-
+                Call WriteOpening(oSB, i, modelData)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        If slabInternalEdgesCount > 0 Then
-            c = "{4FCA60AD-9308-468B-BD02-3D4E17830029}"
-            cid = "EP_DSG_Elements.EP_SlabInternalEdge.1"
-            t = "7ECDC58C-28DD-4CDD-8240-1344E77A7E32"
-            tid = "EP_DSG_Elements.EP_SlabInternalEdge.1"
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "2D Member"))
-            oSB.AppendLine(ConCat_ht("2", "Shape"))
-            oSB.AppendLine(ConCat_ht("3", "Table of geometry"))
-            oSB.AppendLine("</h>")
-
-
-            For i = 0 To slabInternalEdgesCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... opening: " + Str(i))
-                End If
-                Call WriteInternalEdge(oSB, i, SE_SlabInternalEdges)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
-        End If
-
-        If RigidArmsCount > 0 Then
-
-            c = "{5A3B44E9-D820-4539-B52E-A2230C78495B}"
-            cid = "EP_DataAddStructure.EP_RigidArm.1"
-            t = "9D6B46ED-E294-4842-906C-90FBFB716601"
-            tid = "EP_DataAddStructure.EP_RigidArm.1"
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Master"))
-            oSB.AppendLine(ConCat_ht("2", "Slave"))
-            oSB.AppendLine(ConCat_ht("1", "Hinge on master"))
-            oSB.AppendLine(ConCat_ht("2", "Hinge on slave"))
-            oSB.AppendLine("</h>")
-
-
-            For i = 0 To RigidArmsCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... opening: " + Str(i))
-                End If
-                Call WriteRigidArm(oSB, i, SE_RigidArms)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-
-        End If
-
-
-        If nlfunctionscount > 0 Then
-            'output nodal supports ------------------------------------------------------------------
-            c = "{2C78B173-A1D3-11D4-A433-000000000000}"
-            cid = "DataLibScia.EP_NonLinearFunction.1"
-            t = "102590D1-4EF3-4E7D-892B-CAB4DDFE8C20"
-            tid = "DataLibScia.EP_NonLinearFunction.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Type"))
-            oSB.AppendLine(ConCat_ht("2", "Positive end"))
-            oSB.AppendLine(ConCat_ht("3", "Negative end"))
-            oSB.AppendLine(ConCat_ht("4", "u / F"))
-            oSB.AppendLine(ConCat_ht("5", "fi / M"))
-            oSB.AppendLine(ConCat_ht("6", "u / F"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nlfunctionscount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... nodal supports: " + Str(i))
-                End If
-                Call WriteNonlinearFunction(oSB, i, SE_NonlinearFunctions)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If nodesupportnr > 0 Then
-            'output nodal supports ------------------------------------------------------------------
-            c = "{1CBCA4DE-355B-40F7-A91D-8EFD26A6404D}"
-            cid = "DataAddSupport.EP_PointSupportPoint.1"
-            t = "B692AE6A-CE3D-44B6-8F23-FA69CCE6E7EF"
-            tid = "DataAddSupport.EP_PointSupportPoint.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference Table"))
-            'oSB.AppendLine(ConCat_hh("1", "Node"))
-            oSB.AppendLine(ConCat_ht("2", "X"))
-            oSB.AppendLine(ConCat_ht("3", "Y"))
-            oSB.AppendLine(ConCat_ht("4", "Z"))
-            oSB.AppendLine(ConCat_ht("5", "Rx"))
-            oSB.AppendLine(ConCat_ht("6", "Ry"))
-            oSB.AppendLine(ConCat_ht("7", "Rz"))
-            oSB.AppendLine(ConCat_ht("8", "Stiffness X"))
-            oSB.AppendLine(ConCat_ht("9", "Stiffness Y"))
-            oSB.AppendLine(ConCat_ht("10", "Stiffness Z"))
-            oSB.AppendLine(ConCat_ht("11", "Stiffness Rx"))
-            oSB.AppendLine(ConCat_ht("12", "Stiffness Ry"))
-            oSB.AppendLine(ConCat_ht("13", "Stiffness Rz"))
-            oSB.AppendLine(ConCat_ht("14", "Angle [deg]"))
-            oSB.AppendLine(ConCat_ht("15", "Function X"))
-            oSB.AppendLine(ConCat_ht("16", "Function Y"))
-            oSB.AppendLine(ConCat_ht("17", "Function Z"))
-            oSB.AppendLine(ConCat_ht("18", "Function Rx"))
-            oSB.AppendLine(ConCat_ht("19", "Function Ry"))
-            oSB.AppendLine(ConCat_ht("20", "Function Rz"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nodesupportnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... nodal supports: " + Str(i))
-                End If
-                Call WriteNodeSupport(oSB, i, nodesupports)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If edgesupportnr > 0 Then
-            'output edge supports ------------------------------------------------------------------
-            c = "{24449635-FE8C-46B5-8C97-9E0CA33F0E70}"
-            cid = "DataAddSupport.EP_LineSupportSurface.1"
-            t = "DDE61EF9-7735-4DCD-939E-7521D1B4BB6F"
-            tid = "DataAddSupport.EP_LineSupportSurface.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Edge"))
-            oSB.AppendLine(ConCat_ht("3", "X"))
-            oSB.AppendLine(ConCat_ht("4", "Y"))
-            oSB.AppendLine(ConCat_ht("5", "Z"))
-            oSB.AppendLine(ConCat_ht("6", "Rx"))
-            oSB.AppendLine(ConCat_ht("7", "Ry"))
-            oSB.AppendLine(ConCat_ht("8", "Rz"))
-            oSB.AppendLine(ConCat_ht("9", "System"))
-            oSB.AppendLine(ConCat_ht("10", "Stiffness X"))
-            oSB.AppendLine(ConCat_ht("11", "Stiffness Y"))
-            oSB.AppendLine(ConCat_ht("12", "Stiffness Z"))
-            oSB.AppendLine(ConCat_ht("13", "Stiffness Rx"))
-            oSB.AppendLine(ConCat_ht("14", "Stiffness Ry"))
-            oSB.AppendLine(ConCat_ht("15", "Stiffness Rz"))
-            oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("17", "Position x1"))
-            oSB.AppendLine(ConCat_ht("18", "Position x2"))
-            oSB.AppendLine(ConCat_ht("19", "Origin"))
-            oSB.AppendLine(ConCat_ht("20", "Function X"))
-            oSB.AppendLine(ConCat_ht("21", "Function Y"))
-            oSB.AppendLine(ConCat_ht("22", "Function Z"))
-            oSB.AppendLine(ConCat_ht("23", "Function Rx"))
-            oSB.AppendLine(ConCat_ht("24", "Function Ry"))
-            oSB.AppendLine(ConCat_ht("25", "Function Rz"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To edgesupportnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
-                End If
-                Call WriteEdgeSupport(oSB, i, edgesupports)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If nbeamLineSupports > 0 Then
-            'output edge supports ------------------------------------------------------------------
-            c = "{61FC64DE-5B75-4074-BF61-DA1AAA0A194C}"
-            cid = "DataAddSupport.EP_LineSupportLine.1"
-            t = "8B25091F-28B4-425C-88D9-F9C8743D92DD"
-            tid = "DataAddSupport.EP_LineSupportLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "X"))
-            oSB.AppendLine(ConCat_ht("4", "Y"))
-            oSB.AppendLine(ConCat_ht("5", "Z"))
-            oSB.AppendLine(ConCat_ht("6", "Rx"))
-            oSB.AppendLine(ConCat_ht("7", "Ry"))
-            oSB.AppendLine(ConCat_ht("8", "Rz"))
-            oSB.AppendLine(ConCat_ht("9", "Stiffness X"))
-            oSB.AppendLine(ConCat_ht("10", "Stiffness Y"))
-            oSB.AppendLine(ConCat_ht("11", "Stiffness Z"))
-            oSB.AppendLine(ConCat_ht("12", "Stiffness Rx"))
-            oSB.AppendLine(ConCat_ht("13", "Stiffness Ry"))
-            oSB.AppendLine(ConCat_ht("14", "Stiffness Rz"))
-            oSB.AppendLine(ConCat_ht("15", "System"))
-            oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("17", "Position x1"))
-            oSB.AppendLine(ConCat_ht("18", "Position x2"))
-            oSB.AppendLine(ConCat_ht("19", "Origin"))
-            oSB.AppendLine(ConCat_ht("20", "Function X"))
-            oSB.AppendLine(ConCat_ht("21", "Function Y"))
-            oSB.AppendLine(ConCat_ht("22", "Function Z"))
-            oSB.AppendLine(ConCat_ht("23", "Function Rx"))
-            oSB.AppendLine(ConCat_ht("24", "Function Ry"))
-            oSB.AppendLine(ConCat_ht("25", "Function Rz"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nbeamLineSupports - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
-                End If
-                Call WriteBeamLineSupport(oSB, i, SE_beamLineSupports)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If nPointSupportonBeam > 0 Then
-            'output edge supports ------------------------------------------------------------------
-            c = "{D8610F70-C515-4688-9A3C-73AF9207AF36}"
-            cid = "DataAddSupport.EP_PointSupportLine.1"
-            t = "D8E5CBF0-5BDF-4191-9F09-19164FF635BE"
-            tid = "DataAddSupport.EP_PointSupportLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "X"))
-            oSB.AppendLine(ConCat_ht("4", "Y"))
-            oSB.AppendLine(ConCat_ht("5", "Z"))
-            oSB.AppendLine(ConCat_ht("6", "Rx"))
-            oSB.AppendLine(ConCat_ht("7", "Ry"))
-            oSB.AppendLine(ConCat_ht("8", "Rz"))
-            oSB.AppendLine(ConCat_ht("9", "Stiffness X"))
-            oSB.AppendLine(ConCat_ht("10", "Stiffness Y"))
-            oSB.AppendLine(ConCat_ht("11", "Stiffness Z"))
-            oSB.AppendLine(ConCat_ht("12", "Stiffness Rx"))
-            oSB.AppendLine(ConCat_ht("13", "Stiffness Ry"))
-            oSB.AppendLine(ConCat_ht("14", "Stiffness Rz"))
-            oSB.AppendLine(ConCat_ht("15", "System"))
-            oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("17", "Position x"))
-            oSB.AppendLine(ConCat_ht("18", "Origin"))
-            oSB.AppendLine(ConCat_ht("19", "Repeat (n)"))
-            oSB.AppendLine(ConCat_ht("20", "Delta x"))
-            oSB.AppendLine(ConCat_ht("21", "Function X"))
-            oSB.AppendLine(ConCat_ht("22", "Function Y"))
-            oSB.AppendLine(ConCat_ht("23", "Function Z"))
-            oSB.AppendLine(ConCat_ht("24", "Function Rx"))
-            oSB.AppendLine(ConCat_ht("25", "Function Ry"))
-            oSB.AppendLine(ConCat_ht("26", "Function Rz"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nPointSupportonBeam - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
-                End If
-                Call WritePointSupportOnBeam(oSB, i, SE_pointSupportOnBeam)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-        If nSubsoils > 0 Then
-            'output edge supports ------------------------------------------------------------------
-            c = "{8867A6F2-D7E4-11D4-A47F-00C06C542707}"
-            cid = "DataLibScia.EP_Subsoil.1"
-            t = "A4C324A5-2F59-452D-86C0-FF1B5427BC81"
-            tid = "DataLibScia.EP_Subsoil.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Decription"))
-            oSB.AppendLine(ConCat_ht("2", "C1x"))
-            oSB.AppendLine(ConCat_ht("3", "C1y"))
-            oSB.AppendLine(ConCat_ht("4", "C1z"))
-            oSB.AppendLine(ConCat_ht("5", "Stiffness"))
-            oSB.AppendLine(ConCat_ht("6", "C2x"))
-            oSB.AppendLine(ConCat_ht("7", "C2y"))
-            oSB.AppendLine(ConCat_ht("8", "Nonlinear function C1z"))
-
-
-
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nSubsoils - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... subsoil: " + Str(i))
-                End If
-                Call WriteSubsoil(oSB, i, SE_subsoil)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If nSurfaceSupports > 0 Then
-            'output edge supports ------------------------------------------------------------------
-            c = "{1F4C3BA2-9235-4C0B-A940-4C72C9B59C30}"
-            cid = "EP_SurfaceSupportSurface"
-            t = "ECC78F0A-BB10-4F0A-9E4C-3B8EB00FF33F"
-            tid = "EP_SurfaceSupportSurface"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("2", "Type"))
-            oSB.AppendLine(ConCat_ht("3", "Subsoil"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To nSurfaceSupports - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... Surface support: " + Str(i))
-                End If
-                Call WriteSurfaceSupport(oSB, i, SE_surfaceSupport)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-
-        If lgroupnr > 0 Then
-            'output load groups ------------------------------------------------------------------
-            c = "{F9D4AA72-49D5-11D4-A3CF-000000000000}"
-            cid = "DataSetScia.EP_LoadGroup.1"
-            t = "0BB81CC1-B975-48AB-97D2-0CDE69CD8A6E"
-            tid = "DataSetScia.EP_LoadGroup.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load")) '0: Permanent, 1: Variable
-            oSB.AppendLine(ConCat_ht("2", "Relation"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To lgroupnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load group: " + Str(i))
-                End If
-                Call WriteLGroup(oSB, i, lgroups)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If lcasenr > 0 Then
-            'output load cases ------------------------------------------------------------------
-            c = "{0908D21F-481F-11D4-AB84-00C06C452330}"
-            cid = "DataSetScia.EP_LoadCase.1"
-            t = "6D626C96-E1B4-4084-83F2-54200CAD2815"
-            tid = "DataSetScia.EP_LoadCase.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Action type")) '0: Permanent, 1: Variable
-            oSB.AppendLine(ConCat_ht("2", "Load type"))
-            oSB.AppendLine(ConCat_ht("3", "Direction")) '0: -Z, 1: +Z, 2: -Y etc.
-            oSB.AppendLine(ConCat_ht("4", "Load group")) '0: Self-weight, 1: Standard, 2: Primary
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To lcasenr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load case: " + Str(i))
-                End If
-                Call WriteLCase(oSB, i, lcases)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-        If lincominationcount > 0 Then
-            'output linear combinations
-            c = "{C0FBF7E1-4A71-11D4-AB86-00C06C452330}"
-            cid = "DataSetSciaTom.EP_LoadCombi.1"
-            t = "C4D6A765-03F2-4532-89D8-17BC5A7BA10E"
-            tid = "DataSetSciaTom.EP_LoadCombi.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Type"))
-            oSB.AppendLine(ConCat_ht("2", " Load cases"))
-
-            oSB.AppendLine("</h>")
-            For i = 0 To lincominationcount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... combination: " + Str(i))
-                End If
-                Call WriteLinCombination(oSB, i, lincombinations)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-        If nonlincominationcount > 0 Then
-            'output linear combinations
-            c = "{1E28F6C2-DD8B-11D5-AA60-0050FC1D5C09}"
-            cid = "DataSetSciaTom.EP_NonlinearCombi.1"
-            t = "2FD99985-4BEA-4C12-8205-3B40C8216912"
-            tid = "DataSetSciaTom.EP_NonlinearCombi.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Type"))
-            oSB.AppendLine(ConCat_ht("2", " Load cases"))
-            oSB.AppendLine(ConCat_ht("3", "Description"))
-
-            oSB.AppendLine("</h>")
-            For i = 0 To nonlincominationcount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... combination: " + Str(i))
-                End If
-                Call WriteNonLinCombination(oSB, i, nonlincombinations)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If stabcombncount > 0 Then
-            'output linear combinations
-            c = "{B6CCD4B2-DDDC-11D5-AA60-0050FC1D5C09}"
-            cid = "DataSetSciaTom.EP_StabilityCombi.1"
-            t = "92AC4054-1B1B-43AE-A7DA-F4B5ED25E92A"
-            tid = "DataSetSciaTom.EP_StabilityCombi.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", " Load cases"))
-
-            oSB.AppendLine("</h>")
-            For i = 0 To stabcombncount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... combination: " + Str(i))
-                End If
-                Call WriteStabilityCombination(oSB, i, stabcombi)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If lloadnr > 0 Then
-
-            'output line loads ------------------------------------------------------------------
-            c = "{BC16B3C6-F464-11D4-94D3-000000000000}"
-            cid = "DataAddLoad.EP_LineForceLine.1"
-            t = "891E5370-4DB8-4D23-93F9-B6391D3AE73E"
-            tid = "DataAddLoad.EP_LineForceLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Distribution"))
-            oSB.AppendLine(ConCat_ht("5", "Value - P@1"))
-            oSB.AppendLine(ConCat_ht("6", "Value - P@2"))
-            oSB.AppendLine(ConCat_ht("7", "System"))
-            oSB.AppendLine(ConCat_ht("8", "Location"))
-            oSB.AppendLine(ConCat_ht("9", "Position x1"))
-            oSB.AppendLine(ConCat_ht("10", "Position x2"))
-            oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("12", "Origin"))
-            oSB.AppendLine(ConCat_ht("13", "Eccentricity ey"))
-            oSB.AppendLine(ConCat_ht("14", "Eccentricity ez"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To lloadnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteLLoad(oSB, i, lloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If lineMomentBeamCount > 0 Then
-
-            'output line loads ------------------------------------------------------------------
-            c = "{80A77F84-F6A0-11D4-94D7-000000000000}"
-            cid = "DataAddLoad.EP_LineMomentLine.1"
-            t = "DAB00915-4D9D-46C9-BF3D-67407EFE7663"
-            tid = "DataAddLoad.EP_LineMomentLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Distribution"))
-            oSB.AppendLine(ConCat_ht("5", "Value - M@1"))
-            oSB.AppendLine(ConCat_ht("6", "Value - M@2"))
-            oSB.AppendLine(ConCat_ht("7", "System"))
-            oSB.AppendLine(ConCat_ht("8", "Location"))
-            oSB.AppendLine(ConCat_ht("9", "Position x1"))
-            oSB.AppendLine(ConCat_ht("10", "Position x2"))
-            oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("12", "Origin"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To lineMomentBeamCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteLineMomentLoadBeam(oSB, i, SE_lineMomentBeam)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If eloadsnr > 0 Then
-
-            'output line loads ------------------------------------------------------------------
-            c = "{BC16B3C8-F464-11D4-94D3-000000000000}"
-            cid = "DataAddLoad.EP_LineForceSurface.1"
-            t = "3AC40490-0F84-45AB-83EA-5B0EF90A813F"
-            tid = "DataAddLoad.EP_LineForceSurface.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Distribution"))
-            oSB.AppendLine(ConCat_ht("5", "Value - P@1"))
-            oSB.AppendLine(ConCat_ht("6", "Value - P@2"))
-            oSB.AppendLine(ConCat_ht("7", "System"))
-            oSB.AppendLine(ConCat_ht("8", "Location"))
-            oSB.AppendLine(ConCat_ht("9", "Position x1"))
-            oSB.AppendLine(ConCat_ht("10", "Position x2"))
-            oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("12", "Origin"))
-            oSB.AppendLine(ConCat_ht("13", "Eccentricity ey"))
-            oSB.AppendLine(ConCat_ht("14", "Eccentricity ez"))
-            oSB.AppendLine(ConCat_ht("15", "Edge"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To eloadsnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteELoad(oSB, i, eloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-
-        If lineMomentEdgeCount > 0 Then
-
-            'output line loads ------------------------------------------------------------------
-            c = "{C8390D34-1C9A-4190-8EEC-1A1BC146D5DA}"
-            cid = "DataAddLoad.EP_LineMomentSurface.1"
-            t = "04A59A88-15E2-48EC-ABB6-CB836650FFF6"
-            tid = "DataAddLoad.EP_LineMomentSurface.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Distribution"))
-            oSB.AppendLine(ConCat_ht("5", "Value - M@1"))
-            oSB.AppendLine(ConCat_ht("6", "Value - M@2"))
-            oSB.AppendLine(ConCat_ht("7", "System"))
-            oSB.AppendLine(ConCat_ht("8", "Location"))
-            oSB.AppendLine(ConCat_ht("9", "Position x1"))
-            oSB.AppendLine(ConCat_ht("10", "Position x2"))
-            oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("12", "Origin"))
-            oSB.AppendLine(ConCat_ht("13", "Edge"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To lineMomentEdgeCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteMomentLineLoadOnEdge(oSB, i, SE_lineMomentEdge)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        'pointLoadPoint(,), pointLoadpointCount, pointLoadBeam(,), pointLoadbeamCount)
-        If pointLoadpointCount > 0 Then
-            'output line loads ------------------------------------------------------------------
-            c = "{F8371A21-F459-11D4-94D3-000000000000}"
-            cid = "DataAddLoad.EP_PointForcePoint.1"
-            t = "40BBD456-A2B4-4634-A287-A619174F1858"
-            tid = "DataAddLoad.EP_PointForcePoint.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "System"))
-            oSB.AppendLine(ConCat_ht("5", "Value - F"))
-            oSB.AppendLine(ConCat_ht("6", "Angle [deg]"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To pointLoadpointCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WritePLoadsPoint(oSB, i, pointLoadPoint)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If pointMomentpointCount > 0 Then 'point moment
-            'output line loads ------------------------------------------------------------------
-            c = "{80A77F82-F6A0-11D4-94D7-000000000000}"
-            cid = "DataAddLoad.EP_PointMomentPoint.1"
-            t = "C62A6980-F7BB-478C-92CD-51E25FD6A7F6"
-            tid = "DataAddLoad.EP_PointMomentPoint.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "System"))
-            oSB.AppendLine(ConCat_ht("5", "Value - M"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To pointMomentpointCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteMLoadsPoint(oSB, i, SE_PointMomentPointNode)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If pointLoadbeamCount > 0 Then
-            'output line loads ------------------------------------------------------------------
-            c = "{BC16B3C2-F464-11D4-94D3-000000000000}"
-            cid = "DataAddLoad.EP_PointForceLine.1"
-            t = "0CD415E6-90D2-4DD8-8D53-1C731E06A46D"
-            tid = "DataAddLoad.EP_PointForceLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "System"))
-            oSB.AppendLine(ConCat_ht("5", "Value - F"))
-            oSB.AppendLine(ConCat_ht("6", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("7", "Position x"))
-            oSB.AppendLine(ConCat_ht("8", "Origin"))
-            oSB.AppendLine(ConCat_ht("9", "Repeat (n)"))
-            oSB.AppendLine(ConCat_ht("10", "Eccentricity ey"))
-            oSB.AppendLine(ConCat_ht("11", "Eccentricity ez"))
-            oSB.AppendLine(ConCat_ht("12", "Delta x"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To pointLoadbeamCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WritePLoadsBeam(oSB, i, pointLoadBeam)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If pointMomentbeamCount > 0 Then
-            'output line loads ------------------------------------------------------------------
-            c = "{6A363EA4-0BD3-42C0-973A-8C48B14C9FB9}"
-            cid = "DataAddLoad.EP_PointMomentLine.1"
-            t = "3CF3A1A2-C109-4DB9-A0A0-0F4ACD090188"
-            tid = "DataAddLoad.EP_PointMomentLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "System"))
-            oSB.AppendLine(ConCat_ht("5", "Value - F"))
-            oSB.AppendLine(ConCat_ht("6", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("7", "Position x"))
-            oSB.AppendLine(ConCat_ht("8", "Origin"))
-            oSB.AppendLine(ConCat_ht("9", "Repeat (n)"))
-            oSB.AppendLine(ConCat_ht("10", "Delta x"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To pointMomentbeamCount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... line load: " + Str(i))
-                End If
-                Call WriteMLoadsBeam(oSB, i, SE_pointMomentBeam)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If sloadnr > 0 Then
-
-            'output surface loads ------------------------------------------------------------------
-            c = "{BC16B3CA-F464-11D4-94D3-000000000000}"
-            cid = "DataAddLoad.EP_SurfaceForceSurface.1"
-            t = "A4EDBDAC-D94F-4F14-8C9F-41A1DB046706"
-            tid = "DataAddLoad.EP_SurfaceForceSurface.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Direction"))
-            oSB.AppendLine(ConCat_ht("4", "Value"))
-            oSB.AppendLine(ConCat_ht("5", "System"))
-            oSB.AppendLine(ConCat_ht("6", "Location"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To sloadnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface load: " + Str(i))
-                End If
-                Call WriteSLoad(oSB, i, sloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If thermalLoadsBeamcount > 0 Then
-
-            'output beam thermal loads ------------------------------------------------------------------
-            c = "{80A77F86-F6A0-11D4-94D7-000000000000}"
-            cid = "DataAddLoad.EP_LineTemperatureLine.1"
-            t = "FF2259E9-03F6-4CB1-9F61-51D63B1E182C"
-            tid = "DataAddLoad.EP_LineTemperatureLine.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Load case"))
-            oSB.AppendLine(ConCat_ht("2", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("3", "Distribution"))
-            oSB.AppendLine(ConCat_ht("4", "Delta"))
-            oSB.AppendLine(ConCat_ht("5", "+y - Left delta"))
-            oSB.AppendLine(ConCat_ht("6", "-y - Right delta"))
-            oSB.AppendLine(ConCat_ht("7", "+z - Top delta"))
-            oSB.AppendLine(ConCat_ht("8", "-z - Bottom delta"))
-            oSB.AppendLine(ConCat_ht("9", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("10", "Position x1"))
-            oSB.AppendLine(ConCat_ht("11", "Position x2"))
-            oSB.AppendLine(ConCat_ht("12", "Origin"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To thermalLoadsBeamcount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface load: " + Str(i))
-                End If
-                Call WriteBeamThermalLoad(oSB, i, SE_ThermalLoadBeams)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If thermalLoadsSurfacescount > 0 Then
-
-            'output surface thermal loads ------------------------------------------------------------------
-            c = "{DE1557F2-839A-4816-899A-E8D6D84C1120}"
-            cid = "DataAddLoad.EP_SurfaceTemperature.1"
-            t = "DB021D45-AD3E-4C4D-B190-878FBD113FA8"
-            tid = "DataAddLoad.EP_SurfaceTemperature.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("2", "Load case"))
-            oSB.AppendLine(ConCat_ht("3", "Distribution"))
-            oSB.AppendLine(ConCat_ht("4", "Delta"))
-            oSB.AppendLine(ConCat_ht("5", "+z - Top delta"))
-            oSB.AppendLine(ConCat_ht("6", "-z - Bottom delta"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To thermalLoadsSurfacescount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface load: " + Str(i))
-                End If
-                Call WriteSurfaceThermalLoad(oSB, i, SE_ThermalLoadSurfaces)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If fploadnr > 0 Then
-
-            'output free point loads ------------------------------------------------------------------
-            c = "{E03984FC-B420-4C03-8D2F-72EA2FAB147D}"
-            cid = "DataAddLoad.EP_PointForceFree.1"
-            t = "A3BBFA6A-71DE-4B71-9FDB-04BE4DB979D3"
-            tid = "DataAddLoad.EP_PointForceFree.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Direction"))
-            oSB.AppendLine(ConCat_ht("3", "Validity"))
-            oSB.AppendLine(ConCat_ht("4", "Select"))
-            oSB.AppendLine(ConCat_ht("5", "Value - F"))
-            oSB.AppendLine(ConCat_ht("6", "Coord X"))
-            oSB.AppendLine(ConCat_ht("7", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("8", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("9", "System"))
-            oSB.AppendLine(ConCat_ht("10", "Selected objects"))
-            oSB.AppendLine(ConCat_ht("11", "Validity from"))
-            oSB.AppendLine(ConCat_ht("12", "Validity to"))
-
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To fploadnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free point load: " + Str(i))
-                End If
-                Call WriteFPLoad(oSB, scale, i, fploads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If fpointmomentloadcount > 0 Then
-
-            'output free point loads ------------------------------------------------------------------
-            c = "{F92DA832-9046-44F4-B5E2-CEC576BDFC09}"
-            cid = "DataAddLoad.EP_PointMomentFree.1"
-            t = "245E02B5-FA52-48B8-AF2F-DBA106AF4DE8"
-            tid = "DataAddLoad.EP_PointMomentFree.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Direction"))
-            oSB.AppendLine(ConCat_ht("3", "Validity"))
-            oSB.AppendLine(ConCat_ht("4", "Select"))
-            oSB.AppendLine(ConCat_ht("5", "Value - F"))
-            oSB.AppendLine(ConCat_ht("6", "Coord X"))
-            oSB.AppendLine(ConCat_ht("7", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("8", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("9", "System"))
-            oSB.AppendLine(ConCat_ht("10", "Selected objects"))
-            oSB.AppendLine(ConCat_ht("11", "Validity from"))
-            oSB.AppendLine(ConCat_ht("12", "Validity to"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To fpointmomentloadcount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free point load: " + Str(i))
-                End If
-                Call WriteFPMomentLoad(oSB, scale, i, SE_fMomentPointloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If flloadnr > 0 Then
-            'output free line loads ------------------------------------------------------------------
-            c = "{F1A8072A-7476-4C66-AB95-27AEE497E75C}"
-            cid = "DataAddLoad.EP_LineForceFree.1"
-            t = "48C5854A-C31F-4977-A007-E18F00F955A2"
-            tid = "DataAddLoad.EP_LineForceFree.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Direction"))
-            oSB.AppendLine(ConCat_ht("3", "Distribution"))
-            oSB.AppendLine(ConCat_ht("4", "Value - P@1"))
-            oSB.AppendLine(ConCat_ht("5", "Value - P@2"))
-            oSB.AppendLine(ConCat_ht("6", "Validity"))
-            oSB.AppendLine(ConCat_ht("7", "Select"))
-            oSB.AppendLine(ConCat_ht("8", "System"))
-            oSB.AppendLine(ConCat_ht("9", "Location"))
-            oSB.AppendLine(ConCat_ht("10", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("11", "Selected objects"))
-            oSB.AppendLine(ConCat_ht("12", "Validity from"))
-            oSB.AppendLine(ConCat_ht("13", "Validity to"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To flloadnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free line load: " + Str(i))
-                End If
-                Call WriteFLLoad(oSB, scale, i, flloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If fsloadnr > 0 Then
-            'output free surface loads ------------------------------------------------------------------
-            c = "{3E5FFA16-D1A4-4589-AD5A-4A0FC555E8B8}"
-            cid = "DataAddLoad.EP_SurfaceForceFree.1"
-            t = "E5D57918-2A77-4FB0-87D0-E936E3568D5A"
-            tid = "DataAddLoad.EP_SurfaceForceFree.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Load case"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "Direction"))
-            oSB.AppendLine(ConCat_ht("3", "Distribution"))
-            oSB.AppendLine(ConCat_ht("4", "q"))
-            oSB.AppendLine(ConCat_ht("5", "q1"))
-            oSB.AppendLine(ConCat_ht("6", "q2"))
-            oSB.AppendLine(ConCat_ht("7", "Validity"))
-            oSB.AppendLine(ConCat_ht("8", "Select"))
-            oSB.AppendLine(ConCat_ht("9", "System"))
-            oSB.AppendLine(ConCat_ht("10", "Location"))
-            oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("12", "Selected objects"))
-            oSB.AppendLine(ConCat_ht("13", "Validity from"))
-            oSB.AppendLine(ConCat_ht("14", "Validity to"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To fsloadnr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free surface load: " + Str(i))
-                End If
-                Call WriteFSLoad(oSB, scale, i, fsloads)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If hingenr > 0 Then
-
-            'output hinges ------------------------------------------------------------------
-            c = "{56DE8D92-C9D3-11D4-A46B-00C06C542707}"
-            cid = "DataAddScia.EP_Hinge.1"
-            t = "4E5D91E4-1E43-47BA-9161-7FB3D1934A67"
-            tid = "DataAddScia.EP_Hinge.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Position"))
-            oSB.AppendLine(ConCat_ht("3", "ux"))
-            oSB.AppendLine(ConCat_ht("4", "uy"))
-            oSB.AppendLine(ConCat_ht("5", "uz"))
-            oSB.AppendLine(ConCat_ht("6", "fix"))
-            oSB.AppendLine(ConCat_ht("7", "fiy"))
-            oSB.AppendLine(ConCat_ht("8", "fiz"))
-            oSB.AppendLine(ConCat_ht("9", "Stiff - ux"))
-            oSB.AppendLine(ConCat_ht("10", "Stiff - uy"))
-            oSB.AppendLine(ConCat_ht("11", "Stiff - uz"))
-            oSB.AppendLine(ConCat_ht("12", "Stiff - fix"))
-            oSB.AppendLine(ConCat_ht("13", "Stiff - fiy"))
-            oSB.AppendLine(ConCat_ht("14", "Stiff - fiz"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To hingenr - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... hinge: " + Str(i))
-                End If
-                Call WriteHinge(oSB, i, hinges)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-        If crosslinkscount > 0 Then
-
-            'output crosslinks ------------------------------------------------------------------
-            c = "{0CE7AF12-7A9D-4DEC-B8D9-C81562C2DF9F}"
-            cid = "EP_DSG_Elements.EP_CrossLink.1"
-            t = "13DD1788-9602-4247-ADD5-89443365BDEE"
-            tid = "EP_DSG_Elements.EP_CrossLink.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Type"))
-            oSB.AppendLine(ConCat_ht("2", "1st member"))
-            oSB.AppendLine(ConCat_ht("3", "2st member"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To crosslinkscount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... hinge: " + Str(i))
-                End If
-                Call WriteCrossLink(oSB, i, crosslinks)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-        If linehingecount > 0 Then
-
-            'output hinges ------------------------------------------------------------------
-            c = "{73A30999-84BB-4326-AB5B-59E401F1EEBA}"
-            cid = "DataAddScia.EP_LineHingeSurface.1"
-            t = "2096E0EF-9738-4216-97E7-C37C80A93B46"
-            tid = "DataAddScia.EP_LineHingeSurface.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference table"))
-            oSB.AppendLine(ConCat_ht("2", "Edge"))
-            oSB.AppendLine(ConCat_ht("3", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("4", "Position x1"))
-            oSB.AppendLine(ConCat_ht("5", "Position x2"))
-            oSB.AppendLine(ConCat_ht("6", "Origin"))
-            oSB.AppendLine(ConCat_ht("7", "ux"))
-            oSB.AppendLine(ConCat_ht("8", "uy"))
-            oSB.AppendLine(ConCat_ht("9", "uz"))
-            oSB.AppendLine(ConCat_ht("10", "fix"))
-            oSB.AppendLine(ConCat_ht("11", "Stiff - ux"))
-            oSB.AppendLine(ConCat_ht("12", "Stiff - uy"))
-            oSB.AppendLine(ConCat_ht("13", "Stiff - uz"))
-            oSB.AppendLine(ConCat_ht("14", "Stiff - fix"))
-
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To linehingecount - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... LineHinge: " + Str(i))
-                End If
-                Call WriteLineHinge(oSB, i, SE_LineHinges)
-
-            Next
-
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
-        End If
-
-
-        If arbitraryProfileCount > 0 Then
-
-            'output surface thermal loads ------------------------------------------------------------------
-            c = "{88B256F1-527E-4CC8-B78F-87BE44CF2E04}"
-            cid = "EP_DataAddStructure.EP_ArbitraryBeam.1"
-            t = "35A77CA3-2C5B-450A-83E1-BB4277010251"
-            tid = "EP_DataAddStructure.EP_ArbitraryBeam.1"
-
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("2", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("3", "Cross-section"))
-            oSB.AppendLine(ConCat_ht("4", "Spans table"))
-            oSB.AppendLine("</h>")
-
-            For i = 0 To arbitraryProfileCount - 1
+        If modelData.ArbitraryProfiles IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ArbitraryProfile)
+            Call WriteArbitraryProfileHeaders(oSB)
+
+            For i = 0 To modelData.ArbitraryProfiles.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... arbitrary profile: " + Str(i))
                 End If
-                Call WriteArbitraryProfile(oSB, i, SE_ArbitraryProfiles)
+                Call WriteArbitraryProfile(oSB, i, modelData.ArbitraryProfiles)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SlabInternalEdges IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.InternalEdge2D)
+            Call WriteInternalEdgeHeaders(oSB)
+
+            For i = 0 To modelData.SlabInternalEdges.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... SlabInternalEdge: " + Str(i))
+                End If
+                Call WriteInternalEdge(oSB, i, modelData)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.NodeSupports IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.NodeSupport)
+            Call WriteNodeSupportHeaders(oSB)
+
+            For i = 0 To modelData.NodeSupports.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... nodal supports: " + Str(i))
+                End If
+                Call WriteNodeSupport(oSB, i, modelData)
 
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        ' Intgration strip
-        If integrationStripCount > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{6404DF99-5A82-478C-811A-BC16F6CF7DC9}"
-            cid = "EP_DSG_Elements.8.00.EP_CheckMember2D.1"
-            t = "78FC8556-8B69-45B2-8174-3E7534ACDCEF"
-            tid = "EP_DSG_Elements.8.00.EP_CheckMember2D.1"
+        If modelData.BeamLineSupports IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.BeamLineSupport)
+            Call WriteBeamLineSupportHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
+            For i = 0 To modelData.BeamLineSupports.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam line supports: " + Str(i))
+                End If
+                Call WriteBeamLineSupport(oSB, i, modelData.BeamLineSupports)
+            Next
 
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Name"))
-            oSB.AppendLine(ConCat_ht("1", "UniqueID"))
-            oSB.AppendLine(ConCat_ht("2", "Create meshnodes"))
-            oSB.AppendLine(ConCat_ht("3", "Effective width geometry"))
-            oSB.AppendLine(ConCat_ht("4", "Effective width definition"))
-            oSB.AppendLine(ConCat_ht("5", "Width (total)"))
-            oSB.AppendLine(ConCat_ht("6", "No. of thickness (total)"))
-            oSB.AppendLine(ConCat_ht("7", "Coord X"))
-            oSB.AppendLine(ConCat_ht("8", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("9", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("10", "Coord X"))
-            oSB.AppendLine(ConCat_ht("11", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("12", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("13", "Length"))
-            oSB.AppendLine(ConCat_ht("14", "Shape"))
-            oSB.AppendLine(ConCat_ht("15", "2D member"))
-            oSB.AppendLine(ConCat_ht("16", "Table of geometry"))
-            oSB.AppendLine(ConCat_ht("17", "Width left"))
-            oSB.AppendLine(ConCat_ht("18", "Width right"))
-            oSB.AppendLine(ConCat_ht("19", "No. of thickness left"))
-            oSB.AppendLine(ConCat_ht("20", "No. of thickness right"))
-            oSB.AppendLine("</h>")
+            Call CloseContainerAndTable(oSB)
+        End If
 
-            For i = 0 To integrationStripCount - 1
+        If modelData.BeamPointSupports IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.BeamPointSupport)
+            Call WriteBeamPointSupportHeaders(oSB)
+
+            For i = 0 To modelData.BeamPointSupports.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
+                End If
+                Call WriteBeamPointSupport(oSB, i, modelData.BeamPointSupports)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SurfaceEdgeSupports IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SurfaceEdgeSupport)
+            Call WriteEdgeSupportHeaders(oSB)
+
+            For i = 0 To modelData.SurfaceEdgeSupports.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
+                End If
+                Call WriteEdgeSupport(oSB, i, modelData.SurfaceEdgeSupports)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SurfaceSupports IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SurfaceSupport)
+            Call WriteSurfaceSupportHeaders(oSB)
+
+            For i = 0 To modelData.SurfaceSupports.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface support: " + Str(i))
+                End If
+                Call WriteSurfaceSupport(oSB, i, modelData.SurfaceSupports)
+
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.Subsoils IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Subsoil)
+            Call WriteSubsoilHeaders(oSB)
+
+            For i = 0 To modelData.Subsoils.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... subsoil: " + Str(i))
+                End If
+                Call WriteSubsoil(oSB, i, modelData.Subsoils)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.Hinges IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Hinge)
+            Call WriteHingeHeaders(oSB)
+
+            For i = 0 To modelData.Hinges.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... hinge: " + Str(i))
+                End If
+                Call WriteHinge(oSB, i, modelData.Hinges)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.LineHinges IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LineHinge)
+            Call WriteLineHingeHeaders(oSB)
+
+            For i = 0 To modelData.LineHinges.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... LineHinge: " + Str(i))
+                End If
+                Call WriteLineHinge(oSB, i, modelData.LineHinges)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.CrossLinks IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.CrossLink)
+            Call WriteCrossLinkHeaders(oSB)
+
+            For i = 0 To modelData.CrossLinks.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... crosslink: " + Str(i))
+                End If
+                Call WriteCrossLink(oSB, i, modelData.CrossLinks)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.RidgidArms IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.RigidArm)
+            Call WriteRigidArmHeaders(oSB)
+
+            For i = 0 To modelData.RidgidArms.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... rigid arm: " + Str(i))
+                End If
+                Call WriteRigidArm(oSB, i, modelData.RidgidArms)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.LoadCases IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadCase)
+            Call WriteLoadCaseHeaders(oSB)
+
+            For i = 0 To modelData.LoadCases.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load case: " + Str(i))
+                End If
+                Call WriteLoadCase(oSB, i, modelData.LoadCases)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.LoadGroups IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadGroup)
+            Call WriteLoadGroupHeaders(oSB)
+
+            For i = 0 To modelData.LoadGroups.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load group: " + Str(i))
+                End If
+                Call WriteLoadGroup(oSB, i, modelData.LoadGroups)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.LinearCombinations IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LinearCombination)
+            Call WriteLinCombinationHeaders(oSB)
+
+            For i = 0 To modelData.LinearCombinations.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... combination: " + Str(i))
+                End If
+                Call WriteLinCombination(oSB, i, modelData.LinearCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.NonLinearCombinations IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.NonLinearCombination)
+            Call WriteNonLinCombinationHeaders(oSB)
+
+            For i = 0 To modelData.NonLinearCombinations.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... NL combination: " + Str(i))
+                End If
+                Call WriteNonLinCombination(oSB, i, modelData.NonLinearCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.StabilityCombinations IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.StabilityCombination)
+            Call WriteStabilityCombinationHeaders(oSB)
+
+            For i = 0 To modelData.StabilityCombinations.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... stability combination: " + Str(i))
+                End If
+                Call WriteStabilityCombination(oSB, i, modelData.StabilityCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.NodePointLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.PointLoadNode)
+            Call WritePointLoadsPointHeaders(oSB)
+
+            For i = 0 To modelData.NodePointLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... point load node: " + Str(i))
+                End If
+                Call WritePointLoadsPoint(oSB, i, modelData)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.NodePointMoments IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.PointMomentNode)
+            Call WriteMomentLoadsPointHeaders(oSB)
+
+            For i = 0 To modelData.NodePointMoments.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... moment in node: " + Str(i))
+                End If
+                Call WriteMomentLoadsPoint(oSB, i, modelData)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.BeamPointLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.PointLoadBeam)
+            Call WritePointLoadsBeamHeaders(oSB)
+
+            For i = 0 To modelData.BeamPointLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam point load: " + Str(i))
+                End If
+                Call WritePointLoadsBeam(oSB, i, modelData.BeamPointLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.BeamPointMoments IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.PointMomentBeam)
+            Call WriteMomentLoadsBeamHeaders(oSB)
+
+            For i = 0 To modelData.BeamPointMoments.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... point moment on beam: " + Str(i))
+                End If
+                Call WriteMomentLoadsBeam(oSB, i, modelData.BeamPointMoments)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.BeamLineLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LineLoadBeam)
+            Call WriteLineLoadBeamHeaders(oSB)
+
+            For i = 0 To modelData.BeamLineLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam line load: " + Str(i))
+                End If
+                Call WriteLineLoadBeam(oSB, i, modelData.BeamLineLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.BeamLineMoments IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LineMomentBeam)
+            Call WriteLineMomentLoadBeamHeaders(oSB)
+
+            For i = 0 To modelData.BeamLineMoments.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam line moment: " + Str(i))
+                End If
+                Call WriteLineMomentLoadBeam(oSB, i, modelData.BeamLineMoments)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.EdgeLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LineLoadEdge)
+            Call WriteEdgeLoadHeaders(oSB)
+
+            For i = 0 To modelData.EdgeLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge load: " + Str(i))
+                End If
+                Call WriteEdgeLoad(oSB, i, modelData.EdgeLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.EdgeMoments IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LineMomentEdge)
+            Call WriteMomentLineLoadOnEdgeHeaders(oSB)
+
+            For i = 0 To modelData.EdgeMoments.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge moment: " + Str(i))
+                End If
+                Call WriteMomentLineLoadOnEdge(oSB, i, modelData.EdgeMoments)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SurfaceLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SurfaceLoad)
+            Call WriteSurfaceLoadHeaders(oSB)
+
+            For i = 0 To modelData.SurfaceLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface load: " + Str(i))
+                End If
+                Call WriteSurfaceLoad(oSB, i, modelData.SurfaceLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.FreePointLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.FreePointLoad)
+            Call WriteFreePointLoadHeaders(oSB)
+
+            For i = 0 To modelData.FreePointLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free point load: " + Str(i))
+                End If
+                Call WriteFreePointLoad(oSB, modelData.Scale, i, modelData.FreePointLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.FreePointMoments IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.FreePointMoment)
+            Call WriteFreePointMomentLoadHeaders(oSB)
+
+            For i = 0 To modelData.FreePointMoments.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free point moment: " + Str(i))
+                End If
+                Call WriteFreePointMomentLoad(oSB, modelData.Scale, i, modelData.FreePointMoments)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.FreeLineLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.FreeLineLoad)
+            Call WriteFreeLineLoadHeaders(oSB)
+
+            For i = 0 To modelData.FreeLineLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free line load: " + Str(i))
+                End If
+                Call WriteFreeLineLoad(oSB, modelData.Scale, i, modelData.FreeLineLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.FreeSurfaceLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.FreeSurfaceLoad)
+            Call WriteFreeSurfaceLoadHeaders(oSB)
+
+            For i = 0 To modelData.FreeSurfaceLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free surface load: " + Str(i))
+                End If
+                Call WriteFreeSurfaceLoad(oSB, modelData.Scale, i, modelData.FreeSurfaceLoads, UILanguageNumber)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.BeamThermalLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ThermalLoad1D)
+            Call WriteBeamThermalLoadHeaders(oSB)
+
+            For i = 0 To modelData.BeamThermalLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... beam thermal load: " + Str(i))
+                End If
+                Call WriteBeamThermalLoad(oSB, i, modelData.BeamThermalLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SurfaceThermalLoads IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ThermalLoad2D)
+            Call WriteSurfaceThermalLoadHeaders(oSB)
+
+            For i = 0 To modelData.SurfaceThermalLoads.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface thermal load: " + Str(i))
+                End If
+                Call WriteSurfaceThermalLoad(oSB, i, modelData.SurfaceThermalLoads)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.NonLinearFunctions IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.NonLinearFunction)
+            Call WriteNonlinearFunctionHeaders(oSB)
+
+            For i = 0 To modelData.NonLinearFunctions.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... NL function: " + Str(i))
+                End If
+                Call WriteNonlinearFunction(oSB, i, modelData.NonLinearFunctions)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.PretensionElements IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.PreTensionElement)
+            Call WritePressTensionOnlyBeamNLHeaders(oSB)
+
+            For i = 0 To modelData.PretensionElements.GetLength(0) - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... PretensionElement: " + Str(i))
+                End If
+                Call WritePressTensionOnlyBeamNL(oSB, i, modelData.PretensionElements)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.GapElements IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.GapElement)
+            Call WriteGapLocalBeamNLHeaders(oSB)
+
+            For i = 0 To modelData.GapElements.GetLength(0) - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... GapElement: " + Str(i))
+                End If
+                Call WriteGapLocalBeamNL(oSB, i, modelData.GapElements)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.Cables IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Cable)
+            Call WriteCableBeamNLHeaders(oSB)
+
+            For i = 0 To modelData.Cables.GetLength(0) - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... cable: " + Str(i))
+                End If
+                Call WriteCableBeamNL(oSB, i, modelData.Cables)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+
+        If modelData.LimitForceElements IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LimitForceElement)
+            Call WriteLimitForceBeamNLHeaders(oSB)
+
+            For i = 0 To modelData.LimitForceElements.GetLength(0) - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... LimitForceElement: " + Str(i))
+                End If
+                Call WriteLimitForceBeamNL(oSB, i, modelData.LimitForceElements)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.IntegrationStrips IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.IntegrationStrip)
+            Call WriteIntegrationStripHeaders(oSB)
+
+            For i = 0 To modelData.IntegrationStrips.GetLength(0) - 1
                 If i > 0 And (i Mod 500 = 0) Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... integration strip: " + Str(i))
                 End If
-                Call WriteIntegrationStrip(oSB, i, SE_IntegrationStrip)
+                Call WriteIntegrationStrip(oSB, i, modelData.IntegrationStrips)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        ' section on beam
-        If sectionOnBeamCount > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{89BC3399-896D-43D0-8186-A493B1EC5FE2}"
-            cid = "DataAddScia.EP_SectionOnBeam.1"
-            t = "27125C4E-D477-4AE4-BAF7-966A7B0E288B"
-            tid = "DataAddScia.EP_SectionOnBeam.1"
+        If modelData.SectionOnBeams IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SectionOnBeam)
+            Call WriteSectionOnBeamHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "UniqueID"))
-            oSB.AppendLine(ConCat_ht("3", "Coord. definition"))
-            oSB.AppendLine(ConCat_ht("4", "Position x"))
-            oSB.AppendLine(ConCat_ht("5", "Origin"))
-            oSB.AppendLine(ConCat_ht("6", "Repeat (n)"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To sectionOnBeamCount - 1
+            For i = 0 To modelData.SectionOnBeams.GetLength(0) - 1
                 If i > 0 And (i Mod 500 = 0) Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... section on beam: " + Str(i))
                 End If
-                Call WriteSectionOnBeam(oSB, i, SE_SectionOnBeam)
+                Call WriteSectionOnBeam(oSB, i, modelData.SectionOnBeams)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
 
-        ' Averaging strip
-        If averagingStripCount > 0 Then
-            'output beams ---------------------------------------------------------------------
-            c = "{FE0D602A-29D1-45BD-8812-C65D66847842}"
-            cid = "EP_DSG_Elements.EP_RedistStrip.1"
-            t = "4849FC97-8AF4-4546-BB2E-68337ADBDEB4"
-            tid = "EP_DSG_Elements.EP_RedistStrip.1"
+        If modelData.AveragingStrips IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.AveragingStrip)
+            Call WriteAveragingStripHeaders(oSB)
 
-            oSB.AppendLine("")
-            oSB.AppendLine("<container id=""" & c & """ t=""" & cid & """>")
-            oSB.AppendLine("<table id=""" & t & """ t=""" & tid & """>")
-
-            oSB.AppendLine("<h>")
-            oSB.AppendLine(ConCat_ht("0", "Reference Table"))
-            oSB.AppendLine(ConCat_ht("1", "Name"))
-            oSB.AppendLine(ConCat_ht("2", "UniqueID"))
-            oSB.AppendLine(ConCat_ht("3", "Type"))
-            oSB.AppendLine(ConCat_ht("4", "Direction"))
-            oSB.AppendLine(ConCat_ht("5", "Width"))
-            oSB.AppendLine(ConCat_ht("6", "Length"))
-            oSB.AppendLine(ConCat_ht("7", "Angle"))
-            oSB.AppendLine(ConCat_ht("8", "Coord X"))
-            oSB.AppendLine(ConCat_ht("9", "Coord Y"))
-            oSB.AppendLine(ConCat_ht("10", "Coord Z"))
-            oSB.AppendLine(ConCat_ht("11", "Coord x"))
-            oSB.AppendLine(ConCat_ht("12", "Coord y"))
-            oSB.AppendLine(ConCat_ht("13", "Coord z"))
-
-            oSB.AppendLine("</h>")
-
-            For i = 0 To averagingStripCount - 1
+            For i = 0 To modelData.AveragingStrips.GetLength(0) - 1
                 If i > 0 And (i Mod 500 = 0) Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... averaging strip: " + Str(i))
                 End If
-                Call WriteAveragingStrip(oSB, i, SE_AveragingStrip)
+                Call WriteAveragingStrip(oSB, i, modelData.AveragingStrips)
             Next
 
-            oSB.AppendLine("</table>")
-            oSB.AppendLine("</container>")
+            Call CloseContainerAndTable(oSB)
         End If
-
 
         'close XML file--------------------------------------------------------------------
         oSB.AppendLine("</project>")
 
     End Sub
 
-    Private Sub WriteLayer(oSB As Object, i As Long, sE_layers(,) As Object)
+    Private Sub WriteLayerHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Comment"))
+        oSB.AppendLine(ConCat_ht("2", "Structural model only"))
+        oSB.AppendLine(ConCat_ht("3", "Current used activity"))
+        oSB.AppendLine("</h>")
+    End Sub
 
+    Private Sub WriteLayer(oSB As Object, i As Long, sE_layers(,) As Object)
         oSB.AppendLine("<obj id = """ & i.ToString() & """" & " nm=""" & sE_layers(i, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", sE_layers(i, 0)))
         oSB.AppendLine(ConCat_pv("1", sE_layers(i, 1)))
@@ -3743,45 +1896,57 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
                 oSB.AppendLine(ConCat_pv("2", "0"))
         End Select
         oSB.AppendLine(ConCat_pv("3", "1"))
-
-
         oSB.AppendLine("</obj>")
     End Sub
 
-    Private Sub WriteNode(ByRef oSB, inode, nodes(,)) 'write 1 node to the XML stream
-
-        oSB.AppendLine("<obj nm=""" & Trim(nodes(inode, 0)) & """>")
-
-        oSB.AppendLine(ConCat_pv("0", Trim(nodes(inode, 0))))
-        oSB.AppendLine(ConCat_pv("1", CStr(nodes(inode, 1))))
-        oSB.AppendLine(ConCat_pv("2", CStr(nodes(inode, 2))))
-        oSB.AppendLine(ConCat_pv("3", CStr(nodes(inode, 3))))
-
-        oSB.AppendLine("</obj>")
-
+    Private Sub WriteNodeHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Coord X"))
+        oSB.AppendLine(ConCat_ht("2", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("3", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("4", "Linked node"))
+        oSB.AppendLine("</h>")
     End Sub
 
-
-    Private Sub WriteInternalBeamNode(ByRef oSB, inode, nodes(,))
-
-        oSB.AppendLine("<obj nm=""" & Trim(nodes(inode, 0)) & """>")
-
-        oSB.AppendLine(ConCat_pv("0", Trim(nodes(inode, 0))))
-        oSB.AppendLine(ConCat_pv("1", CStr(nodes(inode, 1))))
-        oSB.AppendLine(ConCat_pv("2", CStr(nodes(inode, 2))))
-        oSB.AppendLine(ConCat_pv("3", CStr(nodes(inode, 3))))
-        oSB.AppendLine(ConCat_pv("4", "to " & CStr(nodes(inode, 4))))
-
+    Private Sub WriteNode(ByRef oSB As Text.StringBuilder, modelData As ModelData, node As Node) 'write 1 node to the XML stream
+        oSB.AppendLine("<obj nm=""" & Trim(node.Name) & """>")
+        oSB.AppendLine(ConCat_pv("0", Trim(node.Name)))
+        oSB.AppendLine(ConCat_pv("1", CStr(node.X * modelData.Scale)))
+        oSB.AppendLine(ConCat_pv("2", CStr(node.Y * modelData.Scale)))
+        oSB.AppendLine(ConCat_pv("3", CStr(node.Z * modelData.Scale)))
+        If node.LinkedTo IsNot Nothing Then
+            oSB.AppendLine(ConCat_pv("4", "to " & CStr(node.LinkedTo)))
+        End If
         oSB.AppendLine("</obj>")
     End Sub
 
+    Private Sub WriteBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Beg. node"))
+        oSB.AppendLine(ConCat_ht("2", "End node"))
+        oSB.AppendLine(ConCat_ht("3", "Layer"))
+        oSB.AppendLine(ConCat_ht("4", "Cross-section"))
+        oSB.AppendLine(ConCat_ht("5", "FEM type"))
+        oSB.AppendLine(ConCat_ht("6", "Member system-line at"))
+        oSB.AppendLine(ConCat_ht("7", "ey"))
+        oSB.AppendLine(ConCat_ht("8", "ez"))
+        oSB.AppendLine(ConCat_ht("9", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("10", "Type"))
+        oSB.AppendLine(ConCat_ht("11", "LCS"))
+        oSB.AppendLine(ConCat_ht("12", "LCS Rotation"))
+        oSB.AppendLine(ConCat_ht("13", "X"))
+        oSB.AppendLine(ConCat_ht("14", "Y"))
+        oSB.AppendLine(ConCat_ht("15", "Z"))
+        oSB.AppendLine(ConCat_ht("16", "System lengths and buckling settings"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-    Private Sub WriteBeam(ByRef oSB, ibeam, beams(,)) 'write 1 beam to the XML stream
+    Private Sub WriteBeam(ByRef oSB As Text.StringBuilder, ibeam As Integer, modelData As ModelData) 'write 1 beam to the XML stream
         'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
-
+        Dim beams = modelData.Beams
         Dim LineType As String
-
-        Dim nodeStart As String = "", nodeEnd As String = "", MiddleNode As String
         Dim i As Integer
 
         oSB.AppendLine("<obj nm=""" & beams(ibeam, 0) & """>")
@@ -3790,14 +1955,10 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         Dim ShapeAndNodes As String() = beams(ibeam, 3).Split(New Char() {";"c})
         LineType = ShapeAndNodes.ElementAt(0)
 
-        If Not DupNodeDict.TryGetValue(ShapeAndNodes.ElementAt(1), nodeStart) Then
-            Throw New Exception("Couldn't find node " & ShapeAndNodes.ElementAt(1))
-        End If
-        If Not DupNodeDict.TryGetValue(ShapeAndNodes.Last(), nodeEnd) Then
-            Throw New Exception("Couldn't find node " & ShapeAndNodes.Last())
-        End If
+        Dim nodeStart = modelData.GetNodeName(ShapeAndNodes.ElementAt(1))
+        Dim nodeEnd = modelData.GetNodeName(ShapeAndNodes.Last())
 
-        oSB.AppendLine(ConCat_pn("1", nodeStart)) 'Beg. node
+        oSB.AppendLine(ConCat_pn("1", NodeStart)) 'Beg. node
         oSB.AppendLine(ConCat_pn("2", nodeEnd)) 'End node
 
         oSB.AppendLine(ConCat_pn("3", beams(ibeam, 2))) 'layer
@@ -3839,9 +2000,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_pv("7", beams(ibeam, 11))) 'ey
         oSB.AppendLine(ConCat_pv("8", beams(ibeam, 12))) 'ez
 
-
         If LineType = "Arc" Then
-            MiddleNode = DupNodeDict(ShapeAndNodes.ElementAt(2))
+            Dim middleNode = modelData.GetNodeName(ShapeAndNodes.ElementAt(2))
             oSB.AppendLine(ConCat_opentable("9", ""))
             'Table of Geometry
             oSB.AppendLine("<h>")
@@ -3850,8 +2010,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine("</h>")
 
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", nodeStart))
-            oSB.appendline(ConCat_pv("2", "1"))
+            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pv("2", "1"))
             oSB.AppendLine("</row>")
             oSB.AppendLine(ConCat_row(1))
             oSB.AppendLine(ConCat_pn("1", MiddleNode))
@@ -3869,12 +2029,12 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine("</h>")
             For i = 1 To ShapeAndNodes.Count - 2
                 oSB.AppendLine(ConCat_row(i - 1))
-                oSB.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
-                oSB.appendline(ConCat_pv("2", "0"))
+                oSB.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
+                oSB.AppendLine(ConCat_pv("2", "0"))
                 oSB.AppendLine("</row>")
             Next i
             oSB.AppendLine(ConCat_row(i - 1))
-            oSB.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
+            oSB.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
             oSB.AppendLine("</row>")
 
             oSB.AppendLine(ConCat_closetable("9"))
@@ -3886,8 +2046,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine(ConCat_ht("2", "Edge"))
             oSB.AppendLine("</h>")
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", nodeStart))
-            oSB.appendline(ConCat_pv("2", "0"))
+            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pv("2", "0"))
             oSB.AppendLine("</row>")
             oSB.AppendLine(ConCat_row(1))
             oSB.AppendLine(ConCat_pn("1", nodeEnd))
@@ -3901,45 +2061,45 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine(ConCat_ht("2", "Edge"))
             oSB.AppendLine("</h>")
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", nodeStart))
-            oSB.appendline(ConCat_pv("2", "7"))
+            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pv("2", "7"))
             oSB.AppendLine("</row>")
             For i = 2 To ShapeAndNodes.Count - 1
                 oSB.AppendLine(ConCat_row(i - 1))
-                oSB.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
+                oSB.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
                 oSB.AppendLine("</row>")
             Next i
             oSB.AppendLine(ConCat_closetable("9"))
         End If
         Select Case beams(ibeam, 8)
             Case "general"
-                oSB.appendline(ConCat_pvt("10", "0", "general (0)")) 'type
+                oSB.AppendLine(ConCat_pvt("10", "0", "general (0)")) 'type
             Case "column"
-                oSB.appendline(ConCat_pvt("10", "2", "column (100)"))
+                oSB.AppendLine(ConCat_pvt("10", "2", "column (100)"))
             Case "gable column"
-                oSB.appendline(ConCat_pvt("10", "3", "gable column (70)"))
+                oSB.AppendLine(ConCat_pvt("10", "3", "gable column (70)"))
             Case "secondary column"
-                oSB.appendline(ConCat_pvt("10", "4", "secondary column (60)"))
+                oSB.AppendLine(ConCat_pvt("10", "4", "secondary column (60)"))
             Case "rafter"
-                oSB.appendline(ConCat_pvt("10", "5", "rafter (90)"))
+                oSB.AppendLine(ConCat_pvt("10", "5", "rafter (90)"))
             Case "purlin"
-                oSB.appendline(ConCat_pvt("10", "6", "purlin (0)"))
+                oSB.AppendLine(ConCat_pvt("10", "6", "purlin (0)"))
             Case "roof bracing"
-                oSB.appendline(ConCat_pvt("10", "7", "roof bracing (0)"))
+                oSB.AppendLine(ConCat_pvt("10", "7", "roof bracing (0)"))
             Case "wall bracing"
-                oSB.appendline(ConCat_pvt("10", "8", "wall bracing (0)"))
+                oSB.AppendLine(ConCat_pvt("10", "8", "wall bracing (0)"))
             Case "girt"
-                oSB.appendline(ConCat_pvt("10", "9", "girt (0)"))
+                oSB.AppendLine(ConCat_pvt("10", "9", "girt (0)"))
             Case "truss chord"
-                oSB.appendline(ConCat_pvt("10", "10", "truss chord (95)"))
+                oSB.AppendLine(ConCat_pvt("10", "10", "truss chord (95)"))
             Case "truss diagonal"
-                oSB.appendline(ConCat_pvt("10", "11", "truss diagonal (90)"))
+                oSB.AppendLine(ConCat_pvt("10", "11", "truss diagonal (90)"))
             Case "plate rib"
-                oSB.appendline(ConCat_pvt("10", "12", "plate rib (92)"))
+                oSB.AppendLine(ConCat_pvt("10", "12", "plate rib (92)"))
             Case "beam slab"
-                oSB.appendline(ConCat_pvt("10", "13", "beam slab (99)"))
+                oSB.AppendLine(ConCat_pvt("10", "13", "beam slab (99)"))
             Case Else
-                oSB.appendline(ConCat_pvt("10", "0", "general (0)")) 'type
+                oSB.AppendLine(ConCat_pvt("10", "0", "general (0)")) 'type
         End Select
 
 
@@ -3954,9 +2114,23 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             oSB.AppendLine(ConCat_pv("15", beams(ibeam, 7))) 'Z
         End If
 
+        If beams(ibeam, 13) >= 0 Then 'Buckling group
+            oSB.AppendLine(ConCat_pv("16", beams(ibeam, 13)))
+        End If
+
         oSB.AppendLine("</obj>")
 
     End Sub
+
+    Private Sub WritePressTensionOnlyBeamNLHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+
     Private Sub WritePressTensionOnlyBeamNL(ByRef oSB, i, beamnlocalnonlin(,))
 
         oSB.AppendLine("<obj nm=""" & "PTBNL" & Trim(Str(i)) & """>")
@@ -3969,8 +2143,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", beamnlocalnonlin(i, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -3983,6 +2157,18 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         End Select
         oSB.AppendLine("</obj>")
     End Sub
+
+    Private Sub WriteLimitForceBeamNLHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Type"))
+        oSB.AppendLine(ConCat_ht("5", "Marginal force"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteLimitForceBeamNL(ByRef oSB, i, LimitForce(,))
         oSB.AppendLine("<obj nm=""" & "LFBNL" & Trim(Str(i)) & """>")
         oSB.AppendLine(ConCat_pv("0", "LFBNL" & Trim(Str(i)))) 'Name
@@ -3994,8 +2180,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", LimitForce(i, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -4017,6 +2203,18 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         oSB.AppendLine("</obj>")
     End Sub
+
+    Private Sub WriteGapLocalBeamNLHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "Type"))
+        oSB.AppendLine(ConCat_ht("4", "Displacement"))
+        oSB.AppendLine(ConCat_ht("5", "Position"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteGapLocalBeamNL(ByRef oSB, igap, gaps(,))
         oSB.AppendLine("<obj nm=""" & "GBNL" & Trim(Str(igap)) & """>")
         oSB.AppendLine(ConCat_pv("0", "GBNL" & Trim(Str(igap)))) 'Name
@@ -4028,8 +2226,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", gaps(igap, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -4053,6 +2251,19 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
     End Sub
 
+    Private Sub WriteCableBeamNLHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "Initial mesh"))
+        oSB.AppendLine(ConCat_ht("4", "Self weight"))
+        oSB.AppendLine(ConCat_ht("5", "Normal force"))
+        oSB.AppendLine(ConCat_ht("6", "Pn"))
+        oSB.AppendLine(ConCat_ht("7", "Alpha x"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteCableBeamNL(ByRef oSB, icable, cables(,))
         oSB.AppendLine("<obj nm=""" & "CBNL" & Trim(Str(icable)) & """>")
         oSB.AppendLine(ConCat_pv("0", "CBNL" & Trim(Str(icable)))) 'Name
@@ -4064,8 +2275,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", cables(icable, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -4093,10 +2304,32 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
     End Sub
 
-    Private Sub WriteSurface(ByRef osb, isurface, surfaces(,)) 'write 1 surface to the XML stream
+    Private Sub WriteSurfaceHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Layer"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "Material"))
+        oSB.AppendLine(ConCat_ht("4", "FEM nonlinear model"))
+        oSB.AppendLine(ConCat_ht("5", "Thickness type"))
+        oSB.AppendLine(ConCat_ht("6", "Direction"))
+        oSB.AppendLine(ConCat_ht("7", "Thickness"))
+        oSB.AppendLine(ConCat_ht("8", "Point 1"))
+        oSB.AppendLine(ConCat_ht("9", "Member system-plane at"))
+        oSB.AppendLine(ConCat_ht("10", "Eccentricity z"))
+        oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("12", "Internal nodes"))
+        oSB.AppendLine(ConCat_ht("13", "Swap orientation"))
+        oSB.AppendLine(ConCat_ht("14", "LCS angle"))
+        oSB.AppendLine(ConCat_ht("15", "Element type"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSurface(ByRef osb As Text.StringBuilder, isurface As Integer, modelData As ModelData)
         Dim row_id As Long, inode As Long
         Dim iedge As Long
         Dim edges() As String, nodes() As String
+        Dim surfaces = modelData.Surfaces
 
         osb.AppendLine("<obj nm=""" & surfaces(isurface, 0) & """>")
         osb.AppendLine(ConCat_pv("0", surfaces(isurface, 0)))
@@ -4189,8 +2422,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             End Select
         End If
 
-
-
         Select Case surfaces(isurface, 7)
             Case "Centre"
                 osb.AppendLine(ConCat_pvt("9", "1", "Centre"))
@@ -4220,7 +2451,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             inode = 0
             osb.AppendLine(ConCat_row(row_id))
             osb.AppendLine(ConCat_pv("0", "1")) 'Closed curve
-            osb.AppendLine(ConCat_pn("1", DupNodeDict(Trim(Split(edges(iedge), ";")(1))))) 'first node
+            osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(Trim(Split(edges(iedge), ";")(1))))) 'first node
             Select Case Strings.Trim(Strings.Split(edges(iedge), ";")(0)) 'curve type
                 Case "Line"
                     osb.AppendLine(ConCat_pvt("2", "0", "Line"))
@@ -4245,7 +2476,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
                     osb.AppendLine(ConCat_pn("1", Trim(Split(edges(iedge), ";")(1 + inode))))
                 End If
 
-
             End While
             osb.AppendLine("</row>")
             row_id = row_id + 1
@@ -4266,11 +2496,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
                 osb.AppendLine(ConCat_ht("0", "Node"))
                 osb.AppendLine("</h>")
 
-
-
                 For inode = 0 To nodes.Count - 1
                     osb.AppendLine(ConCat_row(row_id))
-                    osb.AppendLine(ConCat_pn("0", DupNodeDict(Trim(nodes(inode)))))
+                    osb.AppendLine(ConCat_pn("0", modelData.GetNodeName(Trim(nodes(inode)))))
                     osb.AppendLine("</row>")
                     row_id += 1
 
@@ -4282,23 +2510,38 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         osb.AppendLine(ConCat_pv("13", surfaces(isurface, 10)))
         osb.AppendLine(ConCat_pv("14", surfaces(isurface, 11)))
-
-
         osb.AppendLine(ConCat_pvt("15", "1", "Standard"))
 
         osb.AppendLine("</obj>")
 
     End Sub
 
+    Private Sub WriteLoadPanelHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Layer"))
+        oSB.AppendLine(ConCat_ht("2", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("3", "Element type"))
+        oSB.AppendLine(ConCat_ht("4", "Panel type"))
+        oSB.AppendLine(ConCat_ht("5", "Load transfer direction"))
+        oSB.AppendLine(ConCat_ht("6", "Transfer in X [%]"))
+        oSB.AppendLine(ConCat_ht("7", "Transfer in Y [%]"))
+        oSB.AppendLine(ConCat_ht("8", "Load transfer method"))
+        oSB.AppendLine(ConCat_ht("9", "Selection of entities"))
+        oSB.AppendLine(ConCat_ht("10", "Swap orientation"))
+        oSB.AppendLine(ConCat_ht("11", "LCS angle"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-    Private Sub WriteLoadPanels(ByRef osb, iloadpanel, loadpanels(,)) 'write 1 surface to the XML stream
+    Private Sub WriteLoadPanels(ByRef osb As Text.StringBuilder, iloadpanel As Integer, modelData As ModelData) 'write 1 surface to the XML stream
         Dim row_id As Long, inode As Long
         Dim iedge As Long
-        Dim edges() As String, nodes() As String
+        Dim edges() As String
+        Dim loadPanels = modelData.LoadPanels
 
-        osb.AppendLine("<obj nm=""" & loadpanels(iloadpanel, 0) & """>")
-        osb.AppendLine(ConCat_pv("0", loadpanels(iloadpanel, 0))) ' name
-        osb.AppendLine(ConCat_pn("1", loadpanels(iloadpanel, 1))) 'layer
+        osb.AppendLine("<obj nm=""" & loadPanels(iloadpanel, 0) & """>")
+        osb.AppendLine(ConCat_pv("0", loadPanels(iloadpanel, 0))) ' name
+        osb.AppendLine(ConCat_pn("1", loadPanels(iloadpanel, 1))) 'layer
 
         'table of geometry
         osb.AppendLine(ConCat_opentable("2", ""))
@@ -4310,13 +2553,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         'loop through all edges
         row_id = 0
-        edges = Strings.Split(loadpanels(iloadpanel, 2), "|")
+        edges = Strings.Split(loadPanels(iloadpanel, 2), "|")
 
         For iedge = 0 To edges.Count - 1
             inode = 0
             osb.AppendLine(ConCat_row(row_id))
             osb.AppendLine(ConCat_pv("0", "1")) 'Closed curve
-            osb.AppendLine(ConCat_pn("1", DupNodeDict(Trim(Split(edges(iedge), ";")(1))))) 'first node
+            Dim nodeName As String = Trim(Split(edges(iedge), ";")(1))
+            osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(nodeName))) 'first node
             Select Case Strings.Trim(Strings.Split(edges(iedge), ";")(0)) 'curve type
                 Case "Line"
                     osb.AppendLine(ConCat_pvt("2", "0", "Line"))
@@ -4347,28 +2591,41 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         osb.AppendLine(ConCat_closetable("2"))
 
         osb.AppendLine(ConCat_pvt("3", "5", "Load panel"))
-        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelType)(4, loadpanels(iloadpanel, 3)))
-        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferDirection)(5, loadpanels(iloadpanel, 4)))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelType)(4, loadPanels(iloadpanel, 3)))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferDirection)(5, loadPanels(iloadpanel, 4)))
 
         osb.AppendLine(ConCat_pv("6", "50"))
         osb.AppendLine(ConCat_pv("7", "50"))
         'osb.AppendLine(ConCat_ht("6", "Transfer in X [%]"))
         'osb.AppendLine(ConCat_ht("7", "Transfer in Y [%]"))
 
-        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferMethod)(8, loadpanels(iloadpanel, 5)))
+        osb.AppendLine(ConCat_pvt_enum(Of Koala.LoadPanelTransferMethod)(8, loadPanels(iloadpanel, 5)))
         osb.AppendLine(ConCat_pvt("9", "0", "All")) 'selection of entities - -Z +Z all
 
-        osb.AppendLine(ConCat_pv("10", loadpanels(iloadpanel, 6)))
-        osb.AppendLine(ConCat_pv("11", loadpanels(iloadpanel, 7)))
+        osb.AppendLine(ConCat_pv("10", loadPanels(iloadpanel, 6)))
+        osb.AppendLine(ConCat_pv("11", loadPanels(iloadpanel, 7)))
 
         osb.AppendLine("</obj>")
 
     End Sub
 
-    Private Sub WriteOpening(ByRef osb, iopening, openings(,)) 'write 1 opening to the XML stream
+    Private Sub WriteOpeningHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Reference table"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "2D Member"))
+        oSB.AppendLine(ConCat_ht("3", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("4", "Material"))
+        oSB.AppendLine(ConCat_ht("5", "Thickness"))
+        oSB.AppendLine(ConCat_ht("6", "Table of geometry"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteOpening(ByRef osb, iopening, modelData) 'write 1 opening to the XML stream
         Dim row_id As Long, inode As Long
         Dim iedge As Long
         Dim edges() As String
+        Dim openings = modelData.Openings
 
         osb.AppendLine("<obj nm=""" & openings(iopening, 0) & """>")
         'write surface name as reference table
@@ -4379,8 +2636,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         osb.AppendLine("<h2 t=""Member Name""/>")
         osb.AppendLine("</h>")
         osb.AppendLine("<row id=""0"">")
-        osb.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        osb.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        osb.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        osb.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         osb.AppendLine(ConCat_pv("2", openings(iopening, 1)))
         osb.AppendLine("</row>")
         osb.AppendLine("</p0>")
@@ -4403,7 +2660,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             inode = 0
             osb.AppendLine(ConCat_row(row_id))
             osb.AppendLine(ConCat_pv("0", "1")) 'Closed curve
-            osb.AppendLine(ConCat_pn("1", DupNodeDict(Trim(Split(edges(iedge), ";")(1))))) 'first node
+            osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(Trim(Split(edges(iedge), ";")(1))))) 'first node
             Select Case Strings.Trim(Strings.Split(edges(iedge), ";")(0)) 'curve type
                 Case "Line"
                     osb.AppendLine(ConCat_pvt("2", "0", "Line"))
@@ -4432,8 +2689,17 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         osb.AppendLine("</obj>")
 
     End Sub
+    Private Sub WriteInternalEdgeHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "2D Member"))
+        oSB.AppendLine(ConCat_ht("2", "Shape"))
+        oSB.AppendLine(ConCat_ht("3", "Table of geometry"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-    Private Sub WriteInternalEdge(ByRef osb, iInternalEdge, SlabInternalEdges(,))
+    Private Sub WriteInternalEdge(ByRef osb As Text.StringBuilder, iInternalEdge As Integer, modelData As ModelData)
+        Dim slabInternalEdges = modelData.SlabInternalEdges
 
         osb.AppendLine("<obj nm=""" & SlabInternalEdges(iInternalEdge, 0) & """>")
 
@@ -4444,15 +2710,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         Dim ShapeAndNodes As String() = SlabInternalEdges(iInternalEdge, 2).Split(New Char() {";"c})
         Dim LineType = ShapeAndNodes.ElementAt(0)
-        nodeStart = DupNodeDict(ShapeAndNodes.ElementAt(1))
-        nodeEnd = DupNodeDict(ShapeAndNodes.Last())
+        nodeStart = modelData.GetNodeName(ShapeAndNodes.ElementAt(1))
+        nodeEnd = modelData.GetNodeName(ShapeAndNodes.Last())
         Dim i As Long = 0
         ' shape
         osb.AppendLine(ConCat_pv("2", LineType)) ' Shape
         osb.AppendLine(ConCat_opentable("3", "")) 'table of geometry
         If LineType = "Arc" Then
 
-            MiddleNode = DupNodeDict(ShapeAndNodes.ElementAt(2))
+            MiddleNode = modelData.GetNodeName(ShapeAndNodes.ElementAt(2))
 
             'Table of Geometry
             osb.AppendLine("<h>")
@@ -4462,7 +2728,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
             osb.AppendLine(ConCat_row(0))
             osb.AppendLine(ConCat_pn("1", nodeStart))
-            osb.appendline(ConCat_pv("2", "1"))
+            osb.AppendLine(ConCat_pv("2", "1"))
             osb.AppendLine("</row>")
             osb.AppendLine(ConCat_row(1))
             osb.AppendLine(ConCat_pn("1", MiddleNode))
@@ -4480,12 +2746,12 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             osb.AppendLine("</h>")
             For i = 1 To ShapeAndNodes.Count - 2
                 osb.AppendLine(ConCat_row(i - 1))
-                osb.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
-                osb.appendline(ConCat_pv("2", "0"))
+                osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
+                osb.AppendLine(ConCat_pv("2", "0"))
                 osb.AppendLine("</row>")
             Next i
             osb.AppendLine(ConCat_row(i - 1))
-            osb.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
+            osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
             osb.AppendLine("</row>")
 
 
@@ -4498,7 +2764,7 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             osb.AppendLine("</h>")
             osb.AppendLine(ConCat_row(0))
             osb.AppendLine(ConCat_pn("1", nodeStart))
-            osb.appendline(ConCat_pv("2", "0"))
+            osb.AppendLine(ConCat_pv("2", "0"))
             osb.AppendLine("</row>")
             osb.AppendLine(ConCat_row(1))
             osb.AppendLine(ConCat_pn("1", nodeEnd))
@@ -4513,11 +2779,11 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
             osb.AppendLine("</h>")
             osb.AppendLine(ConCat_row(0))
             osb.AppendLine(ConCat_pn("1", nodeStart))
-            osb.appendline(ConCat_pv("2", "7"))
+            osb.AppendLine(ConCat_pv("2", "7"))
             osb.AppendLine("</row>")
             For i = 2 To ShapeAndNodes.Count - 1
                 osb.AppendLine(ConCat_row(i - 1))
-                osb.AppendLine(ConCat_pn("1", DupNodeDict(ShapeAndNodes.ElementAt(i))))
+                osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(ShapeAndNodes.ElementAt(i))))
                 osb.AppendLine("</row>")
             Next i
 
@@ -4526,6 +2792,16 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         osb.AppendLine("</obj>")
 
+    End Sub
+
+    Private Sub WriteRigidArmHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Master"))
+        oSB.AppendLine(ConCat_ht("2", "Slave"))
+        oSB.AppendLine(ConCat_ht("1", "Hinge on master"))
+        oSB.AppendLine(ConCat_ht("2", "Hinge on slave"))
+        oSB.AppendLine("</h>")
     End Sub
 
     Private Sub WriteRigidArm(ByRef osb, iRigidArm, RigidArms(,))
@@ -4549,7 +2825,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         osb.AppendLine("</obj>")
 
+    End Sub
 
+    Private Sub WriteSectionHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Catalog ID"))
+        oSB.AppendLine(ConCat_ht("2", "Catalog item"))
+        oSB.AppendLine(ConCat_ht("3", "Parameters"))
+        oSB.AppendLine("</h>")
     End Sub
 
     Private Sub WriteSection(ByRef oSB, sectionname, sectioncode, sectiondef, sectionmat) 'write 1 profile: hot-rolled steel or concrete
@@ -4557,8 +2841,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         Dim sectiontype As String
         Dim formtype As String
         Dim formcode As Long
-        Dim sectH As Double, sectB As Double, sectD As Double, sectBh As Double, sectBs As Double, sectts As Double, sectth As Double, sects As Double
-        Dim sectsh As Double, sectBa As Double, sectBb As Double, secttha As Double, sectthb As Double, sectBc As Double, sectthc As Double
         oSB.AppendLine("<obj nm=""" & sectionname & """>")
         oSB.AppendLine(ConCat_pv("0", sectionname)) 'Name
 
@@ -4805,6 +3087,18 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteNonlinearFunctionHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Type"))
+        oSB.AppendLine(ConCat_ht("2", "Positive end"))
+        oSB.AppendLine(ConCat_ht("3", "Negative end"))
+        oSB.AppendLine(ConCat_ht("4", "u / F"))
+        oSB.AppendLine(ConCat_ht("5", "fi / M"))
+        oSB.AppendLine(ConCat_ht("6", "u / F"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteNonlinearFunction(ByRef oSB, i, SE_NonlinearFunctions(,)) 'write 1 nodal support to the XML stream
 
 
@@ -4877,8 +3171,36 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteNodeSupport(ByRef oSB, isupport, supports(,)) 'write 1 nodal support to the XML stream
+    Private Sub WriteNodeSupportHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+        'oSB.AppendLine(ConCat_hh("1", "Node"))
+        oSB.AppendLine(ConCat_ht("2", "X"))
+        oSB.AppendLine(ConCat_ht("3", "Y"))
+        oSB.AppendLine(ConCat_ht("4", "Z"))
+        oSB.AppendLine(ConCat_ht("5", "Rx"))
+        oSB.AppendLine(ConCat_ht("6", "Ry"))
+        oSB.AppendLine(ConCat_ht("7", "Rz"))
+        oSB.AppendLine(ConCat_ht("8", "Stiffness X"))
+        oSB.AppendLine(ConCat_ht("9", "Stiffness Y"))
+        oSB.AppendLine(ConCat_ht("10", "Stiffness Z"))
+        oSB.AppendLine(ConCat_ht("11", "Stiffness Rx"))
+        oSB.AppendLine(ConCat_ht("12", "Stiffness Ry"))
+        oSB.AppendLine(ConCat_ht("13", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("14", "Angle [deg]"))
+        oSB.AppendLine(ConCat_ht("15", "Function X"))
+        oSB.AppendLine(ConCat_ht("16", "Function Y"))
+        oSB.AppendLine(ConCat_ht("17", "Function Z"))
+        oSB.AppendLine(ConCat_ht("18", "Function Rx"))
+        oSB.AppendLine(ConCat_ht("19", "Function Ry"))
+        oSB.AppendLine(ConCat_ht("20", "Function Rz"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteNodeSupport(ByRef oSB As Text.StringBuilder, isupport As Integer, modelData As ModelData) 'write 1 nodal support to the XML stream
         Dim tt As String
+        Dim supports = modelData.NodeSupports
 
         oSB.AppendLine("<obj nm=""Sn" & isupport & """>")
         oSB.AppendLine(ConCat_pv("0", "Sn" & isupport)) 'Support name
@@ -4890,9 +3212,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_StructNode.1"))
-        oSB.AppendLine(ConCat_pv("2", DupNodeDict(supports(isupport, 0))))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("2", modelData.GetNodeName(supports(isupport, 0))))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
         'End Of reference table
@@ -4927,6 +3249,37 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteEdgeSupportHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Edge"))
+        oSB.AppendLine(ConCat_ht("3", "X"))
+        oSB.AppendLine(ConCat_ht("4", "Y"))
+        oSB.AppendLine(ConCat_ht("5", "Z"))
+        oSB.AppendLine(ConCat_ht("6", "Rx"))
+        oSB.AppendLine(ConCat_ht("7", "Ry"))
+        oSB.AppendLine(ConCat_ht("8", "Rz"))
+        oSB.AppendLine(ConCat_ht("9", "System"))
+        oSB.AppendLine(ConCat_ht("10", "Stiffness X"))
+        oSB.AppendLine(ConCat_ht("11", "Stiffness Y"))
+        oSB.AppendLine(ConCat_ht("12", "Stiffness Z"))
+        oSB.AppendLine(ConCat_ht("13", "Stiffness Rx"))
+        oSB.AppendLine(ConCat_ht("14", "Stiffness Ry"))
+        oSB.AppendLine(ConCat_ht("15", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("17", "Position x1"))
+        oSB.AppendLine(ConCat_ht("18", "Position x2"))
+        oSB.AppendLine(ConCat_ht("19", "Origin"))
+        oSB.AppendLine(ConCat_ht("20", "Function X"))
+        oSB.AppendLine(ConCat_ht("21", "Function Y"))
+        oSB.AppendLine(ConCat_ht("22", "Function Z"))
+        oSB.AppendLine(ConCat_ht("23", "Function Rx"))
+        oSB.AppendLine(ConCat_ht("24", "Function Ry"))
+        oSB.AppendLine(ConCat_ht("25", "Function Rz"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteEdgeSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
         Dim tt As String
 
@@ -4945,17 +3298,17 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         'different reference depending whether it's towards a surface or an opening
         Select Case supports(isupport, 1)
             Case "SURFACE"
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
             Case "OPENING"
-                oSB.AppendLine(ConCat_pv("0", "{EBA9B148-F564-4DB1-9E2D-F1937FFA4523}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_OpenSlab.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Opening)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Opening)))
             Case "INTERNAL EDGE"
                 oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
                 oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
             Case Else
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         End Select
 
         oSB.AppendLine(ConCat_pv("2", supports(isupport, 0)))
@@ -5013,6 +3366,37 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteBeamLineSupportHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "X"))
+        oSB.AppendLine(ConCat_ht("4", "Y"))
+        oSB.AppendLine(ConCat_ht("5", "Z"))
+        oSB.AppendLine(ConCat_ht("6", "Rx"))
+        oSB.AppendLine(ConCat_ht("7", "Ry"))
+        oSB.AppendLine(ConCat_ht("8", "Rz"))
+        oSB.AppendLine(ConCat_ht("9", "Stiffness X"))
+        oSB.AppendLine(ConCat_ht("10", "Stiffness Y"))
+        oSB.AppendLine(ConCat_ht("11", "Stiffness Z"))
+        oSB.AppendLine(ConCat_ht("12", "Stiffness Rx"))
+        oSB.AppendLine(ConCat_ht("13", "Stiffness Ry"))
+        oSB.AppendLine(ConCat_ht("14", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("15", "System"))
+        oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("17", "Position x1"))
+        oSB.AppendLine(ConCat_ht("18", "Position x2"))
+        oSB.AppendLine(ConCat_ht("19", "Origin"))
+        oSB.AppendLine(ConCat_ht("20", "Function X"))
+        oSB.AppendLine(ConCat_ht("21", "Function Y"))
+        oSB.AppendLine(ConCat_ht("22", "Function Z"))
+        oSB.AppendLine(ConCat_ht("23", "Function Rx"))
+        oSB.AppendLine(ConCat_ht("24", "Function Ry"))
+        oSB.AppendLine(ConCat_ht("25", "Function Rz"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteBeamLineSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
         Dim tt As String
 
@@ -5027,8 +3411,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", supports(isupport, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -5036,9 +3420,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         'support type
         oSB.AppendLine(ConCat_pvt("2", 0, "Line"))
-
-
-
 
         tt = GetStringForDOF(supports(isupport, 1))
         oSB.AppendLine(ConCat_pvt("3", supports(isupport, 1), tt))
@@ -5052,7 +3433,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_pvt("7", supports(isupport, 5), tt))
         tt = GetStringForDOF(supports(isupport, 6))
         oSB.AppendLine(ConCat_pvt("8", supports(isupport, 6), tt))
-
 
         oSB.AppendLine(ConCat_pv("9", supports(isupport, 7)))
         oSB.AppendLine(ConCat_pv("10", supports(isupport, 8)))
@@ -5089,7 +3469,39 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WritePointSupportOnBeam(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
+    Private Sub WriteBeamPointSupportHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "X"))
+        oSB.AppendLine(ConCat_ht("4", "Y"))
+        oSB.AppendLine(ConCat_ht("5", "Z"))
+        oSB.AppendLine(ConCat_ht("6", "Rx"))
+        oSB.AppendLine(ConCat_ht("7", "Ry"))
+        oSB.AppendLine(ConCat_ht("8", "Rz"))
+        oSB.AppendLine(ConCat_ht("9", "Stiffness X"))
+        oSB.AppendLine(ConCat_ht("10", "Stiffness Y"))
+        oSB.AppendLine(ConCat_ht("11", "Stiffness Z"))
+        oSB.AppendLine(ConCat_ht("12", "Stiffness Rx"))
+        oSB.AppendLine(ConCat_ht("13", "Stiffness Ry"))
+        oSB.AppendLine(ConCat_ht("14", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("15", "System"))
+        oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("17", "Position x"))
+        oSB.AppendLine(ConCat_ht("18", "Origin"))
+        oSB.AppendLine(ConCat_ht("19", "Repeat (n)"))
+        oSB.AppendLine(ConCat_ht("20", "Delta x"))
+        oSB.AppendLine(ConCat_ht("21", "Function X"))
+        oSB.AppendLine(ConCat_ht("22", "Function Y"))
+        oSB.AppendLine(ConCat_ht("23", "Function Z"))
+        oSB.AppendLine(ConCat_ht("24", "Function Rx"))
+        oSB.AppendLine(ConCat_ht("25", "Function Ry"))
+        oSB.AppendLine(ConCat_ht("26", "Function Rz"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteBeamPointSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
         Dim tt As String
 
         oSB.AppendLine("<obj nm=""PSOB" & isupport & """>")
@@ -5103,8 +3515,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", supports(isupport, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -5112,8 +3524,6 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         'support type
         oSB.AppendLine(ConCat_pvt("2", 0, "Standard"))
-
-
 
         tt = GetStringForDOF(supports(isupport, 1))
         oSB.AppendLine(ConCat_pvt("3", supports(isupport, 1), tt))
@@ -5167,6 +3577,20 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteSubsoilHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Decription"))
+        oSB.AppendLine(ConCat_ht("2", "C1x"))
+        oSB.AppendLine(ConCat_ht("3", "C1y"))
+        oSB.AppendLine(ConCat_ht("4", "C1z"))
+        oSB.AppendLine(ConCat_ht("5", "Stiffness"))
+        oSB.AppendLine(ConCat_ht("6", "C2x"))
+        oSB.AppendLine(ConCat_ht("7", "C2y"))
+        oSB.AppendLine(ConCat_ht("8", "Nonlinear function C1z"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteSubsoil(ByRef oSB, i, subsoil(,)) 'write 1 edge support to the XML stream
 
         oSB.AppendLine("<obj nm=""Subsoil" & i & """>")
@@ -5193,6 +3617,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteSurfaceSupportHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("2", "Type"))
+        oSB.AppendLine(ConCat_ht("3", "Subsoil"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteSurfaceSupport(ByRef oSB, i, surfacesupport(,))
 
         oSB.AppendLine("<obj nm=""SurfaceSupport" & i & """>")
@@ -5206,8 +3639,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         oSB.AppendLine(ConCat_pv("2", surfacesupport(i, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -5218,7 +3651,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteLGroup(ByRef oSB, igroup, groups(,)) 'write 1 load group to the XML stream
+    Private Sub WriteLoadGroupHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load")) '0: Permanent, 1: Variable
+        oSB.AppendLine(ConCat_ht("2", "Relation"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteLoadGroup(ByRef oSB, igroup, groups(,)) 'write 1 load group to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(igroup)) & """ nm=""" & groups(igroup, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", groups(igroup, 0)))
@@ -5238,6 +3679,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
 
     End Sub
+
+    Private Sub WriteLinCombinationHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Type"))
+        oSB.AppendLine(ConCat_ht("2", " Load cases"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteLinCombination(ByRef oSB, icombi, combinations(,)) 'write 1 combination to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
@@ -5291,6 +3741,16 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_closetable("2"))
         oSB.AppendLine("</obj>")
     End Sub
+
+    Private Sub WriteNonLinCombinationHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Type"))
+        oSB.AppendLine(ConCat_ht("2", " Load cases"))
+        oSB.AppendLine(ConCat_ht("3", "Description"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteNonLinCombination(ByRef oSB, icombi, combinations(,)) 'write 1 nonlinear combination to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
@@ -5326,8 +3786,15 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_pv("3", combinations(icombi, 3)))
         oSB.AppendLine("</obj>")
     End Sub
-    Private Sub WriteStabilityCombination(ByRef oSB, icombi, combinations(,)) 'write 1 nonlinear combination to the XML stream
 
+    Private Sub WriteStabilityCombinationHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", " Load cases"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteStabilityCombination(ByRef oSB, icombi, combinations(,)) 'write 1 nonlinear combination to the XML stream
         oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", combinations(icombi, 0)))
         Dim parts As String() = combinations(icombi, 1).Split(New Char() {";"c})
@@ -5353,7 +3820,18 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_closetable("1"))
         oSB.AppendLine("</obj>")
     End Sub
-    Private Sub WriteLCase(ByRef oSB, icase, cases(,)) 'write 1 load case to the XML stream
+
+    Private Sub WriteLoadCaseHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Action type")) '0: Permanent, 1: Variable
+        oSB.AppendLine(ConCat_ht("2", "Load type"))
+        oSB.AppendLine(ConCat_ht("3", "Direction")) '0: -Z, 1: +Z, 2: -Y etc.
+        oSB.AppendLine(ConCat_ht("4", "Load group")) '0: Self-weight, 1: Standard, 2: Primary
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteLoadCase(ByRef oSB, icase, cases(,)) 'write 1 load case to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(icase)) & """ nm=""" & cases(icase, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", cases(icase, 0)))
@@ -5376,7 +3854,27 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteLLoad(ByRef oSB, iload, loads(,)) 'write 1 line load to the XML stream
+    Private Sub WriteLineLoadBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Distribution"))
+        oSB.AppendLine(ConCat_ht("5", "Value - P@1"))
+        oSB.AppendLine(ConCat_ht("6", "Value - P@2"))
+        oSB.AppendLine(ConCat_ht("7", "System"))
+        oSB.AppendLine(ConCat_ht("8", "Location"))
+        oSB.AppendLine(ConCat_ht("9", "Position x1"))
+        oSB.AppendLine(ConCat_ht("10", "Position x2"))
+        oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("12", "Origin"))
+        oSB.AppendLine(ConCat_ht("13", "Eccentricity ey"))
+        oSB.AppendLine(ConCat_ht("14", "Eccentricity ez"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteLineLoadBeam(ByRef oSB, iload, loads(,)) 'write 1 line load to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "LL" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pv("0", "LL" & Trim(Str(iload))))
@@ -5389,8 +3887,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
@@ -5454,7 +3952,23 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-
+    Private Sub WriteBeamThermalLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Distribution"))
+        oSB.AppendLine(ConCat_ht("4", "Delta"))
+        oSB.AppendLine(ConCat_ht("5", "+y - Left delta"))
+        oSB.AppendLine(ConCat_ht("6", "-y - Right delta"))
+        oSB.AppendLine(ConCat_ht("7", "+z - Top delta"))
+        oSB.AppendLine(ConCat_ht("8", "-z - Bottom delta"))
+        oSB.AppendLine(ConCat_ht("9", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("10", "Position x1"))
+        oSB.AppendLine(ConCat_ht("11", "Position x2"))
+        oSB.AppendLine(ConCat_ht("12", "Origin"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteBeamThermalLoad(ByRef oSB, iload, loads(,)) 'write 1 line load to the XML stream
 
@@ -5470,8 +3984,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -5516,6 +4030,24 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteLineMomentLoadBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Distribution"))
+        oSB.AppendLine(ConCat_ht("5", "Value - M@1"))
+        oSB.AppendLine(ConCat_ht("6", "Value - M@2"))
+        oSB.AppendLine(ConCat_ht("7", "System"))
+        oSB.AppendLine(ConCat_ht("8", "Location"))
+        oSB.AppendLine(ConCat_ht("9", "Position x1"))
+        oSB.AppendLine(ConCat_ht("10", "Position x2"))
+        oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("12", "Origin"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteLineMomentLoadBeam(ByRef oSB, iload, loads(,)) 'write 1 line load to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "LMLB" & Trim(Str(iload)) & """>")
@@ -5529,8 +4061,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
@@ -5592,11 +4124,28 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteELoad(ByRef oSB, iload, loads(,)) 'write 1 line load on surface ede  to the XML stream
+    Private Sub WriteEdgeLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Distribution"))
+        oSB.AppendLine(ConCat_ht("5", "Value - P@1"))
+        oSB.AppendLine(ConCat_ht("6", "Value - P@2"))
+        oSB.AppendLine(ConCat_ht("7", "System"))
+        oSB.AppendLine(ConCat_ht("8", "Location"))
+        oSB.AppendLine(ConCat_ht("9", "Position x1"))
+        oSB.AppendLine(ConCat_ht("10", "Position x2"))
+        oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("12", "Origin"))
+        oSB.AppendLine(ConCat_ht("13", "Eccentricity ey"))
+        oSB.AppendLine(ConCat_ht("14", "Eccentricity ez"))
+        oSB.AppendLine(ConCat_ht("15", "Edge"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-
-
-
+    Private Sub WriteEdgeLoad(ByRef oSB, iload, loads(,)) 'write 1 line load on surface ede  to the XML stream
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "ESL" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pv("0", "ESL" & Trim(Str(iload))))
         oSB.AppendLine(ConCat_pn("1", loads(iload, 0)))
@@ -5610,14 +4159,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<row id=""0"">")
         Select Case (loads(iload, 14))
             Case "edge"
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
             Case "internal"
                 oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
                 oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
             Case Else
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         End Select
 
 
@@ -5691,10 +4240,26 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteMomentLineLoadOnEdgeHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Distribution"))
+        oSB.AppendLine(ConCat_ht("5", "Value - M@1"))
+        oSB.AppendLine(ConCat_ht("6", "Value - M@2"))
+        oSB.AppendLine(ConCat_ht("7", "System"))
+        oSB.AppendLine(ConCat_ht("8", "Location"))
+        oSB.AppendLine(ConCat_ht("9", "Position x1"))
+        oSB.AppendLine(ConCat_ht("10", "Position x2"))
+        oSB.AppendLine(ConCat_ht("11", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("12", "Origin"))
+        oSB.AppendLine(ConCat_ht("13", "Edge"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteMomentLineLoadOnEdge(ByRef oSB, iload, loads(,)) 'write 1 line load on surface ede  to the XML stream
-
-
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "ESLM" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pv("0", "ESLM" & Trim(Str(iload))))
         oSB.AppendLine(ConCat_pn("1", loads(iload, 0)))
@@ -5708,14 +4273,14 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<row id=""0"">")
         Select Case (loads(iload, 12))
             Case "edge"
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
             Case "internal"
                 oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
                 oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
             Case Else
-                oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         End Select
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
@@ -5783,7 +4348,19 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteSLoad(ByRef oSB, iload, loads(,)) 'write 1 surface load to the XML stream
+    Private Sub WriteSurfaceLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "Value"))
+        oSB.AppendLine(ConCat_ht("5", "System"))
+        oSB.AppendLine(ConCat_ht("6", "Location"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSurfaceLoad(ByRef oSB, iload, loads(,)) 'write 1 surface load to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "SF" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pv("0", "SF" & Trim(Str(iload))))
@@ -5796,8 +4373,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
@@ -5829,6 +4406,18 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteSurfaceThermalLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("2", "Load case"))
+        oSB.AppendLine(ConCat_ht("3", "Distribution"))
+        oSB.AppendLine(ConCat_ht("4", "Delta"))
+        oSB.AppendLine(ConCat_ht("5", "+z - Top delta"))
+        oSB.AppendLine(ConCat_ht("6", "-z - Bottom delta"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteSurfaceThermalLoad(ByRef oSB, iload, loads(,)) 'write 1 surface load to the XML stream
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "STLS" & Trim(Str(iload)) & """>")
@@ -5842,8 +4431,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -5865,10 +4454,22 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WritePLoadsPoint(ByRef oSB, iload, loads(,))
+    Private Sub WritePointLoadsPointHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "System"))
+        oSB.AppendLine(ConCat_ht("5", "Value - F"))
+        oSB.AppendLine(ConCat_ht("6", "Angle [deg]"))
+        oSB.AppendLine("</h>")
+    End Sub
 
+    Private Sub WritePointLoadsPoint(ByRef oSB As Text.StringBuilder, iload As Integer, modelData As ModelData)
+
+        Dim loads = modelData.NodePointLoads
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "PLP" & Trim(Str(iload)) & """>")
-
 
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "PLP" & Trim(Str(iload))))
@@ -5880,9 +4481,9 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_StructNode.1"))
-        oSB.AppendLine(ConCat_pv("2", DupNodeDict(loads(iload, 1))))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("2", modelData.GetNodeName(loads(iload, 1))))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
         'end of reference table
@@ -5910,8 +4511,20 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
     End Sub
 
-    Private Sub WriteMLoadsPoint(ByRef oSB, iload, loads(,))
+    Private Sub WriteMomentLoadsPointHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "System"))
+        oSB.AppendLine(ConCat_ht("5", "Value - M"))
+        oSB.AppendLine("</h>")
+    End Sub
 
+    Private Sub WriteMomentLoadsPoint(ByRef oSB As Text.StringBuilder, iload As Integer, modelData As ModelData)
+
+        Dim loads = modelData.NodePointMoments
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "MLP" & Trim(Str(iload)) & """>")
 
 
@@ -5925,14 +4538,12 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_StructNode.1"))
-        oSB.AppendLine(ConCat_pv("2", DupNodeDict(loads(iload, 1))))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Node)))
+        oSB.AppendLine(ConCat_pv("2", modelData.GetNodeName(loads(iload, 1))))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
         'end of reference table
-
-
 
         'direction
         Select Case loads(iload, 3)
@@ -5956,7 +4567,25 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
     End Sub
 
-    Sub WritePLoadsBeam(ByRef oSB, iload, loads(,))
+    Private Sub WritePointLoadsBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "System"))
+        oSB.AppendLine(ConCat_ht("5", "Value - F"))
+        oSB.AppendLine(ConCat_ht("6", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("7", "Position x"))
+        oSB.AppendLine(ConCat_ht("8", "Origin"))
+        oSB.AppendLine(ConCat_ht("9", "Repeat (n)"))
+        oSB.AppendLine(ConCat_ht("10", "Eccentricity ey"))
+        oSB.AppendLine(ConCat_ht("11", "Eccentricity ez"))
+        oSB.AppendLine(ConCat_ht("12", "Delta x"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Sub WritePointLoadsBeam(ByRef oSB, iload, loads(,))
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "PLB" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
@@ -5969,8 +4598,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
@@ -6016,7 +4645,24 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
         oSB.AppendLine("</obj>")
     End Sub
-    Sub WriteMLoadsBeam(ByRef oSB, iload, loads(,))
+
+    Private Sub WriteMomentLoadsBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("3", "Direction"))
+        oSB.AppendLine(ConCat_ht("4", "System"))
+        oSB.AppendLine(ConCat_ht("5", "Value - F"))
+        oSB.AppendLine(ConCat_ht("6", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("7", "Position x"))
+        oSB.AppendLine(ConCat_ht("8", "Origin"))
+        oSB.AppendLine(ConCat_ht("9", "Repeat (n)"))
+        oSB.AppendLine(ConCat_ht("10", "Delta x"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Sub WriteMomentLoadsBeam(ByRef oSB, iload, loads(,))
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "MLB" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
@@ -6029,8 +4675,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p2>")
@@ -6076,10 +4722,25 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("</obj>")
     End Sub
 
+    Private Sub WriteFreePointLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Direction"))
+        oSB.AppendLine(ConCat_ht("3", "Validity"))
+        oSB.AppendLine(ConCat_ht("4", "Select"))
+        oSB.AppendLine(ConCat_ht("5", "Value - F"))
+        oSB.AppendLine(ConCat_ht("6", "Coord X"))
+        oSB.AppendLine(ConCat_ht("7", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("8", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("9", "System"))
+        oSB.AppendLine(ConCat_ht("10", "Selected objects"))
+        oSB.AppendLine(ConCat_ht("11", "Validity from"))
+        oSB.AppendLine(ConCat_ht("12", "Validity to"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-
-
-    Private Sub WriteFPLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
+    Private Sub WriteFreePointLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
         'a free point load consists of:
         'Load Case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
 
@@ -6134,8 +4795,25 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteFreePointMomentLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Direction"))
+        oSB.AppendLine(ConCat_ht("3", "Validity"))
+        oSB.AppendLine(ConCat_ht("4", "Select"))
+        oSB.AppendLine(ConCat_ht("5", "Value - F"))
+        oSB.AppendLine(ConCat_ht("6", "Coord X"))
+        oSB.AppendLine(ConCat_ht("7", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("8", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("9", "System"))
+        oSB.AppendLine(ConCat_ht("10", "Selected objects"))
+        oSB.AppendLine(ConCat_ht("11", "Validity from"))
+        oSB.AppendLine(ConCat_ht("12", "Validity to"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-    Private Sub WriteFPMomentLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
+    Private Sub WriteFreePointMomentLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
         'a free point load consists of:
         'Load Case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
 
@@ -6192,7 +4870,27 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteFLLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free line load to the XML stream
+    Private Sub WriteFreeLineLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Direction"))
+        oSB.AppendLine(ConCat_ht("3", "Distribution"))
+        oSB.AppendLine(ConCat_ht("4", "Value - P@1"))
+        oSB.AppendLine(ConCat_ht("5", "Value - P@2"))
+        oSB.AppendLine(ConCat_ht("6", "Validity"))
+        oSB.AppendLine(ConCat_ht("7", "Select"))
+        oSB.AppendLine(ConCat_ht("8", "System"))
+        oSB.AppendLine(ConCat_ht("9", "Location"))
+        oSB.AppendLine(ConCat_ht("10", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("11", "Selected objects"))
+        oSB.AppendLine(ConCat_ht("12", "Validity from"))
+        oSB.AppendLine(ConCat_ht("13", "Validity to"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+
+    Private Sub WriteFreeLineLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free line load to the XML stream
         'a free line load consists of:
         'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), LineShape
 
@@ -6316,7 +5014,27 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteFSLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free surface load to the XML stream
+    Private Sub WriteFreeSurfaceLoadHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "Direction"))
+        oSB.AppendLine(ConCat_ht("3", "Distribution"))
+        oSB.AppendLine(ConCat_ht("4", "q"))
+        oSB.AppendLine(ConCat_ht("5", "q1"))
+        oSB.AppendLine(ConCat_ht("6", "q2"))
+        oSB.AppendLine(ConCat_ht("7", "Validity"))
+        oSB.AppendLine(ConCat_ht("8", "Select"))
+        oSB.AppendLine(ConCat_ht("9", "System"))
+        oSB.AppendLine(ConCat_ht("10", "Location"))
+        oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("12", "Selected objects"))
+        oSB.AppendLine(ConCat_ht("13", "Validity from"))
+        oSB.AppendLine(ConCat_ht("14", "Validity to"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteFreeSurfaceLoad(ByRef oSB, scale, iload, loads(,), UILanguageNumber) 'write 1 free surface load to the XML stream
         'a free line load consists of:
         'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), BoundaryShape
 
@@ -6484,11 +5202,11 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
                 'different reference depending whether it's towards a surface or an opening
                 Select Case memberParts(1).ToLower.Trim
                     Case "opening"
-                        oSB.AppendLine(ConCat_pv("0", "{EBA9B148-F564-4DB1-9E2D-F1937FFA4523}"))
-                        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_OpenSlab.1"))
+                        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Opening)))
+                        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Opening)))
                     Case Else
-                        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-                        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+                        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+                        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
                 End Select
                 oSB.AppendLine(ConCat_pv("2", memberParts(2).Trim))
                 oSB.AppendLine(ConCat_pv("3", memberParts(0).Trim))
@@ -6509,11 +5227,35 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
-    Private Sub WriteHinge(ByRef oSB, ihinge, hinges(,)) 'write 1 hinge to the XML stream
-        Dim tt As String
+    Private Sub WriteHingeHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Position"))
+        oSB.AppendLine(ConCat_ht("3", "ux"))
+        oSB.AppendLine(ConCat_ht("4", "uy"))
+        oSB.AppendLine(ConCat_ht("5", "uz"))
+        oSB.AppendLine(ConCat_ht("6", "fix"))
+        oSB.AppendLine(ConCat_ht("7", "fiy"))
+        oSB.AppendLine(ConCat_ht("8", "fiz"))
+        oSB.AppendLine(ConCat_ht("9", "Stiff - ux"))
+        oSB.AppendLine(ConCat_ht("10", "Stiff - uy"))
+        oSB.AppendLine(ConCat_ht("11", "Stiff - uz"))
+        oSB.AppendLine(ConCat_ht("12", "Stiff - fix"))
+        oSB.AppendLine(ConCat_ht("13", "Stiff - fiy"))
+        oSB.AppendLine(ConCat_ht("14", "Stiff - fiz"))
+        oSB.AppendLine(ConCat_ht("15", "Function X"))
+        oSB.AppendLine(ConCat_ht("16", "Function Y"))
+        oSB.AppendLine(ConCat_ht("17", "Function Z"))
+        oSB.AppendLine(ConCat_ht("18", "Function Rx"))
+        oSB.AppendLine(ConCat_ht("19", "Function Ry"))
+        oSB.AppendLine(ConCat_ht("20", "Function Rz"))
+        oSB.AppendLine("</h>")
+    End Sub
 
-        oSB.AppendLine("<obj nm=""H" & ihinge & """>")
-        oSB.AppendLine(ConCat_pv("0", "H" & ihinge)) 'Hinge name
+    Private Sub WriteHinge(ByRef oSB, ihinge, hinges(,)) 'write 1 hinge to the XML stream
+        oSB.AppendLine("<obj nm=""" & hinges(ihinge, 1) & """>")
+        oSB.AppendLine(ConCat_pv("0", hinges(ihinge, 1))) 'Hinge name
         'write beam name as reference table
         oSB.AppendLine("<p1 t="""">")
         oSB.AppendLine("<h>")
@@ -6522,52 +5264,50 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", hinges(ihinge, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
         'end of reference table
 
-        Select Case hinges(ihinge, 1)
-            Case "Begin"
-                oSB.AppendLine(ConCat_pvt("2", "0", "Begin"))
-            Case "End"
-                oSB.AppendLine(ConCat_pvt("2", "1", "End"))
-            Case "Both"
-                oSB.AppendLine(ConCat_pvt("2", "2", "Both"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("2", "2", "Both"))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.BeamEnd)(2, hinges(ihinge, 2)))
 
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(3, hinges(ihinge, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(4, hinges(ihinge, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(5, hinges(ihinge, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(6, hinges(ihinge, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(7, hinges(ihinge, 7)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(8, hinges(ihinge, 8)))
 
-        tt = GetStringForDOF(hinges(ihinge, 2))
-        oSB.AppendLine(ConCat_pvt("3", hinges(ihinge, 2), tt))
-        tt = GetStringForDOF(hinges(ihinge, 3))
-        oSB.AppendLine(ConCat_pvt("4", hinges(ihinge, 3), tt))
-        tt = GetStringForDOF(hinges(ihinge, 4))
-        oSB.AppendLine(ConCat_pvt("5", hinges(ihinge, 4), tt))
-        tt = GetStringForDOF(hinges(ihinge, 5))
-        oSB.AppendLine(ConCat_pvt("6", hinges(ihinge, 5), tt))
-        tt = GetStringForDOF(hinges(ihinge, 6))
-        oSB.AppendLine(ConCat_pvt("7", hinges(ihinge, 6), tt))
-        tt = GetStringForDOF(hinges(ihinge, 7))
-        oSB.AppendLine(ConCat_pvt("8", hinges(ihinge, 7), tt))
-        oSB.AppendLine(ConCat_pv("9", hinges(ihinge, 8)))
-        oSB.AppendLine(ConCat_pv("10", hinges(ihinge, 9)))
-        oSB.AppendLine(ConCat_pv("11", hinges(ihinge, 10)))
-        oSB.AppendLine(ConCat_pv("12", hinges(ihinge, 11)))
-        oSB.AppendLine(ConCat_pv("13", hinges(ihinge, 12)))
-        oSB.AppendLine(ConCat_pv("14", hinges(ihinge, 13)))
+        oSB.AppendLine(ConCat_pv("9", hinges(ihinge, 9)))
+        oSB.AppendLine(ConCat_pv("10", hinges(ihinge, 10)))
+        oSB.AppendLine(ConCat_pv("11", hinges(ihinge, 11)))
+        oSB.AppendLine(ConCat_pv("12", hinges(ihinge, 12)))
+        oSB.AppendLine(ConCat_pv("13", hinges(ihinge, 13)))
+        oSB.AppendLine(ConCat_pv("14", hinges(ihinge, 14)))
 
+        oSB.AppendLine(ConCat_pin("15", "1", hinges(ihinge, 15)))
+        oSB.AppendLine(ConCat_pin("16", "1", hinges(ihinge, 16)))
+        oSB.AppendLine(ConCat_pin("17", "1", hinges(ihinge, 17)))
+        oSB.AppendLine(ConCat_pin("18", "1", hinges(ihinge, 18)))
+        oSB.AppendLine(ConCat_pin("19", "1", hinges(ihinge, 19)))
+        oSB.AppendLine(ConCat_pin("20", "1", hinges(ihinge, 20)))
 
         oSB.AppendLine("</obj>")
 
     End Sub
 
+    Private Sub WriteCrossLinkHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Type"))
+        oSB.AppendLine(ConCat_ht("2", "1st member"))
+        oSB.AppendLine(ConCat_ht("3", "2st member"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Sub WriteCrossLink(ByRef oSB, icorsslink, crosslink(,)) 'write 1 hinge to the XML stream
-
-
         oSB.AppendLine("<obj nm=""CRL" & icorsslink & """>")
         oSB.AppendLine(ConCat_pv("0", "CRL" & icorsslink)) 'Cross0-link name
 
@@ -6583,11 +5323,27 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_pv("3", crosslink(icorsslink, 2)))
 
         oSB.AppendLine("</obj>")
-
-
     End Sub
 
-
+    Private Sub WriteLineHingeHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference table"))
+        oSB.AppendLine(ConCat_ht("2", "Edge"))
+        oSB.AppendLine(ConCat_ht("3", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("4", "Position x1"))
+        oSB.AppendLine(ConCat_ht("5", "Position x2"))
+        oSB.AppendLine(ConCat_ht("6", "Origin"))
+        oSB.AppendLine(ConCat_ht("7", "ux"))
+        oSB.AppendLine(ConCat_ht("8", "uy"))
+        oSB.AppendLine(ConCat_ht("9", "uz"))
+        oSB.AppendLine(ConCat_ht("10", "fix"))
+        oSB.AppendLine(ConCat_ht("11", "Stiff - ux"))
+        oSB.AppendLine(ConCat_ht("12", "Stiff - uy"))
+        oSB.AppendLine(ConCat_ht("13", "Stiff - uz"))
+        oSB.AppendLine(ConCat_ht("14", "Stiff - fix"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteLineHinge(ByRef oSB, ihinge, hinges(,)) 'write 1 hinge to the XML stream
         Dim tt As String
@@ -6602,8 +5358,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         oSB.AppendLine(ConCat_pv("2", hinges(ihinge, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -6643,12 +5399,19 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_pv("13", hinges(ihinge, 12)))
         oSB.AppendLine(ConCat_pv("14", hinges(ihinge, 13)))
 
-
-
         oSB.AppendLine("</obj>")
 
     End Sub
 
+    Private Sub WriteArbitraryProfileHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("2", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("3", "Cross-section"))
+        oSB.AppendLine(ConCat_ht("4", "Spans table"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteArbitraryProfile(ByRef oSB, idx, aprofiles(,)) 'write 1 ArbitraryProfile to the XML stream
         oSB.AppendLine("<obj nm=""" & aprofiles(idx, 1) & """>")
@@ -6664,8 +5427,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", aprofiles(idx, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
@@ -6726,6 +5489,31 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteIntegrationStripHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "UniqueID"))
+        oSB.AppendLine(ConCat_ht("2", "Create meshnodes"))
+        oSB.AppendLine(ConCat_ht("3", "Effective width geometry"))
+        oSB.AppendLine(ConCat_ht("4", "Effective width definition"))
+        oSB.AppendLine(ConCat_ht("5", "Width (total)"))
+        oSB.AppendLine(ConCat_ht("6", "No. of thickness (total)"))
+        oSB.AppendLine(ConCat_ht("7", "Coord X"))
+        oSB.AppendLine(ConCat_ht("8", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("9", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("10", "Coord X"))
+        oSB.AppendLine(ConCat_ht("11", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("12", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("13", "Length"))
+        oSB.AppendLine(ConCat_ht("14", "Shape"))
+        oSB.AppendLine(ConCat_ht("15", "2D member"))
+        oSB.AppendLine(ConCat_ht("16", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("17", "Width left"))
+        oSB.AppendLine(ConCat_ht("18", "Width right"))
+        oSB.AppendLine(ConCat_ht("19", "No. of thickness left"))
+        oSB.AppendLine(ConCat_ht("20", "No. of thickness right"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteIntegrationStrip(ByRef oSB, iIntegrationStrip, integrationStrips(,)) 'write 1 integration strip to the XML stream
         'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
@@ -6795,6 +5583,17 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteSectionOnBeamHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "UniqueID"))
+        oSB.AppendLine(ConCat_ht("3", "Coord. definition"))
+        oSB.AppendLine(ConCat_ht("4", "Position x"))
+        oSB.AppendLine(ConCat_ht("5", "Origin"))
+        oSB.AppendLine(ConCat_ht("6", "Repeat (n)"))
+        oSB.AppendLine("</h>")
+    End Sub
 
     Private Sub WriteSectionOnBeam(ByRef oSB, iSectionOnBeam, sectionOnBeams(,))
         oSB.AppendLine("<obj nm=""" & sectionOnBeams(iSectionOnBeam, 1) & """>")
@@ -6807,8 +5606,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        oSB.AppendLine(ConCat_pv("0", "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Beam.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member1D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member1D)))
         oSB.AppendLine(ConCat_pv("2", sectionOnBeams(iSectionOnBeam, 0)))
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p0>")
@@ -6830,6 +5629,25 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
 
     End Sub
 
+    Private Sub WriteAveragingStripHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("1", "Name"))
+        oSB.AppendLine(ConCat_ht("2", "UniqueID"))
+        oSB.AppendLine(ConCat_ht("3", "Type"))
+        oSB.AppendLine(ConCat_ht("4", "Direction"))
+        oSB.AppendLine(ConCat_ht("5", "Width"))
+        oSB.AppendLine(ConCat_ht("6", "Length"))
+        oSB.AppendLine(ConCat_ht("7", "Angle"))
+        oSB.AppendLine(ConCat_ht("8", "Coord X"))
+        oSB.AppendLine(ConCat_ht("9", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("10", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("11", "Coord x"))
+        oSB.AppendLine(ConCat_ht("12", "Coord y"))
+        oSB.AppendLine(ConCat_ht("13", "Coord z"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteAveragingStrip(ByRef oSB, iAveragingStrip, averagingStrips(,)) 'write 1 averaging strip to the XML stream
         'a beam consists of: Name, Section, Layer, LineShape, LCSType, LCSParam1, LCSParam2, LCSParam3
 
@@ -6845,8 +5663,8 @@ SE_ArbitraryProfiles, arbitraryProfileCount, SE_IntegrationStrip, integrationStr
         oSB.AppendLine(ConCat_ht("3", "Member Name"))
         oSB.AppendLine("</h>")
         oSB.AppendLine(ConCat_row(0))
-        oSB.AppendLine(ConCat_pv("0", "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"))
-        oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_Plane.1"))
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         oSB.appendline(ConCat_pv("3", averagingStrips(iAveragingStrip, 0))) ' 2D Member to check
         oSB.AppendLine("</row>")
         oSB.AppendLine(ConCat_closetable("0"))

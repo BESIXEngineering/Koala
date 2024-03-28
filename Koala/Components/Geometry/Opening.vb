@@ -11,11 +11,8 @@ Namespace Koala
     Public Class Opening
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
         ReadOnly allNodes As New List(Of SENode)()
-
-        ReadOnly stopWatch As New System.Diagnostics.Stopwatch()
 
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -57,21 +54,8 @@ Namespace Koala
 
         Protected Overrides Sub BeforeSolveInstance()
             MyBase.BeforeSolveInstance()
-            memberIdx = 0
             nodeIdx = 0
             allNodes.Clear()
-            'initialize stopwatch
-            stopWatch.Start()
-        End Sub
-
-        Protected Overrides Sub AfterSolveInstance()
-            MyBase.AfterSolveInstance()
-            allNodes.Clear()
-            Dim time_elapsed As Double
-            'stop stopwatch
-            stopWatch.Stop()
-            time_elapsed = stopWatch.ElapsedMilliseconds
-            Rhino.RhinoApp.WriteLine("KoalaOpening: Done in " + Str(time_elapsed) + " ms.")
         End Sub
 
         ''' <summary>
@@ -99,8 +83,8 @@ Namespace Koala
             Dim basePath As GH_Path = DA.ParameterTargetPath(0)
 
             ' set member name and surface
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, NameIndex)
             SE_member(0) = memberName
             SE_member(1) = surfaceName
 

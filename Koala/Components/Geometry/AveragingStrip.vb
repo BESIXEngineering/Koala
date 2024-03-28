@@ -10,7 +10,6 @@ Namespace Koala
         Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "RS"
-        Public NameIndex As Integer = 0
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -38,8 +37,6 @@ Namespace Koala
             pManager.AddNumberParameter("Length", "Length", "Length", GH_ParamAccess.item, 1.0)
             pManager.AddNumberParameter("Angle", "Angle", "Angle", GH_ParamAccess.item, 0.0)
             pManager.AddTextParameter("AveragingStripPrefix", "AveragingStripPrefix", "Averaging Strip name prefix", GH_ParamAccess.item, DefaultNamePrefix)
-
-
         End Sub
 
         ''' <summary>
@@ -47,11 +44,6 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
             pManager.AddTextParameter("AveragingStrip", "AveragingStrip", "", GH_ParamAccess.list)
-        End Sub
-
-        Protected Overrides Sub BeforeSolveInstance()
-            NameIndex = 0
-            MyBase.BeforeSolveInstance()
         End Sub
 
         ''' <summary>

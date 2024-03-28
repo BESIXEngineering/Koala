@@ -149,10 +149,12 @@ Namespace Koala
             pManager.AddTextParameter("ArbitraryProfiles", "ArbitraryProfiles", "List of arbitrary profiles", GH_ParamAccess.list)
             pManager.Param(54).Optional = True
             ' added by MWO
-            pManager.AddTextParameter("IntegrationStrips", "IntegrationStrips", "List of integration strips on 2D Members", GH_ParamAccess.list)
-            pManager.Param(55).Optional = True
-            pManager.AddTextParameter("SectionOnBeams", "SectionOnBeams", "List of sections on 1D Members", GH_ParamAccess.list)
-            pManager.Param(56).Optional = True
+            'pManager.AddTextParameter("IntegrationStrips", "IntegrationStrips", "List of integration strips on 2D Members", GH_ParamAccess.list)
+            'pManager.Param(55).Optional = True
+            'pManager.AddTextParameter("SectionOnBeams", "SectionOnBeams", "List of sections on 1D Members", GH_ParamAccess.list)
+            'pManager.Param(56).Optional = True
+            'pManager.AddTextParameter("AveragingStrips", "AveragingStrips", "List of averaging strips", GH_ParamAccess.list)
+            'pManager.Param(57).Optional = True
         End Sub
 
         ''' <summary>
@@ -194,7 +196,7 @@ Namespace Koala
             Dim in_pointLoadsPoints = New List(Of String)
             Dim in_pointLoadsBeams = New List(Of String)
             Dim FileName As String = " "
-            Dim Scale As String = "1"
+            Dim Scale As Double = 1
             Dim RemDuplNodes As Boolean = False
             ' Dim AutoUpdate As Boolean = False
             Dim OnDemand As Boolean = False
@@ -229,9 +231,9 @@ Namespace Koala
 
             Dim in_ArbitraryProfiles = New List(Of String)
             ' Added by MWO
-            Dim in_IntegrationStrips = New List(Of String)
-            Dim in_SectionOnBeams = New List(Of String)
-            Dim in_AveragingStrips = New List(Of String)
+            'Dim in_IntegrationStrips = New List(Of String)
+            'Dim in_SectionOnBeams = New List(Of String)
+            'Dim in_AveragingStrips = New List(Of String)
 
 
 
@@ -260,7 +262,7 @@ Namespace Koala
             DA.GetDataList(Of String)(16, in_flloads)
             DA.GetDataList(Of String)(17, in_fsloads)
             DA.GetDataList(Of String)(18, in_hinges)
-            DA.GetData(Of String)(20, Scale)
+            DA.GetData(Of Double)(20, Scale)
             DA.GetData(Of Boolean)(21, RemDuplNodes)
             DA.GetData(Of Boolean)(22, OnDemand)
             DA.GetDataList(Of String)(23, in_edgeLoads)
@@ -297,9 +299,9 @@ Namespace Koala
 
             DA.GetDataList(Of String)(54, in_ArbitraryProfiles)
             ' Added by MWO
-            DA.GetDataList(Of String)(55, in_IntegrationStrips)
-            DA.GetDataList(Of String)(56, in_SectionOnBeams)
-            DA.GetDataList(Of String)(57, in_AveragingStrips)
+            'DA.GetDataList(Of String)(55, in_IntegrationStrips)
+            'DA.GetDataList(Of String)(56, in_SectionOnBeams)
+            'DA.GetDataList(Of String)(57, in_AveragingStrips)
 
 
             If AutoUpdate = False Then
@@ -310,13 +312,15 @@ Namespace Koala
 
 
 
-            CreateXMLFile(FileName, StructureType, Materials, UILanguage, MeshSize, in_sections, in_nodes, in_beams, in_surfaces, in_openings,
+            CreateXMLFile(FileName, StructureType, Materials, UILanguage, Scale, MeshSize, RemDuplNodes, Tolerance,
+                          projectInfo, in_layers, in_sections,
+                          in_nodes, in_beams, in_surfaces, in_openings,
                           in_nodesupports, in_edgesupports, in_lcases, in_lgroups, in_lloads, in_sloads, in_fploads, in_flloads, in_fsloads, in_hinges,
-                          in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, Scale, in_LinCombinations, in_NonLinCombinations, in_StabCombinations,
-                          in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, projectInfo, in_layers, in_BeamLineSupport, in_PointSupportsOnBeams,
+                          in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, in_LinCombinations, in_NonLinCombinations, in_StabCombinations,
+                          in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
-                          in_freePointMoment, in_nonlinearfunctions, RemDuplNodes, Tolerance, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
-                          in_ArbitraryProfiles, in_IntegrationStrips, in_SectionOnBeams, in_ArbitraryProfiles)
+                          in_freePointMoment, in_nonlinearfunctions, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
+                          in_ArbitraryProfiles, Nothing, Nothing, Nothing) 'in_IntegrationStrips, in_SectionOnBeams, in_AveragingStrips)
             DA.SetData(0, FileName)
 
 

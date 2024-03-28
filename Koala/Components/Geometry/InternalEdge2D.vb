@@ -11,7 +11,6 @@ Namespace Koala
     Public Class InternalEdge2D
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
         ReadOnly allNodes As New List(Of SENode)()
 
@@ -56,13 +55,7 @@ Namespace Koala
 
         Protected Overrides Sub BeforeSolveInstance()
             MyBase.BeforeSolveInstance()
-            memberIdx = 0
             nodeIdx = 0
-            allNodes.Clear()
-        End Sub
-
-        Protected Overrides Sub AfterSolveInstance()
-            MyBase.AfterSolveInstance()
             allNodes.Clear()
         End Sub
 
@@ -97,8 +90,8 @@ Namespace Koala
             GetTypeAndNodes(line, lineType, arrPoints)
             lineShape = lineType
 
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", edgePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", edgePrefix, NameIndex)
             SE_member(0) = memberName
             SE_member(1) = surfaceName
 

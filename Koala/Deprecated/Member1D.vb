@@ -7,14 +7,14 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
-    Public Class Member1D
+    <System.Obsolete>
+    Public Class Member1D_old
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
         ReadOnly allNodes As New List(Of SENode)()
 
-        ReadOnly stopWatch As New System.Diagnostics.Stopwatch()
+        'ReadOnly stopWatch As New System.Diagnostics.Stopwatch()
 
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -31,7 +31,7 @@ Namespace Koala
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.primary
+                Return GH_Exposure.hidden
             End Get
         End Property
 
@@ -65,22 +65,21 @@ Namespace Koala
 
         Protected Overrides Sub BeforeSolveInstance()
             MyBase.BeforeSolveInstance()
-            memberIdx = 0
             nodeIdx = 0
             allNodes.Clear()
             'initialize stopwatch
-            stopWatch.Start()
+            'stopWatch.Start()
         End Sub
 
-        Protected Overrides Sub AfterSolveInstance()
-            MyBase.AfterSolveInstance()
-            allNodes.Clear()
-            Dim time_elapsed As Double
-            'stop stopwatch
-            stopWatch.Stop()
-            time_elapsed = stopWatch.ElapsedMilliseconds
-            Rhino.RhinoApp.WriteLine("Koala1DMembers: Done in " + Str(time_elapsed) + " ms.")
-        End Sub
+        'Protected Overrides Sub AfterSolveInstance()
+        '    MyBase.AfterSolveInstance()
+        '    allNodes.Clear()
+        '    Dim time_elapsed As Double
+        '    'stop stopwatch
+        '    stopWatch.Stop()
+        '    time_elapsed = stopWatch.ElapsedMilliseconds
+        '    Rhino.RhinoApp.WriteLine("Koala1DMembers: Done in " + Str(time_elapsed) + " ms.")
+        'End Sub
 
         ''' <summary>
         ''' This is the method that actually does the work.
@@ -119,7 +118,7 @@ Namespace Koala
             DA.GetData(12, memberNamePrefix)
 
             Dim SE_NodeTree As New GH_Structure(Of GH_String)()
-            Dim SE_member(12) As String
+            Dim SE_member(13) As String
 
             Dim basePath As GH_Path = DA.ParameterTargetPath(0)
 
@@ -142,8 +141,8 @@ Namespace Koala
                 zvector = Vector3d.Zero
             End If
 
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, NameIndex)
 
             'extract geometry from the curve
             GetTypeAndNodes(curve, lineType, arrPoints)
@@ -204,6 +203,7 @@ Namespace Koala
 
             SE_member(11) = ey
             SE_member(12) = ez
+            SE_member(13) = -1  'Buckling group index
 
             DA.SetDataTree(0, SE_NodeTree)
             DA.SetDataList(1, SE_member)

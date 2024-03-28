@@ -14,8 +14,6 @@ Namespace Koala
     Public Class Member0D
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
-
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -50,11 +48,6 @@ Namespace Koala
             pManager.AddTextParameter("Node", "Node", "Output node data", GH_ParamAccess.list)
         End Sub
 
-        Protected Overrides Sub BeforeSolveInstance()
-            MyBase.BeforeSolveInstance()
-            memberIdx = 0
-        End Sub
-
         ''' <summary>
         ''' This is the method that actually does the work.
         ''' </summary>
@@ -69,8 +62,8 @@ Namespace Koala
 
             Dim SE_member(3) As String 'a node consists of: Name, X, Y, Z
 
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", nodePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", nodePrefix, NameIndex)
 
             SE_member(0) = memberName
             SE_member(1) = point.X

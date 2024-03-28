@@ -271,6 +271,7 @@ Namespace Koala
 
                 SE_beams(i, 11) = eys(Math.Min(eys.Count - 1, i))
                 SE_beams(i, 12) = ezs(Math.Min(ezs.Count - 1, i))
+                SE_beams(i, 13) = -1  'Buckling group index
 
                 beamcount += 1
 
@@ -307,6 +308,7 @@ Namespace Koala
                 FlatBeamList.Add(SE_beams(i, 10))
                 FlatBeamList.Add(SE_beams(i, 11))
                 FlatBeamList.Add(SE_beams(i, 12))
+                FlatBeamList.Add(SE_beams(i, 13))
 
             Next i
             DA.SetDataList(1, FlatBeamList)

@@ -6,8 +6,10 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    <System.Obsolete>
     Public Class Hinges
         Inherits GH_KoalaComponent
+
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
         ''' constructor without any arguments.
@@ -32,6 +34,7 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("ListofBeams", "ListofBeams", "List of beams where to apply hinges", GH_ParamAccess.list)
+
             pManager.AddIntegerParameter("Position", "Position", "Position of the hinge", GH_ParamAccess.item, 2)
             AddOptionsToMenuHingePosition(pManager.Param(1))
             pManager.AddIntegerParameter("Rx", "Rx", "Rotation around X axis, Right click and select from options", GH_ParamAccess.item, 1)
@@ -114,19 +117,29 @@ Namespace Koala
             FlatList.Clear()
             For Each item In Hinges
                 FlatList.Add(item)
+                FlatList.Add("H" & (DA.Iteration + 1).ToString)
                 FlatList.Add(Position)
+
                 FlatList.Add(Rx)
                 FlatList.Add(Ry)
                 FlatList.Add(Rz)
                 FlatList.Add(Tx)
                 FlatList.Add(Ty)
                 FlatList.Add(Tz)
+
                 FlatList.Add(RxStiffness)
                 FlatList.Add(RyStiffness)
                 FlatList.Add(RzStiffness)
                 FlatList.Add(TxStiffness)
                 FlatList.Add(TyStiffness)
                 FlatList.Add(TzStiffness)
+
+                FlatList.Add("")
+                FlatList.Add("")
+                FlatList.Add("")
+                FlatList.Add("")
+                FlatList.Add("")
+                FlatList.Add("")
             Next
 
             DA.SetDataList(0, FlatList)

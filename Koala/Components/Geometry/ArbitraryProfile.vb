@@ -10,7 +10,6 @@ Namespace Koala
         Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "AP"
-        Public NameIndex As Integer = 0
 
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -52,10 +51,6 @@ Namespace Koala
             pManager.AddTextParameter("ArbitraryProfiles", "ArbitraryProfiles", "", GH_ParamAccess.list)
         End Sub
 
-        Protected Overrides Sub BeforeSolveInstance()
-            NameIndex = 0
-            MyBase.BeforeSolveInstance()
-        End Sub
         ''' <summary>
         ''' This is the method that actually does the work.
         ''' </summary>
@@ -78,7 +73,6 @@ Namespace Koala
             Dim Alignments = New List(Of Integer)
 
             If (Not DA.GetData(0, Beams)) Then Return
-            DA.GetData(0, Beams)
             DA.GetData(1, NamePrefix)
             If (Not DA.GetData(2, Section)) Then Return
 

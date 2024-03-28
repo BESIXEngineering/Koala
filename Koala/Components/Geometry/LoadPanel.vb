@@ -11,10 +11,8 @@ Namespace Koala
     Public Class LoadPanel
         Inherits GH_KoalaComponent
 
-        Dim memberIdx As Long = 0
         Dim nodeIdx As Long = 0
         ReadOnly allNodes As New List(Of SENode)()
-        ReadOnly stopWatch As New System.Diagnostics.Stopwatch()
 
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -65,20 +63,8 @@ Namespace Koala
 
         Protected Overrides Sub BeforeSolveInstance()
             MyBase.BeforeSolveInstance()
-            memberIdx = 0
             nodeIdx = 0
             allNodes.Clear()
-            'initialize stopwatch
-            stopWatch.Start()
-        End Sub
-
-        Protected Overrides Sub AfterSolveInstance()
-            MyBase.AfterSolveInstance()
-            allNodes.Clear()
-            'stop stopwatch
-            stopWatch.Stop()
-            Dim time_elapsed As Double = stopWatch.ElapsedMilliseconds
-            Rhino.RhinoApp.WriteLine("KoalaLoadPanel: Done in " + Str(time_elapsed) + " ms.")
         End Sub
 
         ''' <summary>
@@ -133,8 +119,8 @@ Namespace Koala
                 Next w
             End If
 
-            memberIdx += 1
-            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, memberIdx)
+            NameIndex += 1
+            Dim memberName As String = String.Format("{0}{1}", memberNamePrefix, NameIndex)
 
             SE_member(0) = memberName
             SE_member(1) = layerName

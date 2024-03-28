@@ -104,19 +104,20 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AveragingStrip.vb" />
-    <Compile Include="GH_KoalaComponent.vb" />
+    <Compile Include="Components\Geometry\AveragingStrip.vb" />
+    <Compile Include="Components\GH_KoalaComponent.vb" />
     <Compile Include="CreateXML2.vb" />
-    <Compile Include="IntegrationStrip.vb" />
-    <Compile Include="InternalNode1D.vb" />
-    <Compile Include="LoadPanel.vb" />
-    <Compile Include="Member2D.vb" />
+    <Compile Include="Components\Geometry\IntegrationStrip.vb" />
+    <Compile Include="Components\Geometry\InternalNode1D.vb" />
+    <Compile Include="Components\Geometry\LoadPanel.vb" />
+    <Compile Include="Components\Geometry\Member1D.vb" />
+    <Compile Include="Components\Geometry\Member2D.vb" />
     <Compile Include="Deprecated\2Dmember.vb" />
     <Compile Include="Analysis.vb" />
-    <Compile Include="ArbitraryProfile.vb" />
+    <Compile Include="Components\Geometry\ArbitraryProfile.vb" />
     <Compile Include="Deprecated\BeamInternalNode.vb" />
     <Compile Include="BeamLoads.vb" />
-    <Compile Include="Member1D.vb" />
+    <Compile Include="Deprecated\Member1D.vb" />
     <Compile Include="Deprecated\Beams.vb" />
     <Compile Include="BeamSupport.vb" />
     <Compile Include="Deprecated\CreateXML.vb" />
@@ -126,14 +127,15 @@
     <Compile Include="EdgeSupport.vb" />
     <Compile Include="Enums.vb" />
     <Compile Include="FreePointMoment.vb" />
-    <Compile Include="FreeSurfaceLoad2.vb" />
+    <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
     <Compile Include="Deprecated\FreeSurfaceLoad.Designer.vb">
       <DependentUpon>FreeSurfaceLoad.vb</DependentUpon>
     </Compile>
     <Compile Include="Deprecated\FreeSurfaceLoad.vb" />
     <Compile Include="GapLocalBeamNL.vb" />
-    <Compile Include="HelperTools.vb" />
-    <Compile Include="Hinges.vb" />
+    <Compile Include="Helpers\GeometryHelpers.vb" />
+    <Compile Include="Helpers\HelperTools.vb" />
+    <Compile Include="Deprecated\Hinges.vb" />
     <Compile Include="Layers.vb" />
     <Compile Include="LimitForceLocalBeamNL.vb" />
     <Compile Include="LinearCombination.vb" />
@@ -143,6 +145,9 @@
     <Compile Include="LoadCasesAndGroups.vb" />
     <Compile Include="KoalaInfo.vb" />
     <Compile Include="Deprecated\LoadPanels.vb" />
+    <Compile Include="Helpers\ContainerData.vb" />
+    <Compile Include="Model\ModelData.vb" />
+    <Compile Include="Model\Node.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -163,24 +168,25 @@
     <Compile Include="FreeLineLoad.vb" />
     <Compile Include="NLCable.vb" />
     <Compile Include="NodeRigidArm.vb" />
-    <Compile Include="Member0D.vb" />
+    <Compile Include="Components\Geometry\Member0D.vb" />
     <Compile Include="Deprecated\Nodes.vb" />
     <Compile Include="NodeSupport.vb" />
     <Compile Include="NonlinearCombination.vb" />
     <Compile Include="NonlinearFunction.vb" />
-    <Compile Include="Opening.vb" />
+    <Compile Include="Components\Geometry\Opening.vb" />
     <Compile Include="Deprecated\Openings.vb" />
     <Compile Include="PointLoadOnBeam.vb" />
     <Compile Include="PointLoadOnStructNode.vb" />
     <Compile Include="PointMomentOnBeam.vb" />
     <Compile Include="PointMomentOnStructNode.vb" />
+    <Compile Include="Components\Constraints\HingeOnBeam.vb" />
     <Compile Include="PointSupportOnBeam.vb" />
     <Compile Include="PressTensionOnlyBeamNl.vb" />
     <Compile Include="ProjectData.vb" />
     <Compile Include="Deprecated\ProjectInfo.vb" />
-    <Compile Include="InternalEdge2D.vb" />
+    <Compile Include="Components\Geometry\InternalEdge2D.vb" />
     <Compile Include="Deprecated\SlabInternalEdge.vb" />
-    <Compile Include="SectionOnBeam.vb" />
+    <Compile Include="Components\Geometry\SectionOnBeam.vb" />
     <Compile Include="StabilityCombination.vb" />
     <Compile Include="Subsoil.vb" />
     <Compile Include="SurfaceLoad.vb" />
@@ -197,6 +203,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="CHANGELOG.MD" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -265,6 +272,7 @@
     <None Include="Resources\SectionOnBeam.bmp" />
     <Content Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

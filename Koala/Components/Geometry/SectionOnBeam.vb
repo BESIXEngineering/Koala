@@ -20,7 +20,6 @@ Namespace Koala
         End Sub
 
         Const DefaultNamePrefix As String = "SB"
-        Public NameIndex As Integer = 0
 
         ''' <summary>
         ''' Registers all the input parameters for this component.
@@ -40,11 +39,6 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
             pManager.AddTextParameter("SectionOnBeam", "SectionOnBeam", "", GH_ParamAccess.list)
-        End Sub
-
-        Protected Overrides Sub BeforeSolveInstance()
-            NameIndex = 0
-            MyBase.BeforeSolveInstance()
         End Sub
 
         ''' <summary>

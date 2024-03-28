@@ -156,6 +156,15 @@ Namespace Koala
         TwoCss = 2
     End Enum
 
+    Public Enum BeamEnd
+        <Description("Begin")>
+        NodeAtStart = 0
+        <Description("End")>
+        NodeAtEnd = 1
+        <Description("Both")>
+        Both = 2
+    End Enum
+
     Public Enum BeamFEMType
         <Description("standard")>
         Standard = 0
@@ -203,6 +212,14 @@ Namespace Koala
         MemberLCS = 2
     End Enum
 
+    Public Enum DegreeOfFreedom
+        Free = 0
+        Rigid = 1
+        Flexible = 2
+        <Description("Nonlinear")>
+        Nonlinear = 7
+    End Enum
+
     Public Enum Direction
         X = 0
         Y = 1
@@ -241,6 +258,7 @@ Namespace Koala
     ''' </summary>
     Public Enum EsaObjectType
         ProjectData
+        MeshSetup
         Layer
         CrossSection
 
@@ -256,7 +274,7 @@ Namespace Koala
         InternalEdge2D
 
         NodeSupport
-        EdgeSupport
+        SurfaceEdgeSupport
         BeamLineSupport
         BeamPointSupport
         SurfaceSupport

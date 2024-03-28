@@ -18,7 +18,7 @@ Namespace Koala
         Public Sub New()
             MyBase.New("EdgeSupport", "EdgeSupport",
                 "EdgeSupport description",
-                "Structure", New EsaObjectType() {EsaObjectType.EdgeSupport})
+                "Structure", New EsaObjectType() {EsaObjectType.SurfaceEdgeSupport})
         End Sub
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
