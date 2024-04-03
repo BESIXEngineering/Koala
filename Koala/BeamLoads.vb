@@ -14,7 +14,7 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("BeamLoads", "BeamLoads",
+            MyBase.New("BeamLoad", "BeamLoad",
                 "BeamLoads description",
                 "Load", New EsaObjectType() {EsaObjectType.LineLoadBeam})
         End Sub

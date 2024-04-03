@@ -1,4 +1,6 @@
-﻿Public Class ModelData
+﻿Imports Koala.Koala
+
+Public Class ModelData
     Public NodeMap As Dictionary(Of String, Node)
 
     Public Scale As Double
@@ -83,4 +85,34 @@
         End If
         GetNodeName = NodeMap(name).Name
     End Function
+
+    Public Function TryGetEdgeMemberType(name As String, ByRef objectType As EsaObjectType) As Boolean
+        Dim i As Long
+        For i = 0 To Surfaces.GetLength(0) - 1
+            If Surfaces(i, 0) = name Then
+                objectType = EsaObjectType.Member2D
+                TryGetEdgeMemberType = True
+                Exit Function
+            End If
+        Next
+
+        For i = 0 To Openings.GetLength(0) - 1
+            If Openings(i, 0) = name Then
+                objectType = EsaObjectType.Opening
+                TryGetEdgeMemberType = True
+                Exit Function
+            End If
+        Next
+
+        For i = 0 To SlabInternalEdges.GetLength(0) - 1
+            If SlabInternalEdges(i, 0) = name Then
+                objectType = EsaObjectType.InternalEdge2D
+                TryGetEdgeMemberType = True
+                Exit Function
+            End If
+        Next
+
+        TryGetEdgeMemberType = False
+    End Function
+
 End Class

@@ -27,7 +27,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
 
             pManager.AddTextParameter("SubsoilName", "SubsoilName", "Name of subsoil", GH_ParamAccess.item, "Subsoil0")
-            pManager.AddTextParameter("Description", "Description", "Description", GH_ParamAccess.item, "Defined subsoil for surface support")
+            pManager.AddTextParameter("Description", "Description", "Description", GH_ParamAccess.item, "Subsoil for surface support")
             pManager.AddNumberParameter("C1x", "C1x", "C1x in MN/m^3", GH_ParamAccess.item, 50.0)
             pManager.AddNumberParameter("C1y", "C1y", "C1y in MN/m^3", GH_ParamAccess.item, 50.0)
             pManager.AddNumberParameter("C1z", "C1z", "C1z in MN/m^3", GH_ParamAccess.item, 50.0)
@@ -35,7 +35,7 @@ Namespace Koala
             pManager.AddNumberParameter("C2y", "C2y", "C2y in MN/m^3", GH_ParamAccess.item, 50.0)
             pManager.AddIntegerParameter("C1ztype", "C1ztype", "C1ztype", GH_ParamAccess.item, 0)
             AddOptionstoMenuC1ztype(pManager.Param(7))
-            pManager.AddTextParameter("NonlinearFunction", "NonlinearFunction", "Name of nonlinear function for C1z", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("NonlinearFunction", "NonlinearFunction", "Name of nonlinear function for C1z (WARN: might not be correctly assigned in SCIA)", GH_ParamAccess.item, "")
         End Sub
 
         ''' <summary>

@@ -1018,11 +1018,11 @@ Module HelperTools
             .Openings = UnflattenObjectData(in_openings, 3, "opening"),
             .SlabInternalEdges = UnflattenObjectData(in_slabinternalEdges, 3, "slab internal edge"),
             .RidgidArms = UnflattenObjectData(in_RigidArms, 5, "rigid arm"),
-            .NodeSupports = UnflattenObjectData(in_nodesupports, 20, "node support"),
-            .BeamPointSupports = UnflattenObjectData(in_PointSupportOnBeam, 24, "beam point support"),
-            .BeamLineSupports = UnflattenObjectData(in_BeamLineSupport, 23, "beam line support"),
-            .SurfaceSupports = UnflattenObjectData(in_SurfaceSupports, 2, "surface support"),
-            .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 25, "surface edge support"),
+            .NodeSupports = UnflattenObjectData(in_nodesupports, 22, "node support"),
+            .BeamPointSupports = UnflattenObjectData(in_PointSupportOnBeam, 26, "beam point support"),
+            .BeamLineSupports = UnflattenObjectData(in_BeamLineSupport, 25, "beam line support"),
+            .SurfaceSupports = UnflattenObjectData(in_SurfaceSupports, 3, "surface support"),
+            .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 27, "surface edge support"),
             .LoadCases = UnflattenObjectData(in_lcases, 3, "load case"),
             .LoadGroups = UnflattenObjectData(in_lgroups, 3, "load group"),
             .NodePointLoads = UnflattenObjectData(in_pointLoadsPoints, 6, "point load"),
@@ -1385,7 +1385,7 @@ Module HelperTools
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... edge supports: " + Str(i))
                 End If
-                Call WriteEdgeSupport(oSB, i, modelData.SurfaceEdgeSupports)
+                Call WriteEdgeSupport(oSB, i, modelData)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -1400,7 +1400,6 @@ Module HelperTools
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface support: " + Str(i))
                 End If
                 Call WriteSurfaceSupport(oSB, i, modelData.SurfaceSupports)
-
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -3195,6 +3194,7 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("18", "Function Rx"))
         oSB.AppendLine(ConCat_ht("19", "Function Ry"))
         oSB.AppendLine(ConCat_ht("20", "Function Rz"))
+        oSB.AppendLine(ConCat_ht("21", "System"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -3202,8 +3202,8 @@ Module HelperTools
         Dim tt As String
         Dim supports = modelData.NodeSupports
 
-        oSB.AppendLine("<obj nm=""Sn" & isupport & """>")
-        oSB.AppendLine(ConCat_pv("0", "Sn" & isupport)) 'Support name
+        oSB.AppendLine("<obj nm=""" & supports(isupport, 1) & """>")
+        oSB.AppendLine(ConCat_pv("0", supports(isupport, 1))) 'Support name
         'write beam name as reference table
         oSB.AppendLine("<p1 t="""">")
         oSB.AppendLine("<h>")
@@ -3218,26 +3218,22 @@ Module HelperTools
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
         'End Of reference table
-        'oSB.AppendLine(ConCat_pn("1", supports(isupport, 0))) 'Node name
-        tt = GetStringForDOF(supports(isupport, 1))
-        oSB.AppendLine(ConCat_pvt("2", supports(isupport, 1), tt))
-        tt = GetStringForDOF(supports(isupport, 2))
-        oSB.AppendLine(ConCat_pvt("3", supports(isupport, 2), tt))
-        tt = GetStringForDOF(supports(isupport, 3))
-        oSB.AppendLine(ConCat_pvt("4", supports(isupport, 3), tt))
-        tt = GetStringForDOF(supports(isupport, 4))
-        oSB.AppendLine(ConCat_pvt("5", supports(isupport, 4), tt))
-        tt = GetStringForDOF(supports(isupport, 5))
-        oSB.AppendLine(ConCat_pvt("6", supports(isupport, 5), tt))
-        tt = GetStringForDOF(supports(isupport, 6))
-        oSB.AppendLine(ConCat_pvt("7", supports(isupport, 6), tt))
-        oSB.AppendLine(ConCat_pv("8", supports(isupport, 7)))
-        oSB.AppendLine(ConCat_pv("9", supports(isupport, 8)))
-        oSB.AppendLine(ConCat_pv("10", supports(isupport, 9)))
-        oSB.AppendLine(ConCat_pv("11", supports(isupport, 10)))
-        oSB.AppendLine(ConCat_pv("12", supports(isupport, 11)))
-        oSB.AppendLine(ConCat_pv("13", supports(isupport, 12)))
-        oSB.AppendLine(ConCat_pv("14", supports(isupport, 13)))
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(2, supports(isupport, 2)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(3, supports(isupport, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(4, supports(isupport, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(5, supports(isupport, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(6, supports(isupport, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(7, supports(isupport, 7)))
+
+        oSB.AppendLine(ConCat_pv("8", supports(isupport, 8)))
+        oSB.AppendLine(ConCat_pv("9", supports(isupport, 9)))
+        oSB.AppendLine(ConCat_pv("10", supports(isupport, 10)))
+        oSB.AppendLine(ConCat_pv("11", supports(isupport, 11)))
+        oSB.AppendLine(ConCat_pv("12", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pv("13", supports(isupport, 13)))
+        'Angle
+        oSB.AppendLine(ConCat_pv("14", supports(isupport, 21)))
         '15-20 NL functions
         oSB.AppendLine(ConCat_pin("15", "1", supports(isupport, 14)))
         oSB.AppendLine(ConCat_pin("16", "1", supports(isupport, 15)))
@@ -3245,8 +3241,9 @@ Module HelperTools
         oSB.AppendLine(ConCat_pin("18", "1", supports(isupport, 17)))
         oSB.AppendLine(ConCat_pin("19", "1", supports(isupport, 18)))
         oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 19)))
+        'System
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystemNodeSupport)(21, supports(isupport, 20)))
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteEdgeSupportHeaders(ByRef oSB)
@@ -3260,13 +3257,13 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("6", "Rx"))
         oSB.AppendLine(ConCat_ht("7", "Ry"))
         oSB.AppendLine(ConCat_ht("8", "Rz"))
-        oSB.AppendLine(ConCat_ht("9", "System"))
-        oSB.AppendLine(ConCat_ht("10", "Stiffness X"))
-        oSB.AppendLine(ConCat_ht("11", "Stiffness Y"))
-        oSB.AppendLine(ConCat_ht("12", "Stiffness Z"))
-        oSB.AppendLine(ConCat_ht("13", "Stiffness Rx"))
-        oSB.AppendLine(ConCat_ht("14", "Stiffness Ry"))
-        oSB.AppendLine(ConCat_ht("15", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("9", "Stiffness X"))
+        oSB.AppendLine(ConCat_ht("10", "Stiffness Y"))
+        oSB.AppendLine(ConCat_ht("11", "Stiffness Z"))
+        oSB.AppendLine(ConCat_ht("12", "Stiffness Rx"))
+        oSB.AppendLine(ConCat_ht("13", "Stiffness Ry"))
+        oSB.AppendLine(ConCat_ht("14", "Stiffness Rz"))
+        oSB.AppendLine(ConCat_ht("15", "System"))
         oSB.AppendLine(ConCat_ht("16", "Coord. definition"))
         oSB.AppendLine(ConCat_ht("17", "Position x1"))
         oSB.AppendLine(ConCat_ht("18", "Position x2"))
@@ -3280,11 +3277,10 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteEdgeSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
-        Dim tt As String
-
-        oSB.AppendLine("<obj nm=""Sle" & isupport & """>")
-        oSB.AppendLine(ConCat_pv("0", "Sle" & isupport)) 'Support name
+    Private Sub WriteEdgeSupport(ByRef oSB As Text.StringBuilder, isupport As Integer, modelData As ModelData) 'write 1 edge support to the XML stream
+        Dim supports = modelData.SurfaceEdgeSupports
+        oSB.AppendLine("<obj nm=""" & supports(isupport, 3) & """>")
+        oSB.AppendLine(ConCat_pv("0", supports(isupport, 3))) 'Support name
 
         'write surface name as reference table
         oSB.AppendLine("<p1 t="""">")
@@ -3295,75 +3291,60 @@ Module HelperTools
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
 
-        'different reference depending whether it's towards a surface or an opening
-        Select Case supports(isupport, 1)
-            Case "SURFACE"
-                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
-                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
-            Case "OPENING"
-                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Opening)))
-                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Opening)))
-            Case "INTERNAL EDGE"
-                oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
-            Case Else
-                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
-                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
-        End Select
+        Dim objType As EsaObjectType = EsaObjectType.Member2D
 
+        If Not modelData.TryGetEdgeMemberType(supports(isupport, 0), objType) Then
+            'different reference depending whether it's towards a surface or an opening
+            Select Case supports(isupport, 1)
+                Case "SURFACE"
+                    objType = EsaObjectType.Member2D
+                Case "OPENING"
+                    objType = EsaObjectType.Opening
+                Case "INTERNAL EDGE"
+                    objType = EsaObjectType.InternalEdge2D
+                Case Else
+                    objType = EsaObjectType.Member2D
+            End Select
+        End If
+
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(objType)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(objType)))
         oSB.AppendLine(ConCat_pv("2", supports(isupport, 0)))
+
         oSB.AppendLine("</row>")
         oSB.AppendLine("</p1>")
         'end of reference table
 
         oSB.AppendLine(ConCat_pvt("2", CStr(CLng(supports(isupport, 2)) - 1), supports(isupport, 2))) 'Edge number minus 1 is the index
 
-        tt = GetStringForDOF(supports(isupport, 3))
-        oSB.AppendLine(ConCat_pvt("3", supports(isupport, 3), tt))
-        tt = GetStringForDOF(supports(isupport, 4))
-        oSB.AppendLine(ConCat_pvt("4", supports(isupport, 4), tt))
-        tt = GetStringForDOF(supports(isupport, 5))
-        oSB.AppendLine(ConCat_pvt("5", supports(isupport, 5), tt))
-        tt = GetStringForDOF(supports(isupport, 6))
-        oSB.AppendLine(ConCat_pvt("6", supports(isupport, 6), tt))
-        tt = GetStringForDOF(supports(isupport, 7))
-        oSB.AppendLine(ConCat_pvt("7", supports(isupport, 7), tt))
-        tt = GetStringForDOF(supports(isupport, 8))
-        oSB.AppendLine(ConCat_pvt("8", supports(isupport, 8), tt))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(3, supports(isupport, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(4, supports(isupport, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(5, supports(isupport, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(6, supports(isupport, 7)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(7, supports(isupport, 8)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(8, supports(isupport, 9)))
 
-        oSB.AppendLine(ConCat_pvt("9", "0", "GCS")) 'Coordinate system
-        oSB.AppendLine(ConCat_pv("10", supports(isupport, 9)))
-        oSB.AppendLine(ConCat_pv("11", supports(isupport, 10)))
-        oSB.AppendLine(ConCat_pv("12", supports(isupport, 11)))
-        oSB.AppendLine(ConCat_pv("13", supports(isupport, 12)))
-        oSB.AppendLine(ConCat_pv("14", supports(isupport, 13)))
-        oSB.AppendLine(ConCat_pv("15", supports(isupport, 14)))
+        oSB.AppendLine(ConCat_pv("9", supports(isupport, 10)))
+        oSB.AppendLine(ConCat_pv("10", supports(isupport, 11)))
+        oSB.AppendLine(ConCat_pv("11", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pv("12", supports(isupport, 13)))
+        oSB.AppendLine(ConCat_pv("13", supports(isupport, 14)))
+        oSB.AppendLine(ConCat_pv("14", supports(isupport, 15)))
 
-        'p11 would be the definition of relative or absolute coordinates
-        Select Case supports(isupport, 15)
-            Case "Rela"
-                oSB.AppendLine(ConCat_pvt("16", "1", "Rela"))
-            Case "Abso"
-                oSB.AppendLine(ConCat_pvt("16", "0", "Abso"))
-        End Select
-        oSB.AppendLine(ConCat_pv("17", supports(isupport, 16)))
-        oSB.AppendLine(ConCat_pv("18", supports(isupport, 17)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystem)(15, supports(isupport, 22)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordinateDefinition)(16, supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pv("17", supports(isupport, 24)))
+        oSB.AppendLine(ConCat_pv("18", supports(isupport, 25)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Origin)(19, supports(isupport, 26)))
 
-        'p12 would be the indication of where the coordinates start: From start or From end
-        Select Case supports(isupport, 18)
-            Case "From start"
-                oSB.AppendLine(ConCat_pvt("19", "0", "From start"))
-            Case "From end"
-                oSB.AppendLine(ConCat_pvt("19", "1", "From end"))
-        End Select
-        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 18)))
-        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 19)))
-        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 20)))
-        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 21)))
-        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 22)))
-        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 16)))
+        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 17)))
+        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 18)))
+        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 19)))
+        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 20)))
+        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 21)))
+
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteBeamLineSupportHeaders(ByRef oSB)
@@ -3398,10 +3379,8 @@ Module HelperTools
     End Sub
 
     Private Sub WriteBeamLineSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
-        Dim tt As String
-
-        oSB.AppendLine("<obj nm=""BLS" & isupport & """>")
-        oSB.AppendLine(ConCat_pv("0", "BLS" & isupport)) 'Support name
+        oSB.AppendLine("<obj nm=""" & supports(isupport, 1) & """>")
+        oSB.AppendLine(ConCat_pv("0", supports(isupport, 1))) 'Support name
 
         'write beam name as reference table
         oSB.AppendLine("<p1 t="""">")
@@ -3421,52 +3400,33 @@ Module HelperTools
         'support type
         oSB.AppendLine(ConCat_pvt("2", 0, "Line"))
 
-        tt = GetStringForDOF(supports(isupport, 1))
-        oSB.AppendLine(ConCat_pvt("3", supports(isupport, 1), tt))
-        tt = GetStringForDOF(supports(isupport, 2))
-        oSB.AppendLine(ConCat_pvt("4", supports(isupport, 2), tt))
-        tt = GetStringForDOF(supports(isupport, 3))
-        oSB.AppendLine(ConCat_pvt("5", supports(isupport, 3), tt))
-        tt = GetStringForDOF(supports(isupport, 4))
-        oSB.AppendLine(ConCat_pvt("6", supports(isupport, 4), tt))
-        tt = GetStringForDOF(supports(isupport, 5))
-        oSB.AppendLine(ConCat_pvt("7", supports(isupport, 5), tt))
-        tt = GetStringForDOF(supports(isupport, 6))
-        oSB.AppendLine(ConCat_pvt("8", supports(isupport, 6), tt))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(3, supports(isupport, 2)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(4, supports(isupport, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(5, supports(isupport, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(6, supports(isupport, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(7, supports(isupport, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(8, supports(isupport, 7)))
 
-        oSB.AppendLine(ConCat_pv("9", supports(isupport, 7)))
-        oSB.AppendLine(ConCat_pv("10", supports(isupport, 8)))
-        oSB.AppendLine(ConCat_pv("11", supports(isupport, 9)))
-        oSB.AppendLine(ConCat_pv("12", supports(isupport, 10)))
-        oSB.AppendLine(ConCat_pv("13", supports(isupport, 11)))
-        oSB.AppendLine(ConCat_pv("14", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pv("9", supports(isupport, 8)))
+        oSB.AppendLine(ConCat_pv("10", supports(isupport, 9)))
+        oSB.AppendLine(ConCat_pv("11", supports(isupport, 10)))
+        oSB.AppendLine(ConCat_pv("12", supports(isupport, 11)))
+        oSB.AppendLine(ConCat_pv("13", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pv("14", supports(isupport, 13)))
 
-        oSB.AppendLine(ConCat_pvt("15", "0", "GCS")) 'Coordinate system
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystem)(15, supports(isupport, 20)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordinateDefinition)(16, supports(isupport, 21)))
+        oSB.AppendLine(ConCat_pv("17", supports(isupport, 22)))
+        oSB.AppendLine(ConCat_pv("18", supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Origin)(19, supports(isupport, 24)))
 
-        Select Case supports(isupport, 13)
-            Case "Rela"
-                oSB.AppendLine(ConCat_pvt("16", "1", "Rela"))
-            Case "Abso"
-                oSB.AppendLine(ConCat_pvt("16", "0", "Abso"))
-        End Select
-        oSB.AppendLine(ConCat_pv("17", supports(isupport, 14)))
-        oSB.AppendLine(ConCat_pv("18", supports(isupport, 15)))
-
-        'p12 would be the indication of where the coordinates start: From start or From end
-        Select Case supports(isupport, 16)
-            Case "From start"
-                oSB.AppendLine(ConCat_pvt("19", "0", "From start"))
-            Case "From end"
-                oSB.AppendLine(ConCat_pvt("19", "1", "From end"))
-        End Select
-        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 17)))
-        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 18)))
-        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 19)))
-        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 20)))
-        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 21)))
-        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 22)))
+        oSB.AppendLine(ConCat_pin("20", "1", supports(isupport, 14)))
+        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 15)))
+        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 16)))
+        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 17)))
+        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 18)))
+        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 19)))
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteBeamPointSupportHeaders(ByRef oSB)
@@ -3502,10 +3462,8 @@ Module HelperTools
     End Sub
 
     Private Sub WriteBeamPointSupport(ByRef oSB, isupport, supports(,)) 'write 1 edge support to the XML stream
-        Dim tt As String
-
-        oSB.AppendLine("<obj nm=""PSOB" & isupport & """>")
-        oSB.AppendLine(ConCat_pv("0", "PSOB" & isupport)) 'Support name
+        oSB.AppendLine("<obj nm=""" & supports(isupport, 1) & """>")
+        oSB.AppendLine(ConCat_pv("0", supports(isupport, 1))) 'Support name
 
         'write beam name as reference table
         oSB.AppendLine("<p1 t="""">")
@@ -3525,53 +3483,33 @@ Module HelperTools
         'support type
         oSB.AppendLine(ConCat_pvt("2", 0, "Standard"))
 
-        tt = GetStringForDOF(supports(isupport, 1))
-        oSB.AppendLine(ConCat_pvt("3", supports(isupport, 1), tt))
-        tt = GetStringForDOF(supports(isupport, 2))
-        oSB.AppendLine(ConCat_pvt("4", supports(isupport, 2), tt))
-        tt = GetStringForDOF(supports(isupport, 3))
-        oSB.AppendLine(ConCat_pvt("5", supports(isupport, 3), tt))
-        tt = GetStringForDOF(supports(isupport, 4))
-        oSB.AppendLine(ConCat_pvt("6", supports(isupport, 4), tt))
-        tt = GetStringForDOF(supports(isupport, 5))
-        oSB.AppendLine(ConCat_pvt("7", supports(isupport, 5), tt))
-        tt = GetStringForDOF(supports(isupport, 6))
-        oSB.AppendLine(ConCat_pvt("8", supports(isupport, 6), tt))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(3, supports(isupport, 2)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(4, supports(isupport, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomForTranslation)(5, supports(isupport, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(6, supports(isupport, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(7, supports(isupport, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomSupport)(8, supports(isupport, 7)))
 
+        oSB.AppendLine(ConCat_pv("9", supports(isupport, 8)))
+        oSB.AppendLine(ConCat_pv("10", supports(isupport, 9)))
+        oSB.AppendLine(ConCat_pv("11", supports(isupport, 10)))
+        oSB.AppendLine(ConCat_pv("12", supports(isupport, 11)))
+        oSB.AppendLine(ConCat_pv("13", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pv("14", supports(isupport, 13)))
 
-        oSB.AppendLine(ConCat_pv("9", supports(isupport, 7)))
-        oSB.AppendLine(ConCat_pv("10", supports(isupport, 8)))
-        oSB.AppendLine(ConCat_pv("11", supports(isupport, 9)))
-        oSB.AppendLine(ConCat_pv("12", supports(isupport, 10)))
-        oSB.AppendLine(ConCat_pv("13", supports(isupport, 11)))
-        oSB.AppendLine(ConCat_pv("14", supports(isupport, 12)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystem)(15, supports(isupport, 20)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordinateDefinition)(16, supports(isupport, 21)))
+        oSB.AppendLine(ConCat_pv("17", supports(isupport, 22)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Origin)(18, supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pv("19", supports(isupport, 24)))
+        oSB.AppendLine(ConCat_pv("20", supports(isupport, 25)))
 
-        oSB.AppendLine(ConCat_pvt("15", "0", "GCS")) 'Coordinate system
-
-        Select Case supports(isupport, 13)
-            Case "Rela"
-                oSB.AppendLine(ConCat_pvt("16", "1", "Rela"))
-            Case "Abso"
-                oSB.AppendLine(ConCat_pvt("16", "0", "Abso"))
-        End Select
-        oSB.AppendLine(ConCat_pv("17", supports(isupport, 14)))
-
-        'p12 would be the indication of where the coordinates start: From start or From end
-        Select Case supports(isupport, 15)
-            Case "From start"
-                oSB.AppendLine(ConCat_pvt("18", "0", "From start"))
-            Case "From end"
-                oSB.AppendLine(ConCat_pvt("18", "1", "From end"))
-        End Select
-        oSB.AppendLine(ConCat_pv("19", supports(isupport, 16)))
-
-        oSB.AppendLine(ConCat_pv("20", supports(isupport, 17)))
-        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 18)))
-        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 19)))
-        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 20)))
-        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 21)))
-        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 22)))
-        oSB.AppendLine(ConCat_pin("26", "1", supports(isupport, 23)))
+        oSB.AppendLine(ConCat_pin("21", "1", supports(isupport, 14)))
+        oSB.AppendLine(ConCat_pin("22", "1", supports(isupport, 15)))
+        oSB.AppendLine(ConCat_pin("23", "1", supports(isupport, 16)))
+        oSB.AppendLine(ConCat_pin("24", "1", supports(isupport, 17)))
+        oSB.AppendLine(ConCat_pin("25", "1", supports(isupport, 18)))
+        oSB.AppendLine(ConCat_pin("26", "1", supports(isupport, 19)))
 
         oSB.AppendLine("</obj>")
 
@@ -3593,7 +3531,7 @@ Module HelperTools
 
     Private Sub WriteSubsoil(ByRef oSB, i, subsoil(,)) 'write 1 edge support to the XML stream
 
-        oSB.AppendLine("<obj nm=""Subsoil" & i & """>")
+        oSB.AppendLine("<obj nm=""" & subsoil(i, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", subsoil(i, 0)))
         oSB.AppendLine(ConCat_pv("1", subsoil(i, 1)))
         oSB.AppendLine(ConCat_pv("2", subsoil(i, 2)))
@@ -3608,11 +3546,12 @@ Module HelperTools
                 oSB.AppendLine(ConCat_pvt("4", "0", "Flexible"))
         End Select
 
-
         oSB.AppendLine(ConCat_pv("5", subsoil(i, 4)))
         oSB.AppendLine(ConCat_pv("6", subsoil(i, 5)))
         oSB.AppendLine(ConCat_pv("7", subsoil(i, 6)))
-        oSB.AppendLine(ConCat_pv("8", subsoil(i, 8)))
+        ' TODO: Subsoil NLinear function definition doesn't seem to work
+        '  Confirmed by creating small test model, exporting to xml and importing again
+        oSB.AppendLine(ConCat_pin("8", "1", subsoil(i, 8)))
         oSB.AppendLine("</obj>")
 
     End Sub
@@ -3628,8 +3567,8 @@ Module HelperTools
 
     Private Sub WriteSurfaceSupport(ByRef oSB, i, surfacesupport(,))
 
-        oSB.AppendLine("<obj nm=""SurfaceSupport" & i & """>")
-        oSB.AppendLine(ConCat_pv("0", "SurfaceSupport" & i))
+        oSB.AppendLine("<obj nm=""" & surfacesupport(i, 1) & """>")
+        oSB.AppendLine(ConCat_pv("0", surfacesupport(i, 1)))
 
         'write beam name as reference table
         oSB.AppendLine("<p1 t="""">")
@@ -3646,7 +3585,7 @@ Module HelperTools
         oSB.AppendLine("</p1>")
         'end of reference table
         oSB.AppendLine(ConCat_pvt("2", "0", "Individual"))
-        oSB.AppendLine(ConCat_pn("3", surfacesupport(i, 1)))
+        oSB.AppendLine(ConCat_pn("3", surfacesupport(i, 2)))
         oSB.AppendLine("</obj>")
 
     End Sub
@@ -5273,12 +5212,12 @@ Module HelperTools
 
         oSB.AppendLine(ConCat_pvt_enum(Of Koala.BeamEnd)(2, hinges(ihinge, 2)))
 
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(3, hinges(ihinge, 3)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(4, hinges(ihinge, 4)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(5, hinges(ihinge, 5)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(6, hinges(ihinge, 6)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(7, hinges(ihinge, 7)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedom)(8, hinges(ihinge, 8)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(3, hinges(ihinge, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(4, hinges(ihinge, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(5, hinges(ihinge, 5)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(6, hinges(ihinge, 6)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(7, hinges(ihinge, 7)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DegreeOfFreedomHinge)(8, hinges(ihinge, 8)))
 
         oSB.AppendLine(ConCat_pv("9", hinges(ihinge, 9)))
         oSB.AppendLine(ConCat_pv("10", hinges(ihinge, 10)))
@@ -5434,7 +5373,7 @@ Module HelperTools
         oSB.AppendLine("</p1>")
 
         'Coordinate definition
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileCoordDefinition)(2, aprofiles(idx, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordinateDefinition)(2, aprofiles(idx, 3)))
         'Section
         oSB.AppendLine(ConCat_pv("3", aprofiles(idx, 2)))
         'Span reference table
@@ -5615,7 +5554,7 @@ Module HelperTools
 
         oSB.AppendLine(ConCat_pv("1", sectionOnBeams(iSectionOnBeam, 1))) 'Name
         'oSB.AppendLine(ConCat_pv("1", sectionOnBeams(iSectionOnBeam, 2))) 'UniqueID
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.ArbitraryProfileCoordDefinition)(3, sectionOnBeams(iSectionOnBeam, 3)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordinateDefinition)(3, sectionOnBeams(iSectionOnBeam, 3)))
         oSB.AppendLine(ConCat_pv("4", sectionOnBeams(iSectionOnBeam, 4))) 'Position
         oSB.AppendLine(ConCat_pvt_enum(Of Koala.Origin)(5, sectionOnBeams(iSectionOnBeam, 5)))
 

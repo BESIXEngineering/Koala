@@ -27,7 +27,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("1DMemberName", "1DMemberName", "Name of the 1D member where to put a section", GH_ParamAccess.item)
             pManager.AddTextParameter("SectionPrefix", "SectionPrefix", "Section on the beam name prefix", GH_ParamAccess.item, DefaultNamePrefix)
-            pManager.AddParameter(New Param_Enum("Coord. Definition", "Coord. Definition", GH_ParamAccess.item, ArbitraryProfileCoordDefinition.Rela))
+            pManager.AddParameter(New Param_Enum("Coord. Definition", "Coord. Definition", GH_ParamAccess.item, CoordinateDefinition.Rela))
             pManager.AddNumberParameter("Position", "Position", "Position along the 1D Member where to put the section", GH_ParamAccess.item, 0.5)
             pManager.AddParameter(New Param_Enum("Origin", "Origin", GH_ParamAccess.item, Origin.fromStart))
             pManager.AddNumberParameter("Repeat (n)", "Repeat (n)", "Number of times to repeat the section", GH_ParamAccess.item, 1)
@@ -55,7 +55,7 @@ Namespace Koala
             Dim Member1D As String = ""
             Dim NamePrefix As String = DefaultNamePrefix
             Dim CoordIdx As Integer = 0
-            Dim Coord As ArbitraryProfileCoordDefinition
+            Dim Coord As CoordinateDefinition
             Dim Position As Double = 0
             Dim originIdx As Integer = 0
             Dim origin As Origin
@@ -66,7 +66,7 @@ Namespace Koala
             DA.GetData(0, Member1D)
             DA.GetData(1, NamePrefix)
             DA.GetData(2, CoordIdx)
-            Coord = CType(CoordIdx, ArbitraryProfileCoordDefinition)
+            Coord = CType(CoordIdx, CoordinateDefinition)
             DA.GetData(3, Position)
             DA.GetData(4, originIdx)
             origin = CType(originIdx, Origin)

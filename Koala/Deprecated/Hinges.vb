@@ -25,7 +25,7 @@ Namespace Koala
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.tertiary
+                Return GH_Exposure.hidden
             End Get
         End Property
 

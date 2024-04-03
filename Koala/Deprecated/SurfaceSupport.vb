@@ -6,6 +6,7 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    <System.Obsolete("Use 'SurfaceSupport2' instead which makes better use of Grasshopper's default data matching algorithm.")>
     Public Class SurfaceSupport
         Inherits GH_KoalaComponent
         ''' <summary>
@@ -23,7 +24,7 @@ Namespace Koala
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.secondary
+                Return GH_Exposure.hidden
             End Get
         End Property
 
@@ -55,37 +56,16 @@ Namespace Koala
             If (Not DA.GetDataList(Of String)(0, SurfList)) Then Return
             If (Not DA.GetData(1, Subsoil)) Then Return
 
-
-
-
-
-
             Dim SE_surfsupports(SurfList.Count, 2)
             Dim FlatList As New List(Of System.Object)()
             'a load consists of: load case, surface name, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m)
 
-            Dim itemcount As Long
-            Dim item As String
-
-            'initialize some variables
-            itemcount = 0
-
-            'create load data
-            '=================
             For Each item In SurfList
-                SE_surfsupports(itemcount, 0) = item
-                SE_surfsupports(itemcount, 1) = Subsoil
-                itemcount += 1
+                FlatList.Add(item.Trim())
+                NameIndex += 1
+                FlatList.Add("SurfaceSupport" & NameIndex.ToString())
+                FlatList.Add(Subsoil)
             Next
-
-            'Flatten data for export as simple list
-
-            FlatList.Clear()
-
-            For i = 0 To itemcount - 1
-                FlatList.Add(SE_surfsupports(i, 0))
-                FlatList.Add(SE_surfsupports(i, 1))
-            Next i
             DA.SetDataList(0, FlatList)
         End Sub
 

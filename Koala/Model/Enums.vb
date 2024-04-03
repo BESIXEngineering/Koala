@@ -119,11 +119,6 @@ Namespace Koala
         GeneralXYZ = 8
     End Enum
 
-    Public Enum ArbitraryProfileCoordDefinition
-        Abso = 0
-        Rela = 1
-    End Enum
-
     Public Enum ArbitraryProfileAlignment
         <Description("default")>
         Undefined = 0
@@ -203,6 +198,22 @@ Namespace Koala
         BeamSlab = 13
     End Enum
 
+    Public Enum CoordinateDefinition
+        Abso = 0
+        Rela = 1
+    End Enum
+
+    Public Enum CoordSystem
+        GCS = 0
+        LCS = 1
+    End Enum
+
+    Public Enum CoordSystemNodeSupport
+        GCS = 0
+        <Description("LCS of node")>
+        LCS = 1
+    End Enum
+
     Public Enum CoordSystemFreeLoad
         <Description("GCS - Length")>
         GCSLength = 0
@@ -212,10 +223,33 @@ Namespace Koala
         MemberLCS = 2
     End Enum
 
-    Public Enum DegreeOfFreedom
+    Public Enum DegreeOfFreedomHinge
         Free = 0
         Rigid = 1
         Flexible = 2
+        Nonlinear = 3
+    End Enum
+
+    Public Enum DegreeOfFreedomSupport
+        Free = 0
+        Rigid = 1
+        Flexible = 2
+        <Description("Nonlinear")>
+        Nonlinear = 7
+    End Enum
+
+    Public Enum DegreeOfFreedomForTranslation
+        Free = 0
+        Rigid = 1
+        Flexible = 2
+        <Description("Rigid press only")>
+        RigidPressOnly = 3
+        <Description("Rigid tension only")>
+        RigidTensionOnly = 4
+        <Description("Flexible press only")>
+        FlexiblePressOnly = 5
+        <Description("Flexible tension only")>
+        FlexibleTensionOnly = 6
         <Description("Nonlinear")>
         Nonlinear = 7
     End Enum

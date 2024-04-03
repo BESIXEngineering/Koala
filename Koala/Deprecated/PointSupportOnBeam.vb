@@ -6,6 +6,7 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    <System.Obsolete("Use 'BeamPointSupport' instead which makes better use of Grasshopper's default data matching algorithm.")>
     Public Class PointSupportOnBeam
         Inherits GH_KoalaComponent
         ''' <summary>
@@ -23,7 +24,7 @@ Namespace Koala
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.secondary
+                Return GH_Exposure.hidden
             End Get
         End Property
 
@@ -148,8 +149,9 @@ Namespace Koala
             FlatList.Clear()
             For Each item In BeamSupports
 
-
                 FlatList.Add(item)
+                NameIndex += 1
+                FlatList.Add("PSOB" & NameIndex.ToString())
 
                 FlatList.Add(Tx)
                 FlatList.Add(Ty)
@@ -157,24 +159,25 @@ Namespace Koala
                 FlatList.Add(Rx)
                 FlatList.Add(Ry)
                 FlatList.Add(Rz)
-
                 FlatList.Add(TxStiffness * 1000000.0)
                 FlatList.Add(TyStiffness * 1000000.0)
                 FlatList.Add(TzStiffness * 1000000.0)
                 FlatList.Add(RxStiffness * 1000000.0)
                 FlatList.Add(RyStiffness * 1000000.0)
                 FlatList.Add(RzStiffness * 1000000.0)
-                FlatList.Add(CoordDefinition)
-                FlatList.Add(PositionX)
-                FlatList.Add(Origin)
-                FlatList.Add(Repeat)
-                FlatList.Add(DeltaX)
                 FlatList.Add(TxFunction)
                 FlatList.Add(TyFunction)
                 FlatList.Add(TzFunction)
                 FlatList.Add(RxFunction)
                 FlatList.Add(RyFunction)
                 FlatList.Add(RzFunction)
+
+                FlatList.Add(CoordSystem.GCS)
+                FlatList.Add(CoordDefinition)
+                FlatList.Add(PositionX)
+                FlatList.Add(Origin)
+                FlatList.Add(Repeat)
+                FlatList.Add(DeltaX)
             Next
 
 

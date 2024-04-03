@@ -40,26 +40,26 @@ Namespace Koala
 
             pManager.AddParameter(New Param_Enum("Position", "Position of the hinge", GH_ParamAccess.item, BeamEnd.Both))
 
-            pManager.AddParameter(New Param_Enum("Tx", "Translation in X axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
-            pManager.AddParameter(New Param_Enum("Ty", "Translation in Y axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
-            pManager.AddParameter(New Param_Enum("Tz", "Translation in Z axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
-            pManager.AddParameter(New Param_Enum("Rx", "Rotation around X axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
-            pManager.AddParameter(New Param_Enum("Ry", "Rotation around Y axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
-            pManager.AddParameter(New Param_Enum("Rz", "Rotation around Z axis", GH_ParamAccess.item, DegreeOfFreedom.Rigid))
+            pManager.AddParameter(New Param_Enum("Tx", "Translation in X axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
+            pManager.AddParameter(New Param_Enum("Ty", "Translation in Y axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
+            pManager.AddParameter(New Param_Enum("Tz", "Translation in Z axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
+            pManager.AddParameter(New Param_Enum("Rx", "Rotation around X axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
+            pManager.AddParameter(New Param_Enum("Ry", "Rotation around Y axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
+            pManager.AddParameter(New Param_Enum("Rz", "Rotation around Z axis", GH_ParamAccess.item, DegreeOfFreedomHinge.Rigid))
 
-            pManager.AddNumberParameter("StiffnessTx", "StiffnessTx", "Stiffness for Tx", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessTy", "StiffnessTy", "Stiffness for Ty", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessTz", "StiffnessTz", "Stiffness for Tz", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessRx", "StiffnessRx", "Stiffness for Rx", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessRy", "StiffnessRy", "Stiffness for Ry", GH_ParamAccess.item, 0.0)
-            pManager.AddNumberParameter("StiffnessRz", "StiffnessRz", "Stiffness for Rz", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessTx", "StiffnessTx", "Stiffness for Tx in MN/m", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessTy", "StiffnessTy", "Stiffness for Ty in MN/m", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessTz", "StiffnessTz", "Stiffness for Tz in MN/m", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessRx", "StiffnessRx", "Stiffness for Rx in MNm/rad", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessRy", "StiffnessRy", "Stiffness for Ry in MNm/rad", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessRz", "StiffnessRz", "Stiffness for Rz in MNm/rad", GH_ParamAccess.item, 0.0)
 
-            pManager.AddTextParameter("FunctionTx", "FunctionTx", "Stiffness for Tx in MNm", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("FunctionTy", "FunctionTy", "Stiffness for Ty in MNm", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("FunctionTz", "FunctionTz", "Stiffness for Tz in MNm", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("FunctionRx", "FunctionRx", "Stiffness for Rx in MNm/rad", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("FunctionRy", "FunctionRy", "Stiffness for Ry in MNm/rad", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("FunctionRz", "FunctionRz", "Stiffness for Rz in MNm/rad", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionTx", "FunctionTx", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Tx in MNm", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionTy", "FunctionTy", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Ty in MNm", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionTz", "FunctionTz", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Tz in MNm", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionRx", "FunctionRx", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Rx in MNm/rad", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionRy", "FunctionRy", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Ry in MNm/rad", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("FunctionRz", "FunctionRz", "WARN: Not supported by SCIA, first available NL function is used!!! Name of the non-linear stiffness function for Rz in MNm/rad", GH_ParamAccess.item, "")
         End Sub
 
         ''' <summary>
@@ -79,12 +79,12 @@ Namespace Koala
             Dim beams As String = ""
             Dim namePrefix As String = DefaultNamePrefix
             Dim position As BeamEnd = BeamEnd.Both
-            Dim Tx As DegreeOfFreedom = DegreeOfFreedom.Rigid
-            Dim Ty As DegreeOfFreedom = DegreeOfFreedom.Rigid
-            Dim Tz As DegreeOfFreedom = DegreeOfFreedom.Rigid
-            Dim Rx As DegreeOfFreedom = DegreeOfFreedom.Rigid
-            Dim Ry As DegreeOfFreedom = DegreeOfFreedom.Rigid
-            Dim Rz As DegreeOfFreedom = DegreeOfFreedom.Rigid
+            Dim Tx As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
+            Dim Ty As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
+            Dim Tz As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
+            Dim Rx As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
+            Dim Ry As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
+            Dim Rz As DegreeOfFreedomHinge = DegreeOfFreedomHinge.Rigid
             Dim TxStiffness As Double
             Dim TyStiffness As Double
             Dim TzStiffness As Double
@@ -109,12 +109,12 @@ Namespace Koala
             DA.GetData(1, namePrefix)
             If DA.GetData(2, i) Then position = CType(i, BeamEnd)
 
-            If DA.GetData(3, i) Then Tx = CType(i, DegreeOfFreedom)
-            If DA.GetData(4, i) Then Ty = CType(i, DegreeOfFreedom)
-            If DA.GetData(5, i) Then Tz = CType(i, DegreeOfFreedom)
-            If DA.GetData(6, i) Then Rx = CType(i, DegreeOfFreedom)
-            If DA.GetData(7, i) Then Ry = CType(i, DegreeOfFreedom)
-            If DA.GetData(8, i) Then Rz = CType(i, DegreeOfFreedom)
+            If DA.GetData(3, i) Then Tx = CType(i, DegreeOfFreedomHinge)
+            If DA.GetData(4, i) Then Ty = CType(i, DegreeOfFreedomHinge)
+            If DA.GetData(5, i) Then Tz = CType(i, DegreeOfFreedomHinge)
+            If DA.GetData(6, i) Then Rx = CType(i, DegreeOfFreedomHinge)
+            If DA.GetData(7, i) Then Ry = CType(i, DegreeOfFreedomHinge)
+            If DA.GetData(8, i) Then Rz = CType(i, DegreeOfFreedomHinge)
 
             DA.GetData(Of Double)(9, TxStiffness)
             DA.GetData(Of Double)(10, TyStiffness)
@@ -142,21 +142,21 @@ Namespace Koala
                 NameIndex += 1
                 FlatList.Add(namePrefix & NameIndex.ToString())
 
-                FlatList.Add(position)
+                FlatList.Add(GetEnumDescription(position))
 
-                FlatList.Add(Tx)
-                FlatList.Add(Ty)
-                FlatList.Add(Tz)
-                FlatList.Add(Rx)
-                FlatList.Add(Ry)
-                FlatList.Add(Rz)
+                FlatList.Add(GetEnumDescription(Tx))
+                FlatList.Add(GetEnumDescription(Ty))
+                FlatList.Add(GetEnumDescription(Tz))
+                FlatList.Add(GetEnumDescription(Rx))
+                FlatList.Add(GetEnumDescription(Ry))
+                FlatList.Add(GetEnumDescription(Rz))
 
-                FlatList.Add(TxStiffness)
-                FlatList.Add(TyStiffness)
-                FlatList.Add(TzStiffness)
-                FlatList.Add(RxStiffness)
-                FlatList.Add(RyStiffness)
-                FlatList.Add(RzStiffness)
+                FlatList.Add(TxStiffness * 1000000.0)
+                FlatList.Add(TyStiffness * 1000000.0)
+                FlatList.Add(TzStiffness * 1000000.0)
+                FlatList.Add(RxStiffness * 1000000.0)
+                FlatList.Add(RyStiffness * 1000000.0)
+                FlatList.Add(RzStiffness * 1000000.0)
 
                 FlatList.Add(TxFunction)
                 FlatList.Add(TyFunction)

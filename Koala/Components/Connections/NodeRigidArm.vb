@@ -10,7 +10,6 @@ Namespace Koala
         Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "RA"
-        Public NameIndex As Integer = 0
 
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -49,11 +48,6 @@ Namespace Koala
             pManager.AddTextParameter("RigidArm", "RigidArm", "RigidArm data", GH_ParamAccess.list)
         End Sub
 
-        Protected Overrides Sub BeforeSolveInstance()
-            NameIndex = 0
-            MyBase.BeforeSolveInstance()
-        End Sub
-
         ''' <summary>
         ''' This is the method that actually does the work.
         ''' </summary>
@@ -79,7 +73,6 @@ Namespace Koala
 
             Dim item As String
 
-
             'create fixed supports on first & last nodes, fully fixed
             '=====================================
             FlatList.Clear()
@@ -93,8 +86,6 @@ Namespace Koala
             Next
 
             DA.SetDataList(0, FlatList)
-
-
         End Sub
 
 

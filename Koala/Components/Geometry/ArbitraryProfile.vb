@@ -33,7 +33,7 @@ Namespace Koala
             pManager.AddTextParameter("Beams", "Beams", "Names of the beams on which the ArbitraryProfile is placed (can be multiple beams separated by semi-colon ';')", GH_ParamAccess.item)
             pManager.AddTextParameter("NamePrefix", "NamePrefix", "Object name prefix", GH_ParamAccess.item, DefaultNamePrefix)
             pManager.AddTextParameter("Section", "Section", "Cross section name of the ArbitraryProfile object", GH_ParamAccess.item)
-            pManager.AddParameter(New Param_Enum("CoordDefinition", "CoordDefinition", GH_ParamAccess.item, ArbitraryProfileCoordDefinition.Rela))
+            pManager.AddParameter(New Param_Enum("CoordDefinition", "CoordDefinition", GH_ParamAccess.item, CoordinateDefinition.Rela))
 
             pIdx = pManager.AddNumberParameter("Length", "Length", "Length of each span (if relative, should sum up to 1)", GH_ParamAccess.list)
             pManager.Param(pIdx).Optional = True
@@ -64,7 +64,7 @@ Namespace Koala
             Dim Section As String
 
             Dim CoordDefinitionIdx As Integer = 1
-            Dim CoordDefinition As ArbitraryProfileCoordDefinition
+            Dim CoordDefinition As CoordinateDefinition
 
             Dim Lengths = New List(Of Double)
             Dim TypeOfCss = New List(Of Integer)
@@ -77,7 +77,7 @@ Namespace Koala
             If (Not DA.GetData(2, Section)) Then Return
 
             DA.GetData(3, CoordDefinitionIdx)
-            CoordDefinition = CType(CoordDefinitionIdx, ArbitraryProfileCoordDefinition)
+            CoordDefinition = CType(CoordDefinitionIdx, CoordinateDefinition)
 
             DA.GetDataList(4, Lengths)
             DA.GetDataList(5, TypeOfCss)
@@ -112,7 +112,7 @@ Namespace Koala
             Dim AlignmentsValues(spanCount - 1) As String
 
             Dim SpanLength As Double
-            If CoordDefinition = ArbitraryProfileCoordDefinition.Rela Then
+            If CoordDefinition = CoordinateDefinition.Rela Then
                 SpanLength = 1.0 / spanCount
             Else
                 SpanLength = 1.0

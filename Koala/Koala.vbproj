@@ -106,6 +106,11 @@
   <ItemGroup>
     <Compile Include="Components\Geometry\AveragingStrip.vb" />
     <Compile Include="Components\GH_KoalaComponent.vb" />
+    <Compile Include="Components\Supports\BeamLineSupport.vb" />
+    <Compile Include="Components\Supports\SurfaceEdgeSupport.vb" />
+    <Compile Include="Components\Supports\NodeSupport2.vb" />
+    <Compile Include="Components\Supports\BeamPointSupport.vb" />
+    <Compile Include="Components\Supports\SurfaceSupport2.vb" />
     <Compile Include="CreateXML2.vb" />
     <Compile Include="Components\Geometry\IntegrationStrip.vb" />
     <Compile Include="Components\Geometry\InternalNode1D.vb" />
@@ -119,13 +124,13 @@
     <Compile Include="BeamLoads.vb" />
     <Compile Include="Deprecated\Member1D.vb" />
     <Compile Include="Deprecated\Beams.vb" />
-    <Compile Include="BeamSupport.vb" />
+    <Compile Include="Deprecated\BeamSupport.vb" />
     <Compile Include="Deprecated\CreateXML.vb" />
     <Compile Include="Cross-Sections.vb" />
     <Compile Include="CrossLink.vb" />
     <Compile Include="EdgeLoad.vb" />
-    <Compile Include="EdgeSupport.vb" />
-    <Compile Include="Enums.vb" />
+    <Compile Include="Deprecated\EdgeSupport.vb" />
+    <Compile Include="Model\Enums.vb" />
     <Compile Include="FreePointMoment.vb" />
     <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
     <Compile Include="Deprecated\FreeSurfaceLoad.Designer.vb">
@@ -170,7 +175,7 @@
     <Compile Include="NodeRigidArm.vb" />
     <Compile Include="Components\Geometry\Member0D.vb" />
     <Compile Include="Deprecated\Nodes.vb" />
-    <Compile Include="NodeSupport.vb" />
+    <Compile Include="Deprecated\NodeSupport.vb" />
     <Compile Include="NonlinearCombination.vb" />
     <Compile Include="NonlinearFunction.vb" />
     <Compile Include="Components\Geometry\Opening.vb" />
@@ -179,8 +184,8 @@
     <Compile Include="PointLoadOnStructNode.vb" />
     <Compile Include="PointMomentOnBeam.vb" />
     <Compile Include="PointMomentOnStructNode.vb" />
-    <Compile Include="Components\Constraints\HingeOnBeam.vb" />
-    <Compile Include="PointSupportOnBeam.vb" />
+    <Compile Include="Components\Connections\HingeOnBeam.vb" />
+    <Compile Include="Deprecated\PointSupportOnBeam.vb" />
     <Compile Include="PressTensionOnlyBeamNl.vb" />
     <Compile Include="ProjectData.vb" />
     <Compile Include="Deprecated\ProjectInfo.vb" />
@@ -190,7 +195,7 @@
     <Compile Include="StabilityCombination.vb" />
     <Compile Include="Subsoil.vb" />
     <Compile Include="SurfaceLoad.vb" />
-    <Compile Include="SurfaceSupport.vb" />
+    <Compile Include="Deprecated\SurfaceSupport.vb" />
     <Compile Include="ThermalLoadOnBeam.vb" />
     <Compile Include="ThermalLoadOnSurface.vb" />
   </ItemGroup>

@@ -6,6 +6,7 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
+    <System.Obsolete("Use 'BeamLineSupport' instead which makes better use of Grasshopper's default data matching algorithm.")>
     Public Class BeamSupport
         Inherits GH_KoalaComponent
         ''' <summary>
@@ -23,7 +24,7 @@ Namespace Koala
 
         Public Overrides ReadOnly Property Exposure As GH_Exposure
             Get
-                Return GH_Exposure.secondary
+                Return GH_Exposure.hidden
             End Get
         End Property
 
@@ -135,16 +136,14 @@ Namespace Koala
             Dim FlatList As New List(Of System.Object)()
             'a support consists of: Reference name, reference type, edge number, X, Y, Z, RX, RY, RZ - 0 is free, 1 is blocked DOF
 
-
-
             Dim item As String
 
             'Flatten data for export as simple list
             FlatList.Clear()
             For Each item In BeamSupports
-
-
                 FlatList.Add(item)
+                NameIndex += 1
+                FlatList.Add("BLS" & NameIndex.ToString())
                 FlatList.Add(Tx)
                 FlatList.Add(Ty)
                 FlatList.Add(Tz)
@@ -157,21 +156,18 @@ Namespace Koala
                 FlatList.Add(RxStiffness * 1000000.0)
                 FlatList.Add(RyStiffness * 1000000.0)
                 FlatList.Add(RzStiffness * 1000000.0)
-                FlatList.Add(CoordDefinition)
-                FlatList.Add(Position1)
-                FlatList.Add(Position2)
-                FlatList.Add(Origin)
                 FlatList.Add(TxFunction)
                 FlatList.Add(TyFunction)
                 FlatList.Add(TzFunction)
                 FlatList.Add(RxFunction)
                 FlatList.Add(RyFunction)
                 FlatList.Add(RzFunction)
+                FlatList.Add(CoordSystem.GCS)
+                FlatList.Add(CoordDefinition)
+                FlatList.Add(Position1)
+                FlatList.Add(Position2)
+                FlatList.Add(Origin)
             Next
-
-
-
-
 
             DA.SetDataList(0, FlatList)
         End Sub

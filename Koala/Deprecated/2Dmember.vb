@@ -6,10 +6,7 @@ Imports Rhino.Geometry
 
 Namespace Koala
 
-    ''' <summary>
-    ''' Obsolete. Use "Member2D" instead which makes better use of Grasshopper's default data matching algorithm.
-    ''' </summary>
-    <System.Obsolete>
+    <System.Obsolete("Use 'Member2D' instead which makes better use of Grasshopper's default data matching algorithm.")>
     Public Class _2Dmember
         Inherits GH_KoalaComponent
         ''' <summary>
