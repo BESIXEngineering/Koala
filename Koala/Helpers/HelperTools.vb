@@ -948,7 +948,7 @@ Module HelperTools
     '<Custom additional code> 
 
     Public Sub CreateXMLFile(FileName As String, StructureType As String, Materials As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
-                             projectInfo As List(Of String), in_layers As List(Of String), in_sections As List(Of String),
+                             projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_sections As List(Of String),
                              in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
                              in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String), in_lloads As List(Of String), in_sloads As List(Of String),
                              in_fploads As List(Of String), in_flloads As List(Of String), in_fsloads As List(Of String), in_hinges As List(Of String), in_edgeLoads As List(Of String), in_pointLoadsPoints As List(Of String), in_pointLoadsBeams As List(Of String),
@@ -1009,6 +1009,7 @@ Module HelperTools
             .Sections = UnflattenObjectData(in_sections, 4, "section"),
             .Materials = Materials,
             .ProjectInfo = projectInfo,
+            .Selections = UnflattenObjectData(in_selections, 2, "selections"),
             .Nodes = allNodes,
             .NodeMap = nodeMap,
             .Beams = UnflattenObjectData(in_beams, 14, "beam"),
@@ -1017,7 +1018,7 @@ Module HelperTools
             .LoadPanels = UnflattenObjectData(in_loadpanels, 8, "load panel"),
             .Openings = UnflattenObjectData(in_openings, 3, "opening"),
             .SlabInternalEdges = UnflattenObjectData(in_slabinternalEdges, 3, "slab internal edge"),
-            .RidgidArms = UnflattenObjectData(in_RigidArms, 5, "rigid arm"),
+            .RigidArms = UnflattenObjectData(in_RigidArms, 5, "rigid arm"),
             .NodeSupports = UnflattenObjectData(in_nodesupports, 22, "node support"),
             .BeamPointSupports = UnflattenObjectData(in_PointSupportOnBeam, 26, "beam point support"),
             .BeamLineSupports = UnflattenObjectData(in_BeamLineSupport, 25, "beam line support"),
@@ -1461,15 +1462,15 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
-        If modelData.RidgidArms IsNot Nothing Then
+        If modelData.RigidArms IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.RigidArm)
             Call WriteRigidArmHeaders(oSB)
 
-            For i = 0 To modelData.RidgidArms.GetLength(0) - 1
+            For i = 0 To modelData.RigidArms.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... rigid arm: " + Str(i))
                 End If
-                Call WriteRigidArm(oSB, i, modelData.RidgidArms)
+                Call WriteRigidArm(oSB, i, modelData.RigidArms)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -1868,10 +1869,62 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
+        ' Write selection at end to make sure that referenced objects already exist in model
+        If modelData.Selections IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Selection)
+            Call WriteSelectionHeaders(oSB)
+
+            For i = 0 To modelData.Selections.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... selection: " + Str(i))
+                End If
+                Call WriteSelection(oSB, i, modelData)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
         'close XML file--------------------------------------------------------------------
         oSB.AppendLine("</project>")
 
     End Sub
+
+    Private Sub WriteSelectionHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Selected objects (Type.Name)"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSelection(oSB As Text.StringBuilder, i As Long, modelData As ModelData)
+        Dim selections = modelData.Selections
+
+        oSB.AppendLine("<obj nm=""" & selections(i, 0).Trim & """>")
+        oSB.AppendLine(ConCat_pv("0", selections(i, 0).Trim))
+
+        Dim objDefinitionParts = selections(i, 1).Split(";")
+        If objDefinitionParts.Length Mod 2 <> 0 Then
+            Throw New ArgumentException("Invalid selected object definition: " & selections(i, 0))
+        End If
+
+        If objDefinitionParts.Length > 1 Then
+            Dim j As Integer
+            For j = 0 To objDefinitionParts.Length - 1 Step 2
+                Dim objName As String = objDefinitionParts(j).Trim
+                Dim objType As EsaObjectType = Koala.GetEnum(Of EsaObjectType)(objDefinitionParts(j + 1))
+                If objType = EsaObjectType.Undefined Then
+                    objType = modelData.FindObjectTypeByName(objName)
+                End If
+                If objType = EsaObjectType.Undefined Then
+                    Throw New Exception("Failed to determine type of object " & objName & " for selection " & selections(i, 0))
+                End If
+                oSB.AppendLine(ConCat_pvx("1", ContainerTypes(objType) & "." & objName, j / 2))
+            Next
+        End If
+
+        oSB.AppendLine("</obj>")
+    End Sub
+
 
     Private Sub WriteLayerHeaders(ByRef oSB)
         oSB.AppendLine("<h>")

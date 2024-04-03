@@ -1,4 +1,5 @@
 ﻿Imports Koala.Koala
+Imports Rhino.DocObjects
 
 Public Class ModelData
     Public NodeMap As Dictionary(Of String, Node)
@@ -12,6 +13,7 @@ Public Class ModelData
     Public Layers(,) As String
     Public Materials As List(Of String)
     Public ProjectInfo As List(Of String)
+    Public Selections(,) As String
 
     Public Nodes As List(Of Node)
     Public BeamInternalNodes(,) As String
@@ -22,7 +24,7 @@ Public Class ModelData
     Public Openings(,) As String
     Public SlabInternalEdges(,) As String
 
-    Public RidgidArms(,) As String
+    Public RigidArms(,) As String
 
     Public NodeSupports(,) As String
     Public BeamPointSupports(,) As String
@@ -87,32 +89,86 @@ Public Class ModelData
     End Function
 
     Public Function TryGetEdgeMemberType(name As String, ByRef objectType As EsaObjectType) As Boolean
-        Dim i As Long
-        For i = 0 To Surfaces.GetLength(0) - 1
-            If Surfaces(i, 0) = name Then
-                objectType = EsaObjectType.Member2D
-                TryGetEdgeMemberType = True
-                Exit Function
-            End If
-        Next
+        If IsInCollection(name, Surfaces) Then
+            objectType = EsaObjectType.Member2D
+            TryGetEdgeMemberType = True
 
-        For i = 0 To Openings.GetLength(0) - 1
-            If Openings(i, 0) = name Then
-                objectType = EsaObjectType.Opening
-                TryGetEdgeMemberType = True
-                Exit Function
-            End If
-        Next
+        ElseIf IsInCollection(name, Openings) Then
+            objectType = EsaObjectType.Opening
+            TryGetEdgeMemberType = True
 
-        For i = 0 To SlabInternalEdges.GetLength(0) - 1
-            If SlabInternalEdges(i, 0) = name Then
-                objectType = EsaObjectType.InternalEdge2D
-                TryGetEdgeMemberType = True
-                Exit Function
-            End If
-        Next
+        ElseIf IsInCollection(name, SlabInternalEdges) Then
+            objectType = EsaObjectType.InternalEdge2D
+            TryGetEdgeMemberType = True
 
-        TryGetEdgeMemberType = False
+        Else
+            TryGetEdgeMemberType = False
+
+        End If
     End Function
 
+    Private Function IsInCollection(name As String, collection As String(,), Optional nameIdx As Integer = 0) As Boolean
+        If collection Is Nothing Or String.IsNullOrEmpty(name) Then
+            IsInCollection = False
+            Exit Function
+        End If
+
+        For i As Long = 0 To collection.GetLength(0) - 1
+            If collection(i, nameIdx) = name Then
+                IsInCollection = True
+                Exit Function
+            End If
+        Next
+
+        IsInCollection = False
+    End Function
+
+    Public Function FindObjectTypeByName(name As String) As EsaObjectType
+        If Nodes IsNot Nothing And Nodes.Any(Function(x) x.Name = name) Then
+            FindObjectTypeByName = EsaObjectType.Node
+
+        ElseIf IsInCollection(name, Beams) Then
+            FindObjectTypeByName = EsaObjectType.Member1D
+
+        ElseIf IsInCollection(name, Surfaces) Then
+            FindObjectTypeByName = EsaObjectType.Member2D
+
+        ElseIf IsInCollection(name, LoadPanels) Then
+            FindObjectTypeByName = EsaObjectType.LoadPanel
+
+        ElseIf IsInCollection(name, Openings) Then
+            FindObjectTypeByName = EsaObjectType.Opening
+
+        ElseIf IsInCollection(name, SlabInternalEdges) Then
+            FindObjectTypeByName = EsaObjectType.InternalEdge2D
+
+        ElseIf IsInCollection(name, NodeSupports, 1) Then
+            FindObjectTypeByName = EsaObjectType.NodeSupport
+
+        ElseIf IsInCollection(name, BeamLineSupports, 1) Then
+            FindObjectTypeByName = EsaObjectType.BeamLineSupport
+
+        ElseIf IsInCollection(name, BeamPointSupports, 1) Then
+            FindObjectTypeByName = EsaObjectType.BeamPointSupport
+
+        ElseIf IsInCollection(name, SurfaceEdgeSupports, 1) Then
+            FindObjectTypeByName = EsaObjectType.SurfaceEdgeSupport
+
+        ElseIf IsInCollection(name, SurfaceSupports, 1) Then
+            FindObjectTypeByName = EsaObjectType.SurfaceSupport
+
+        ElseIf IsInCollection(name, Subsoils) Then
+            FindObjectTypeByName = EsaObjectType.Subsoil
+
+        ElseIf IsInCollection(name, Hinges, 1) Then
+            FindObjectTypeByName = EsaObjectType.Hinge
+
+        ElseIf IsInCollection(name, RigidArms) Then
+            FindObjectTypeByName = EsaObjectType.RigidArm
+
+        Else
+            FindObjectTypeByName = EsaObjectType.Undefined
+
+        End If
+    End Function
 End Class

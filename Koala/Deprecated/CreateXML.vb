@@ -1,7 +1,6 @@
 ﻿Imports System.Collections.Generic
 Imports System.Windows.Forms
 Imports Grasshopper.Kernel
-Imports Rhino.Geometry
 
 
 Namespace Koala
@@ -235,9 +234,6 @@ Namespace Koala
             'Dim in_SectionOnBeams = New List(Of String)
             'Dim in_AveragingStrips = New List(Of String)
 
-
-
-
             Dim i As Integer = 0
 
             If (Not DA.GetData(Of String)(19, FileName)) Then Return
@@ -303,17 +299,14 @@ Namespace Koala
             'DA.GetDataList(Of String)(56, in_SectionOnBeams)
             'DA.GetDataList(Of String)(57, in_AveragingStrips)
 
-
             If AutoUpdate = False Then
                 If OnDemand = False Then
                     Exit Sub
                 End If
             End If
 
-
-
             CreateXMLFile(FileName, StructureType, Materials, UILanguage, Scale, MeshSize, RemDuplNodes, Tolerance,
-                          projectInfo, in_layers, in_sections,
+                          projectInfo, Nothing, in_layers, in_sections,
                           in_nodes, in_beams, in_surfaces, in_openings,
                           in_nodesupports, in_edgesupports, in_lcases, in_lgroups, in_lloads, in_sloads, in_fploads, in_flloads, in_fsloads, in_hinges,
                           in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, in_LinCombinations, in_NonLinCombinations, in_StabCombinations,
@@ -322,8 +315,6 @@ Namespace Koala
                           in_freePointMoment, in_nonlinearfunctions, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
                           in_ArbitraryProfiles, Nothing, Nothing, Nothing) 'in_IntegrationStrips, in_SectionOnBeams, in_AveragingStrips)
             DA.SetData(0, FileName)
-
-
 
         End Sub
 

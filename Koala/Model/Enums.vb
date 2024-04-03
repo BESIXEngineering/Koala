@@ -274,6 +274,7 @@ Namespace Koala
 
     Enum EsaObjectCategory
         Project
+        Tools
         Library
         Structure0D
         Structure1D
@@ -291,10 +292,13 @@ Namespace Koala
     ''' Different types of ESA objects that can be created using Koala
     ''' </summary>
     Public Enum EsaObjectType
+        Undefined = -1
+
         ProjectData
         MeshSetup
         Layer
         CrossSection
+        Selection
 
         Node
         <Description("1D Member")>

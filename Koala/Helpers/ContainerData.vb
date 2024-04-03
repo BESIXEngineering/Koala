@@ -6,6 +6,7 @@ Partial Module HelperTools
     Public ContainerIds As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
         {EsaObjectType.ProjectData, "{AC021036-C943-4B46-88E4-72CFB9D9391C}"},
         {EsaObjectType.MeshSetup, "{31450A87-BE7E-4EA0-BFD2-4544A3E7BA53}"},
+        {EsaObjectType.Selection, "{84BB4F12-7C5C-4A58-8BA3-8311409F0F82}"},
         {EsaObjectType.Layer, "{D3885EC4-BAE5-11D4-B3FA-00104BC3B531}"},
         {EsaObjectType.CrossSection, "{2127A9B3-36BD-11D4-B337-00104BC3B531}"},
         {EsaObjectType.Node, "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"},
@@ -59,6 +60,7 @@ Partial Module HelperTools
     Public ContainerTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
         {EsaObjectType.ProjectData, "EP_GraphicDsObjects.EP_BaseDataProjectHeader.1"},
         {EsaObjectType.MeshSetup, "EP_Model.10.00.EP_MeshSetup.1"},
+        {EsaObjectType.Selection, "EPSelectManager.EP_DBSelectItem.1"},
         {EsaObjectType.Layer, "EP_DSG_Elements.EP_DataLayer.1"},
         {EsaObjectType.CrossSection, "CrossSection.EP_CrossSection.1"},
         {EsaObjectType.Node, "EP_DSG_Elements.EP_StructNode.1"},
@@ -113,6 +115,7 @@ Partial Module HelperTools
     Public TableIds As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
         {EsaObjectType.ProjectData, "10753FD4-0179-4825-89F9-ADAEAE8699D0"},
         {EsaObjectType.MeshSetup, "C706BB08-BD78-41F3-8407-590DED0050F3"},
+        {EsaObjectType.Selection, "50D04CF8-11B3-4F1B-AB09-CAF908654548"},
         {EsaObjectType.Layer, "06959627-BC30-413C-97DC-B412E4F7E9DA"},
         {EsaObjectType.CrossSection, "CDB98AF7-B4FE-4360-8240-C9F4A34065B3"},
         {EsaObjectType.Node, "FCFB763E-A640-42FF-A2DC-2D5FA1A420BF"}, '"E2CADA5A-BD04-4CE2-9F43-C09035196EF8"
@@ -166,6 +169,7 @@ Partial Module HelperTools
     Public TableTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
         {EsaObjectType.ProjectData, "ProjectData.EP_ProjectData.1"},
         {EsaObjectType.MeshSetup, "EP_Model.10.00.EP_MeshSetup.1"},
+        {EsaObjectType.Selection, "EPSelectManager.EP_DBSelectItem.1"},
         {EsaObjectType.Layer, "EP_DSG_Elements.EP_DataLayer.1"},
         {EsaObjectType.CrossSection, "CrossSection.EP_CssGeometry.1"},
         {EsaObjectType.Node, "EP_DSG_Elements.EP_StructNode.1"},

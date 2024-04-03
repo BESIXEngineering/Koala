@@ -11,6 +11,7 @@
 - Member1D BulcklingGroup input parameter
 - HingeOnBeam with NonLinear function parameters and NamePrefix (to replace Hinges component)
 - Support components: added input parameters for name prefix and system definition
+- Selection component
 ### Changed
 - Restructured HelperTools and CreateXML methods
 - Amount of values returned for a Member1D increased to 14

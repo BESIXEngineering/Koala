@@ -18,6 +18,8 @@ Namespace Koala
         Private ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
             {EsaObjectCategory.Project, New EsaObjectType() {
                 EsaObjectType.ProjectData}},
+            {EsaObjectCategory.Tools, New EsaObjectType() {
+                EsaObjectType.Selection}},
             {EsaObjectCategory.Library, New EsaObjectType() {
                 EsaObjectType.Layer,
                 EsaObjectType.CrossSection}},
@@ -211,6 +213,7 @@ Namespace Koala
                           remDuplNodes,
                           tolerance,
                           projectInfo,
+                          GetInputText(DA, EsaObjectType.Selection),
                           GetInputText(DA, EsaObjectType.Layer),
                           GetInputText(DA, EsaObjectType.CrossSection),
                           GetInputText(DA, EsaObjectType.Node),

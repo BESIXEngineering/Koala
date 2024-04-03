@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Geometry\AveragingStrip.vb" />
+    <Compile Include="Components\Tools\NamedSelection.vb" />
     <Compile Include="Components\GH_KoalaComponent.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
     <Compile Include="Components\Supports\SurfaceEdgeSupport.vb" />
@@ -172,7 +173,7 @@
     <Compile Include="FreePointLoad.vb" />
     <Compile Include="FreeLineLoad.vb" />
     <Compile Include="NLCable.vb" />
-    <Compile Include="NodeRigidArm.vb" />
+    <Compile Include="Components\Connections\NodeRigidArm.vb" />
     <Compile Include="Components\Geometry\Member0D.vb" />
     <Compile Include="Deprecated\Nodes.vb" />
     <Compile Include="Deprecated\NodeSupport.vb" />
@@ -275,6 +276,7 @@
     <None Include="Resources\NonLinearFunction.bmp" />
     <None Include="Resources\RigidArms.bmp" />
     <None Include="Resources\SectionOnBeam.bmp" />
+    <None Include="Resources\SaveSelection.bmp" />
     <Content Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
   <ItemGroup />
