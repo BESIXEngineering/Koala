@@ -281,26 +281,26 @@ Namespace Koala
 
                                 If currentnode = -1 Then
                                     'create it, then add it to the edge information
-                                    nodecount = nodecount + 1
-                                    SE_nodes(nodecount - 1, 0) = NodePrefix & nodecount.ToString()
+                                    SE_nodes(nodecount, 0) = NodePrefix & (nodecount + 1).ToString()
                                     If FirstNode = "" Then
                                         'store the position of the first node to later check if the surface is closed
-                                        FirstNode = SE_nodes(nodecount - 1, 0)
+                                        FirstNode = SE_nodes(nodecount, 0)
                                         FirstPoint = arrPoint
                                     End If
-                                    SE_nodes(nodecount - 1, 1) = arrPoint(0)
-                                    SE_nodes(nodecount - 1, 2) = arrPoint(1)
-                                    SE_nodes(nodecount - 1, 3) = arrPoint(2)
+                                    SE_nodes(nodecount, 1) = arrPoint(0)
+                                    SE_nodes(nodecount, 2) = arrPoint(1)
+                                    SE_nodes(nodecount, 3) = arrPoint(2)
                                     currentnode = nodecount
+                                    nodecount += 1
                                 End If
 
                                 If edgenodelist = "" Then
-                                    edgenodelist = SE_nodes(currentnode - 1, 0)
+                                    edgenodelist = SE_nodes(currentnode, 0)
                                 Else
                                     If inode < nodesinedge Then 'closed curve for SCIA Engineer > don't add the last point
-                                        edgenodelist = edgenodelist & ";" & SE_nodes(currentnode - 1, 0)
+                                        edgenodelist = edgenodelist & ";" & SE_nodes(currentnode, 0)
                                     ElseIf inode = nodesinedge And EdgeType = "Circle" Then
-                                        edgenodelist = edgenodelist & ";" & SE_nodes(currentnode - 1, 0)
+                                        edgenodelist = edgenodelist & ";" & SE_nodes(currentnode, 0)
 
                                     End If
                                 End If
@@ -310,7 +310,7 @@ Namespace Koala
 
                     Next arrPoint
 
-                    LastEdgeNode = SE_nodes(currentnode - 1, 0)
+                    LastEdgeNode = SE_nodes(currentnode, 0)
 
                     'add edge information to the BoundaryShape string
                     If BoundaryShape = "" Then

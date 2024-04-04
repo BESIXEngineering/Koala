@@ -113,8 +113,6 @@ Namespace Koala
 
                 For Each arrPoint In arrPoints
 
-
-
                     'check if node at these coordinates already exists
                     If RemDuplNodes Then
                         currentnode = GetExistingNode(arrPoint, SE_nodes, nodecount, tolerance)
@@ -124,17 +122,17 @@ Namespace Koala
 
                     If currentnode = -1 Then
                         'create it
-                        nodecount = nodecount + 1
-                        SE_nodes(nodecount - 1, 0) = NodePrefix & nodecount
-                        SE_nodes(nodecount - 1, 1) = arrPoint.X
-                        SE_nodes(nodecount - 1, 2) = arrPoint.Y
-                        SE_nodes(nodecount - 1, 3) = arrPoint.Z
+                        SE_nodes(nodecount, 0) = NodePrefix & (nodecount + 1).ToString()
+                        SE_nodes(nodecount, 1) = arrPoint.X
+                        SE_nodes(nodecount, 2) = arrPoint.Y
+                        SE_nodes(nodecount, 3) = arrPoint.Z
 
                         currentnode = nodecount
+                        nodecount += 1
                     End If
 
                     'add the node to the line shape
-                    LineShape = LineShape & ";" & SE_nodes(currentnode - 1, 0)
+                    LineShape = LineShape & ";" & SE_nodes(currentnode, 0)
 
                 Next arrPoint
                 SE_slabInternalEdges(i, 2) = LineShape

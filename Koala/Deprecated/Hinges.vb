@@ -117,7 +117,8 @@ Namespace Koala
             FlatList.Clear()
             For Each item In Hinges
                 FlatList.Add(item)
-                FlatList.Add("H" & (DA.Iteration + 1).ToString)
+                NameIndex += 1
+                FlatList.Add("H" & NameIndex.ToString)
                 FlatList.Add(Position)
 
                 FlatList.Add(Rx)

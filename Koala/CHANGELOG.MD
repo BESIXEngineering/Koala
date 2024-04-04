@@ -6,7 +6,7 @@
 ### Fixed
 ### Security
 
-## 3.14 (in progress)
+## 3.14
 ### Added
 - Member1D BulcklingGroup input parameter
 - HingeOnBeam with NonLinear function parameters and NamePrefix (to replace Hinges component)
@@ -27,4 +27,3 @@
 - Obscured InternalNodeOnMember1D component as member/node connection is broken in the SCIA XML update
 ### Fixed
 - Auto-remove feature for duplicate internal nodes
-### Security

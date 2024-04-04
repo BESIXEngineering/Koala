@@ -4149,20 +4149,20 @@ Module HelperTools
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        Select Case (loads(iload, 14))
-            Case "edge"
+        Select Case (loads(iload, 14).ToString().ToLower())
+            Case "edge", "surface"
                 oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
                 oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
-            Case "internal"
-                oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
+            Case "internal", "internal edge"
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.InternalEdge2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.InternalEdge2D)))
+            Case "opening"
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Opening)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Opening)))
             Case Else
                 oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
                 oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
         End Select
-
-
-
 
         oSB.AppendLine(ConCat_pv("2", loads(iload, 1)))
         oSB.AppendLine("</row>")
@@ -4170,7 +4170,6 @@ Module HelperTools
         'end of reference table
 
         'direction
-
         Select Case loads(iload, 4)
             Case "X"
                 oSB.AppendLine(ConCat_pvt("3", "0", "X"))
@@ -4263,13 +4262,16 @@ Module HelperTools
         oSB.AppendLine("<h2 t=""Member Name""/>")
         oSB.AppendLine("</h>")
         oSB.AppendLine("<row id=""0"">")
-        Select Case (loads(iload, 12))
-            Case "edge"
+        Select Case (loads(iload, 12).ToString().ToLower())
+            Case "edge", "surface"
                 oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
                 oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))
-            Case "internal"
-                oSB.AppendLine(ConCat_pv("0", "{4FCA60AD-9308-468B-BD02-3D4E17830029}"))
-                oSB.AppendLine(ConCat_pv("1", "EP_DSG_Elements.EP_SlabInternalEdge.1"))
+            Case "internal", "internal edge"
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.InternalEdge2D)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.InternalEdge2D)))
+            Case "opening"
+                oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Opening)))
+                oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Opening)))
             Case Else
                 oSB.AppendLine(ConCat_pv("0", ContainerIds(EsaObjectType.Member2D)))
                 oSB.AppendLine(ConCat_pv("1", ContainerTypes(EsaObjectType.Member2D)))

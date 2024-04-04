@@ -195,6 +195,7 @@ Namespace Koala
             Dim in_pointLoadsPoints = New List(Of String)
             Dim in_pointLoadsBeams = New List(Of String)
             Dim FileName As String = " "
+            Dim ScaleText As String = "1"
             Dim Scale As Double = 1
             Dim RemDuplNodes As Boolean = False
             ' Dim AutoUpdate As Boolean = False
@@ -258,7 +259,9 @@ Namespace Koala
             DA.GetDataList(Of String)(16, in_flloads)
             DA.GetDataList(Of String)(17, in_fsloads)
             DA.GetDataList(Of String)(18, in_hinges)
-            DA.GetData(Of Double)(20, Scale)
+            If (DA.GetData(Of String)(20, ScaleText)) Then
+                Scale = Double.Parse(ScaleText)
+            End If
             DA.GetData(Of Boolean)(21, RemDuplNodes)
             DA.GetData(Of Boolean)(22, OnDemand)
             DA.GetDataList(Of String)(23, in_edgeLoads)
