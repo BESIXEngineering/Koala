@@ -1239,6 +1239,21 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
+        ' Non-linear functions need to be defined at the start in order to be referenced by other members
+        If modelData.NonLinearFunctions IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.NonLinearFunction)
+            Call WriteNonlinearFunctionHeaders(oSB)
+
+            For i = 0 To modelData.NonLinearFunctions.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... NL function: " + Str(i))
+                End If
+                Call WriteNonlinearFunction(oSB, i, modelData.NonLinearFunctions)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
         If modelData.Nodes IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Node)
             Call WriteNodeHeaders(oSB)
@@ -1392,6 +1407,21 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
+        'Define subsoil before surface supports!
+        If modelData.Subsoils IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Subsoil)
+            Call WriteSubsoilHeaders(oSB)
+
+            For i = 0 To modelData.Subsoils.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... subsoil: " + Str(i))
+                End If
+                Call WriteSubsoil(oSB, i, modelData.Subsoils)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
         If modelData.SurfaceSupports IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SurfaceSupport)
             Call WriteSurfaceSupportHeaders(oSB)
@@ -1406,15 +1436,15 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
-        If modelData.Subsoils IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.Subsoil)
-            Call WriteSubsoilHeaders(oSB)
+        If modelData.RigidArms IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.RigidArm)
+            Call WriteRigidArmHeaders(oSB)
 
-            For i = 0 To modelData.Subsoils.GetLength(0) - 1
+            For i = 0 To modelData.RigidArms.GetLength(0) - 1
                 If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... subsoil: " + Str(i))
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... rigid arm: " + Str(i))
                 End If
-                Call WriteSubsoil(oSB, i, modelData.Subsoils)
+                Call WriteRigidArm(oSB, i, modelData.RigidArms)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -1457,20 +1487,6 @@ Module HelperTools
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... crosslink: " + Str(i))
                 End If
                 Call WriteCrossLink(oSB, i, modelData.CrossLinks)
-            Next
-
-            Call CloseContainerAndTable(oSB)
-        End If
-
-        If modelData.RigidArms IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.RigidArm)
-            Call WriteRigidArmHeaders(oSB)
-
-            For i = 0 To modelData.RigidArms.GetLength(0) - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... rigid arm: " + Str(i))
-                End If
-                Call WriteRigidArm(oSB, i, modelData.RigidArms)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -1751,20 +1767,6 @@ Module HelperTools
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... surface thermal load: " + Str(i))
                 End If
                 Call WriteSurfaceThermalLoad(oSB, i, modelData.SurfaceThermalLoads)
-            Next
-
-            Call CloseContainerAndTable(oSB)
-        End If
-
-        If modelData.NonLinearFunctions IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.NonLinearFunction)
-            Call WriteNonlinearFunctionHeaders(oSB)
-
-            For i = 0 To modelData.NonLinearFunctions.GetLength(0) - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... NL function: " + Str(i))
-                End If
-                Call WriteNonlinearFunction(oSB, i, modelData.NonLinearFunctions)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -3602,8 +3604,7 @@ Module HelperTools
         oSB.AppendLine(ConCat_pv("5", subsoil(i, 4)))
         oSB.AppendLine(ConCat_pv("6", subsoil(i, 5)))
         oSB.AppendLine(ConCat_pv("7", subsoil(i, 6)))
-        ' TODO: Subsoil NLinear function definition doesn't seem to work
-        '  Confirmed by creating small test model, exporting to xml and importing again
+        ' Subsoil NLinear function definition requires the NLinear function to be defined FIRST in the XML or esa project!
         oSB.AppendLine(ConCat_pin("8", "1", subsoil(i, 8)))
         oSB.AppendLine("</obj>")
 

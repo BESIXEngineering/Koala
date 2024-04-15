@@ -35,7 +35,7 @@ Namespace Koala
             pManager.AddNumberParameter("C2y", "C2y", "C2y in MN/m^3", GH_ParamAccess.item, 50.0)
             pManager.AddIntegerParameter("C1ztype", "C1ztype", "C1ztype", GH_ParamAccess.item, 0)
             AddOptionstoMenuC1ztype(pManager.Param(7))
-            pManager.AddTextParameter("NonlinearFunction", "NonlinearFunction", "Name of nonlinear function for C1z (WARN: might not be correctly assigned in SCIA)", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("NonlinearFunction", "NonlinearFunction", "Name of nonlinear function for C1z", GH_ParamAccess.item, "")
         End Sub
 
         ''' <summary>
@@ -63,9 +63,6 @@ Namespace Koala
             Dim C1ztype As String = ""
             Dim NonlinearFunction As String = ""
 
-
-
-
             If (Not DA.GetData(Of String)(0, SubsoilName)) Then Return
             DA.GetData(Of String)(1, Description)
             DA.GetData(Of Double)(2, C1x)
@@ -77,14 +74,8 @@ Namespace Koala
             C1ztype = GetStringForC1ztype(i)
             DA.GetData(Of String)(8, NonlinearFunction)
 
-
-
             Dim FlatList As New List(Of System.Object)()
             'a hinge consists of: Beam name, ux, uy, uz, phix, phiy, phiz (0: free, 1: fixed), Position (Begin/End/Both)
-
-            Dim item As String
-
-
 
             'create fixed supports on first & last nodes, fully fixed
             '=====================================
@@ -99,8 +90,6 @@ Namespace Koala
             FlatList.Add(C2y * 1000000)
             FlatList.Add(C1ztype)
             FlatList.Add(NonlinearFunction)
-
-
 
             DA.SetDataList(0, FlatList)
         End Sub

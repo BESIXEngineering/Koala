@@ -6,9 +6,13 @@
 ### Fixed
 ### Security
 
-## 3.14
+## 3.15 (2024-04-15)
+### Fixed
+- Assignment of NonLinear function to subsoil by moving NonLinear function definitions to the top of the XML file
+
+## 3.14 (2024-04-04)
 ### Added
-- Member1D BulcklingGroup input parameter
+- Member1D BucklingGroup input parameter
 - HingeOnBeam with NonLinear function parameters and NamePrefix (to replace Hinges component)
 - Support components: added input parameters for name prefix and system definition
 - Selection component
