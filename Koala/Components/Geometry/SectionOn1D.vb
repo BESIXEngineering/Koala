@@ -4,7 +4,7 @@ Imports Grasshopper.Kernel
 Imports Rhino.Geometry
 
 Namespace Koala
-    Public Class SectionOnBeam
+    Public Class SectionOn1D
         Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -14,9 +14,9 @@ Namespace Koala
         ''' new tabs/panels will automatically be created.
         ''' </summary>
         Public Sub New()
-            MyBase.New("Section on beam", "Section on beam",
+            MyBase.New("Section on 1D", "Section on 1D",
                        "Create a section on 1D Member",
-                       "Structure", New EsaObjectType() {EsaObjectType.SectionOnBeam})
+                       "Structure", New EsaObjectType() {EsaObjectType.SectionOn1D})
         End Sub
 
         Const DefaultNamePrefix As String = "SB"
@@ -26,7 +26,7 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("1DMemberName", "1DMemberName", "Name of the 1D member where to put a section", GH_ParamAccess.item)
-            pManager.AddTextParameter("SectionPrefix", "SectionPrefix", "Section on the beam name prefix", GH_ParamAccess.item, DefaultNamePrefix)
+            pManager.AddTextParameter("SectionPrefix", "SectionPrefix", "Section on 1D name prefix", GH_ParamAccess.item, DefaultNamePrefix)
             pManager.AddParameter(New Param_Enum("Coord. Definition", "Coord. Definition", GH_ParamAccess.item, CoordinateDefinition.Rela))
             pManager.AddNumberParameter("Position", "Position", "Position along the 1D Member where to put the section", GH_ParamAccess.item, 0.5)
             pManager.AddParameter(New Param_Enum("Origin", "Origin", GH_ParamAccess.item, Origin.fromStart))
@@ -38,7 +38,7 @@ Namespace Koala
         ''' Registers all the output parameters for this component.
         ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
-            pManager.AddTextParameter("SectionOnBeam", "SectionOnBeam", "", GH_ParamAccess.list)
+            pManager.AddTextParameter("SectionOn1D", "SectionOn1D", "Section on 1D data", GH_ParamAccess.list)
         End Sub
 
         ''' <summary>

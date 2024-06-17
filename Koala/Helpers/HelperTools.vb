@@ -920,6 +920,9 @@ Module HelperTools
         ConCat_pnx = "<p" & p & " n=""" & n & """ x=""" & x & """/>"
     End Function
 
+    Private Function ConCat_pv1v2v3(p, v1, v2, v3)
+        ConCat_pv1v2v3 = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ v3=""" & v3 & """/>"
+    End Function
     Private Function ConCat_pv1v2x(p, v1, v2, x)
         ConCat_pv1v2x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ x=""" & x & """/>"
     End Function
@@ -957,9 +960,11 @@ Module HelperTools
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
                              in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
-                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String), in_IntegationStrips As List(Of String), in_SectionOnBeams As List(Of String), in_AveragingStrips As List(Of String))
+                             in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String),
+                             in_IntegationStrips As List(Of String), in_SectionOn1D As List(Of String), in_SectionOn2D As List(Of String),
+                             in_AveragingStrips As List(Of String))
 
-        Dim i As Long, j As Long
+        Dim i As Long
 
         ''If LCSType = 0 > Standard definition of LCS with an angle > LCSParam1 is the angle in radian
         ''If LCSType = 2 > Definition of LCS through a vector for local Z > LCSParam1/2/3 are the X, Y, Z components of the vector
@@ -1056,7 +1061,8 @@ Module HelperTools
             .ArbitraryProfiles = UnflattenObjectData(in_ArbitraryProfiles, 9, "arbitrary profile"),
             .IntegrationStrips = UnflattenObjectData(in_IntegationStrips, 17, "integration strip"),
             .AveragingStrips = UnflattenObjectData(in_AveragingStrips, 14, "averaging strip"),
-            .SectionOnBeams = UnflattenObjectData(in_SectionOnBeams, 8, "section on beam")
+            .SectionOn1D = UnflattenObjectData(in_SectionOn1D, 8, "section on 1d"),
+            .SectionOn2D = UnflattenObjectData(in_SectionOn2D, 6, "section on 2d")
         }
 
         'write the XML file
@@ -1843,15 +1849,29 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
-        If modelData.SectionOnBeams IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SectionOnBeam)
-            Call WriteSectionOnBeamHeaders(oSB)
+        If modelData.SectionOn1D IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SectionOn1D)
+            Call WriteSectionOn1DHeaders(oSB)
 
-            For i = 0 To modelData.SectionOnBeams.GetLength(0) - 1
+            For i = 0 To modelData.SectionOn1D.GetLength(0) - 1
                 If i > 0 And (i Mod 500 = 0) Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... section on beam: " + Str(i))
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... section on 1D: " + Str(i))
                 End If
-                Call WriteSectionOnBeam(oSB, i, modelData.SectionOnBeams)
+                Call WriteSectionOn1D(oSB, i, modelData.SectionOn1D)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SectionOn2D IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SectionOn2D)
+            Call WriteSectionOn2DHeaders(oSB)
+
+            For i = 0 To modelData.SectionOn2D.GetLength(0) - 1
+                If i > 0 And (i Mod 500 = 0) Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... section on 2D: " + Str(i))
+                End If
+                Call WriteSectionOn2D(oSB, i, modelData.SectionOn2D)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -2012,7 +2032,7 @@ Module HelperTools
         Dim nodeStart = modelData.GetNodeName(ShapeAndNodes.ElementAt(1))
         Dim nodeEnd = modelData.GetNodeName(ShapeAndNodes.Last())
 
-        oSB.AppendLine(ConCat_pn("1", NodeStart)) 'Beg. node
+        oSB.AppendLine(ConCat_pn("1", nodeStart)) 'Beg. node
         oSB.AppendLine(ConCat_pn("2", nodeEnd)) 'End node
 
         oSB.AppendLine(ConCat_pn("3", beams(ibeam, 2))) 'layer
@@ -2064,11 +2084,11 @@ Module HelperTools
             oSB.AppendLine("</h>")
 
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pn("1", nodeStart))
             oSB.AppendLine(ConCat_pv("2", "1"))
             oSB.AppendLine("</row>")
             oSB.AppendLine(ConCat_row(1))
-            oSB.AppendLine(ConCat_pn("1", MiddleNode))
+            oSB.AppendLine(ConCat_pn("1", middleNode))
             oSB.AppendLine("</row>")
             oSB.AppendLine(ConCat_row(2))
             oSB.AppendLine(ConCat_pn("1", nodeEnd))
@@ -2100,7 +2120,7 @@ Module HelperTools
             oSB.AppendLine(ConCat_ht("2", "Edge"))
             oSB.AppendLine("</h>")
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pn("1", nodeStart))
             oSB.AppendLine(ConCat_pv("2", "0"))
             oSB.AppendLine("</row>")
             oSB.AppendLine(ConCat_row(1))
@@ -2115,7 +2135,7 @@ Module HelperTools
             oSB.AppendLine(ConCat_ht("2", "Edge"))
             oSB.AppendLine("</h>")
             oSB.AppendLine(ConCat_row(0))
-            oSB.AppendLine(ConCat_pn("1", NodeStart))
+            oSB.AppendLine(ConCat_pn("1", nodeStart))
             oSB.AppendLine(ConCat_pv("2", "7"))
             oSB.AppendLine("</row>")
             For i = 2 To ShapeAndNodes.Count - 1
@@ -2755,14 +2775,14 @@ Module HelperTools
     Private Sub WriteInternalEdge(ByRef osb As Text.StringBuilder, iInternalEdge As Integer, modelData As ModelData)
         Dim slabInternalEdges = modelData.SlabInternalEdges
 
-        osb.AppendLine("<obj nm=""" & SlabInternalEdges(iInternalEdge, 0) & """>")
+        osb.AppendLine("<obj nm=""" & slabInternalEdges(iInternalEdge, 0) & """>")
 
-        osb.AppendLine(ConCat_pv("0", SlabInternalEdges(iInternalEdge, 0))) ' name
-        osb.AppendLine(ConCat_pn("1", SlabInternalEdges(iInternalEdge, 1))) ' 2D member
+        osb.AppendLine(ConCat_pv("0", slabInternalEdges(iInternalEdge, 0))) ' name
+        osb.AppendLine(ConCat_pn("1", slabInternalEdges(iInternalEdge, 1))) ' 2D member
 
         Dim nodeStart As String, nodeEnd As String, MiddleNode As String
 
-        Dim ShapeAndNodes As String() = SlabInternalEdges(iInternalEdge, 2).Split(New Char() {";"c})
+        Dim ShapeAndNodes As String() = slabInternalEdges(iInternalEdge, 2).Split(New Char() {";"c})
         Dim LineType = ShapeAndNodes.ElementAt(0)
         nodeStart = modelData.GetNodeName(ShapeAndNodes.ElementAt(1))
         nodeEnd = modelData.GetNodeName(ShapeAndNodes.Last())
@@ -3254,7 +3274,6 @@ Module HelperTools
     End Sub
 
     Private Sub WriteNodeSupport(ByRef oSB As Text.StringBuilder, isupport As Integer, modelData As ModelData) 'write 1 nodal support to the XML stream
-        Dim tt As String
         Dim supports = modelData.NodeSupports
 
         oSB.AppendLine("<obj nm=""" & supports(isupport, 1) & """>")
@@ -5578,7 +5597,7 @@ Module HelperTools
 
     End Sub
 
-    Private Sub WriteSectionOnBeamHeaders(ByRef oSB)
+    Private Sub WriteSectionOn1DHeaders(ByRef oSB)
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Reference Table"))
         oSB.AppendLine(ConCat_ht("1", "Name"))
@@ -5590,7 +5609,7 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteSectionOnBeam(ByRef oSB, iSectionOnBeam, sectionOnBeams(,))
+    Private Sub WriteSectionOn1D(ByRef oSB, iSectionOnBeam, sectionOnBeams(,))
         oSB.AppendLine("<obj nm=""" & sectionOnBeams(iSectionOnBeam, 1) & """>")
 
         'write surface name as reference table
@@ -5620,6 +5639,58 @@ Module HelperTools
             oSB.AppendLine(ConCat_pv("7", sectionOnBeams(iSectionOnBeam, 7))) 'Delta x
         End If
 
+        oSB.AppendLine("</obj>")
+
+    End Sub
+
+    Private Sub WriteSectionOn2DHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Draw"))
+        oSB.AppendLine(ConCat_ht("2", "Direction of cut"))
+        oSB.AppendLine(ConCat_ht("3", "Coord X"))
+        oSB.AppendLine(ConCat_ht("4", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("5", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("6", "Coord X"))
+        oSB.AppendLine(ConCat_ht("7", "Coord Y"))
+        oSB.AppendLine(ConCat_ht("8", "Coord Z"))
+        oSB.AppendLine(ConCat_ht("9", "Layer"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSectionOn2D(ByRef oSB, iSection, sectionOn2D(,))
+        'Name
+        oSB.AppendLine("<obj nm=""" & sectionOn2D(iSection, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", sectionOn2D(iSection, 0)))
+        'Draw
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DrawDiagram)(1, sectionOn2D(iSection, 2)))
+        'Direction
+        Dim direction As Rhino.Geometry.Vector3d
+        If Not Grasshopper.Kernel.GH_Convert.ToVector3d(sectionOn2D(iSection, 3), direction, Grasshopper.Kernel.GH_Conversion.Both) Then
+            direction = Rhino.Geometry.Vector3d.ZAxis
+        End If
+        oSB.AppendLine(ConCat_pv1v2v3("2", direction.X, direction.Y, direction.Z))
+
+        'Vertex 1
+        Dim vertex1 As Rhino.Geometry.Point3d
+        If Not Grasshopper.Kernel.GH_Convert.ToPoint3d(sectionOn2D(iSection, 4), vertex1, Grasshopper.Kernel.GH_Conversion.Both) Then
+            Throw New ArgumentException("Invalid SectionOn2D Vertex1")
+        End If
+        oSB.AppendLine(ConCat_pv("3", vertex1.X))
+        oSB.AppendLine(ConCat_pv("4", vertex1.Y))
+        oSB.AppendLine(ConCat_pv("5", vertex1.Z))
+
+        'Vertex 2
+        Dim vertex2 As Rhino.Geometry.Point3d
+        If Not Grasshopper.Kernel.GH_Convert.ToPoint3d(sectionOn2D(iSection, 5), vertex2, Grasshopper.Kernel.GH_Conversion.Both) Then
+            Throw New ArgumentException("Invalid SectionOn2D Vertex2")
+        End If
+        oSB.AppendLine(ConCat_pv("6", vertex2.X))
+        oSB.AppendLine(ConCat_pv("7", vertex2.Y))
+        oSB.AppendLine(ConCat_pv("8", vertex2.Z))
+
+        ' Layer
+        oSB.AppendLine(ConCat_pn("9", sectionOn2D(iSection, 1)))
         oSB.AppendLine("</obj>")
 
     End Sub

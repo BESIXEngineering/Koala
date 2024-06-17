@@ -2488,7 +2488,7 @@
     </def_table>
   </def_container>
   
-  <!-- section on beam -->
+  <!-- section on 1D -->
   <def_container id="{89BC3399-896D-43D0-8186-A493B1EC5FE2}" clsid="{89BC3399-896D-43D0-8186-A493B1EC5FE2}" progid="DataAddScia.EP_SectionOnBeam.1">
     <def_table id="27125C4E-D477-4AE4-BAF7-966A7B0E288B" name="XML\default" type="vertical" clsid="{89BC3399-896D-43D0-8186-A493B1EC5FE2}" progid="DataAddScia.EP_SectionOnBeam.1" size="8">
       <def_property x="0" name="Reference Table" type="table" id="{8F96D00B-2125-411D-9218-EF0038D0056F}">
@@ -2515,6 +2515,33 @@
       </def_property>
       <def_property x="6" name="Repeat (n)" type="param" flag="33619968" id="{EDA4B5AF-8A80-11D4-A414-000000000000}"/>
       <def_property x="7" name="Delta x" type="param" flag="33619968" id="{EDA4B5B0-8A80-11D4-A414-000000000000}"/>
+    </def_table>
+  </def_container>
+
+  <!-- section on 2D -->
+  <def_container id="{96ACB475-E405-42E9-B2A9-682ADC4F94C7}" clsid="{96ACB475-E405-42E9-B2A9-682ADC4F94C7}" progid="DataAddScia.EP_SectionOnSlab.1">
+    <def_table id="061DDBA5-F511-4ED1-B546-E75514741D9C" name="XML\default" type="vertical" clsid="{96ACB475-E405-42E9-B2A9-682ADC4F94C7}" progid="DataAddScia.EP_SectionOnSlab.1" size="16">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="1" name="Draw" type="enum" id="{DF84E772-0954-420D-AD8C-BB9A14DC639E}">
+        <def_enum size="6">
+          <it_enum v="0" t="Upright to element"/>
+          <it_enum v="1" t="Element plane"/>
+          <it_enum v="2" t="X direction"/>
+          <it_enum v="3" t="Y direction"/>
+          <it_enum v="4" t="Z direction"/>
+          <it_enum v="5" t="Draw similar as for setting in service properties"/>
+        </def_enum>
+      </def_property>
+      <def_property x="2" name="Direction of cut" type="real3" id="{B08C60CE-4082-48FA-8FA1-E098A3208F9B}"/>
+      <def_property x="3" name="Coord X" type="param" flag="33619968" id="{5C72E956-E131-43AD-B289-38769EDB7612}"/>
+      <def_property x="4" name="Coord Y" type="param" flag="33619968" id="{96F88865-C491-4B49-9705-C404FD6C4F14}"/>
+      <def_property x="5" name="Coord Z" type="param" flag="33619968" id="{EAEEDC01-3E4B-41BB-9934-99112F13C437}"/>
+      <def_property x="6" name="Coord X" type="param" flag="33619968" id="{8BDB8A2C-A112-4A8A-9CD0-07567EB16281}"/>
+      <def_property x="7" name="Coord Y" type="param" flag="33619968" id="{71B0D0C6-E334-4132-8612-B16CB2D23E65}"/>
+      <def_property x="8" name="Coord Z" type="param" flag="33619968" id="{C23AFC05-B7FD-4CC9-A97B-CF9038BFB78F}"/>
+      <def_property x="9" name="Layer" type="ref" flag="131072" id="{35E4A750-E358-11D4-AE4C-000000000000}">
+        <def_ref id="{D3885EC4-BAE5-11D4-B3FA-00104BC3B531}" progid="EP_DSG_Elements.EP_DataLayer.1"/>
+      </def_property>
     </def_table>
   </def_container>
   

@@ -105,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\Geometry\AveragingStrip.vb" />
+    <Compile Include="Components\Geometry\SectionOn2D.vb" />
     <Compile Include="Components\Tools\NamedSelection.vb" />
     <Compile Include="Components\GH_KoalaComponent.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
@@ -192,7 +193,7 @@
     <Compile Include="Deprecated\ProjectInfo.vb" />
     <Compile Include="Components\Geometry\InternalEdge2D.vb" />
     <Compile Include="Deprecated\SlabInternalEdge.vb" />
-    <Compile Include="Components\Geometry\SectionOnBeam.vb" />
+    <Compile Include="Components\Geometry\SectionOn1D.vb" />
     <Compile Include="StabilityCombination.vb" />
     <Compile Include="Subsoil.vb" />
     <Compile Include="SurfaceLoad.vb" />
@@ -277,6 +278,7 @@
     <None Include="Resources\RigidArms.bmp" />
     <None Include="Resources\SectionOnBeam.bmp" />
     <None Include="Resources\SaveSelection.bmp" />
+    <None Include="Resources\SectionOn2D.bmp" />
     <Content Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
   <ItemGroup />

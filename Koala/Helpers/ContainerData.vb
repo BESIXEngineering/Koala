@@ -54,7 +54,8 @@ Partial Module HelperTools
         {EsaObjectType.Cable, "{02AC59F3-478B-44C3-A350-E78DA69D7520}"},
         {EsaObjectType.IntegrationStrip, "{6404DF99-5A82-478C-811A-BC16F6CF7DC9}"},
         {EsaObjectType.AveragingStrip, "{FE0D602A-29D1-45BD-8812-C65D66847842}"},
-        {EsaObjectType.SectionOnBeam, "{89BC3399-896D-43D0-8186-A493B1EC5FE2}"}
+        {EsaObjectType.SectionOn1D, "{89BC3399-896D-43D0-8186-A493B1EC5FE2}"},
+        {EsaObjectType.SectionOn2D, "{96ACB475-E405-42E9-B2A9-682ADC4F94C7}"}
     }
 
     Public ContainerTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
@@ -108,7 +109,8 @@ Partial Module HelperTools
         {EsaObjectType.Cable, "DataAddSupport.EP_NonlinearityInitStress.1"},
         {EsaObjectType.IntegrationStrip, "EP_DSG_Elements.8.00.EP_CheckMember2D.1"},
         {EsaObjectType.AveragingStrip, "EP_DSG_Elements.EP_RedistStrip.1"},
-        {EsaObjectType.SectionOnBeam, "DataAddScia.EP_SectionOnBeam.1"}
+        {EsaObjectType.SectionOn1D, "DataAddScia.EP_SectionOnBeam.1"},
+        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"}
     }
 
 
@@ -163,7 +165,8 @@ Partial Module HelperTools
         {EsaObjectType.Cable, "80F27A2A-A741-4C59-8421-C791B85B068F"},
         {EsaObjectType.IntegrationStrip, "78FC8556-8B69-45B2-8174-3E7534ACDCEF"},
         {EsaObjectType.AveragingStrip, "4849FC97-8AF4-4546-BB2E-68337ADBDEB4"},
-        {EsaObjectType.SectionOnBeam, "27125C4E-D477-4AE4-BAF7-966A7B0E288B"}
+        {EsaObjectType.SectionOn1D, "27125C4E-D477-4AE4-BAF7-966A7B0E288B"},
+        {EsaObjectType.SectionOn2D, "061DDBA5-F511-4ED1-B546-E75514741D9C"}
     }
 
     Public TableTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
@@ -217,7 +220,8 @@ Partial Module HelperTools
         {EsaObjectType.Cable, "DataAddSupport.EP_NonlinearityInitStress.1"},
         {EsaObjectType.IntegrationStrip, "EP_DSG_Elements.8.00.EP_CheckMember2D.1"},
         {EsaObjectType.AveragingStrip, "EP_DSG_Elements.EP_RedistStrip.1"},
-        {EsaObjectType.SectionOnBeam, "DataAddScia.EP_SectionOnBeam.1"}
+        {EsaObjectType.SectionOn1D, "DataAddScia.EP_SectionOnBeam.1"},
+        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"}
     }
 
 

@@ -271,6 +271,20 @@ Namespace Koala
         DirectionY = 2
     End Enum
 
+    Public Enum DrawDiagram
+        <Description("Upright to element")>
+        UprightToElement = 0
+        <Description("Element plane")>
+        ElementPlane = 1
+        <Description("X direction")>
+        XDirection = 2
+        <Description("Y direction")>
+        YDirection = 3
+        <Description("Z direction")>
+        ZDirection = 4
+        <Description("Draw similar as for setting in service properties")>
+        ServiceProperties = 5
+    End Enum
 
     Enum EsaObjectCategory
         Project
@@ -358,7 +372,8 @@ Namespace Koala
         IntegrationStrip
         AveragingStrip
 
-        SectionOnBeam
+        SectionOn1D
+        SectionOn2D
     End Enum
 
     Public Enum LoadPanelType

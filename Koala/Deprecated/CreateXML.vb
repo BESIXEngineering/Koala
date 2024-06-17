@@ -316,7 +316,7 @@ Namespace Koala
                           in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
                           in_freePointMoment, in_nonlinearfunctions, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
-                          in_ArbitraryProfiles, Nothing, Nothing, Nothing) 'in_IntegrationStrips, in_SectionOnBeams, in_AveragingStrips)
+                          in_ArbitraryProfiles, Nothing, Nothing, Nothing, Nothing) 'in_IntegrationStrips, in_SectionOnBeams, in_AveragingStrips)
             DA.SetData(0, FileName)
 
         End Sub

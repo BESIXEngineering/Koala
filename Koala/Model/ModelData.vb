@@ -76,7 +76,8 @@ Public Class ModelData
     Public ArbitraryProfiles(,) As String
     Public IntegrationStrips(,) As String
     Public AveragingStrips(,) As String
-    Public SectionOnBeams(,) As String
+    Public SectionOn1D(,) As String
+    Public SectionOn2D(,) As String
 
     ''' <summary>
     ''' Find the matching name of the node as mapped in the model

@@ -6,6 +6,12 @@
 ### Fixed
 ### Security
 
+## 3.16 (2024-06-17)
+### Added
+- Added SectionOn2D
+### Changed
+- Renamed SectionOnBeam to SectionOn1D
+
 ## 3.15 (2024-04-15)
 ### Fixed
 - Assignment of NonLinear function to subsoil by moving NonLinear function definitions to the top of the XML file

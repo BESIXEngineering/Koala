@@ -29,14 +29,15 @@ Namespace Koala
                 EsaObjectType.Member1D,
                 EsaObjectType.ArbitraryProfile,
                 EsaObjectType.InternalNode1D,
-                EsaObjectType.SectionOnBeam}},
+                EsaObjectType.SectionOn1D}},
             {EsaObjectCategory.Structure2D, New EsaObjectType() {
                 EsaObjectType.Member2D,
                 EsaObjectType.LoadPanel,
                 EsaObjectType.Opening,
                 EsaObjectType.InternalEdge2D,
                 EsaObjectType.IntegrationStrip,
-                EsaObjectType.AveragingStrip}},
+                EsaObjectType.AveragingStrip,
+                EsaObjectType.SectionOn2D}},
             {EsaObjectCategory.BoundaryCondition, New EsaObjectType() {
                 EsaObjectType.NodeSupport,
                 EsaObjectType.BeamPointSupport,
@@ -260,7 +261,8 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.ThermalLoad2D),
                           GetInputText(DA, EsaObjectType.ArbitraryProfile),
                           GetInputText(DA, EsaObjectType.IntegrationStrip),
-                          GetInputText(DA, EsaObjectType.SectionOnBeam),
+                          GetInputText(DA, EsaObjectType.SectionOn1D),
+                          GetInputText(DA, EsaObjectType.SectionOn2D),
                           GetInputText(DA, EsaObjectType.AveragingStrip)
                           )
 
