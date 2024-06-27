@@ -188,9 +188,14 @@ Namespace Koala
                 End If
 
                 If dataCount > 9 AndAlso projectData(9) IsNot Nothing Then
-                    If Not projectData(9).CastTo(scale) AndAlso scale <= 0 Then
-                        scale = 1
-                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData scale")
+                    If projectData(9).CastTo(stringValue) Then
+                        If Not Double.TryParse(stringValue, scale) Then
+                            scale = 1
+                            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData scale")
+                        ElseIf scale <= 0 Then
+                            scale = 1
+                            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "ProjectData scale must be larger than zero")
+                        End If
                     End If
                 End If
 
@@ -201,9 +206,14 @@ Namespace Koala
                 End If
 
                 If dataCount > 11 AndAlso projectData(11) IsNot Nothing Then
-                    If Not projectData(11).CastTo(tolerance) AndAlso tolerance < 0 Then
-                        tolerance = 0.001
-                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData tolerance")
+                    If projectData(11).CastTo(stringValue) Then
+                        If Not Double.TryParse(stringValue, tolerance) Then
+                            tolerance = 0.001
+                            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Invalid ProjectData tolerance")
+                        ElseIf tolerance <= 0 Then
+                            tolerance = 0.001
+                            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "ProjectData tolerance must be larger than zero")
+                        End If
                     End If
                 End If
             End If

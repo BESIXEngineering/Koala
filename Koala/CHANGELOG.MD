@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.17 (2024-06-27)
+### Fixed
+- Reading scale and tolerance from ProjectData
+
 ## 3.16 (2024-06-17)
 ### Added
 - Added SectionOn2D
