@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.18 (2024-08-26)
+### Added
+- Added functionality for Accidental and Seismic Load Groups
+
 ## 3.17 (2024-06-27)
 ### Fixed
 - Reading scale and tolerance from ProjectData

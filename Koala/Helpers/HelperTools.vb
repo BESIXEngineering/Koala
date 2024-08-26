@@ -3687,6 +3687,15 @@ Module HelperTools
                 ElseIf Strings.UCase(groups(igroup, 2)) = "TOGETHER" Then
                     oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
                 End If
+            Case "ACCIDENTAL"
+                oSB.AppendLine(ConCat_pvt("1", "2", "Accidental"))
+            Case "SEISMIC"
+                oSB.AppendLine(ConCat_pvt("1", "3", "Seismic"))
+                If Strings.UCase(groups(igroup, 2)) = "EXCLUSIVE" Then
+                    oSB.AppendLine(ConCat_pvt("2", "1", "Exclusive"))
+                ElseIf Strings.UCase(groups(igroup, 2)) = "TOGETHER" Then
+                    oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
+                End If
         End Select
         oSB.AppendLine("</obj>")
 
