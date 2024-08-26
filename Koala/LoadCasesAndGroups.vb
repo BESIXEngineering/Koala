@@ -29,7 +29,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
 
             pManager.AddTextParameter("LoadCases", "LCs", "LoadCase parameters in format 'Name;Type;LoadGroup'; if Type=SW >> Permanent|Self weight (e.g. LC1;SW;LG1); if Type=Permanent >> Permanent|Standard (e.g. LC2;Permanent;LG1); if Type=Variable >> Variable|Static (e.g. LC2;Variable;LG2)", GH_ParamAccess.list, "LC2;Permanent;LG1")
-            pManager.AddTextParameter("LoadGroups", "LGs", "LoadGroup parameters in format 'Name;Type' if Type=Permanent (e.g. LG1;Permanent) or format 'Name;Type;Relation' if Type=Variable (e.g. LG2;Variable;EXCLUSIVE). Relation options: STANDARD, EXCLUSIVE, TOGETHER", GH_ParamAccess.list, "LG2; Variable; Standard")
+            pManager.AddTextParameter("LoadGroups", "LGs", "LoadGroup parameters in format 'Name;Type' if Type=Permanent (e.g. LG1;Permanent) or format 'Name;Type;Relation' if Type=Variable or Type=Seismic (e.g. LG2;Variable;EXCLUSIVE). Relation options: STANDARD (Variable only), EXCLUSIVE, TOGETHER", GH_ParamAccess.list, "LG2; Variable; Standard")
 
         End Sub
 
@@ -66,7 +66,7 @@ Namespace Koala
             'a load case consists of: name, type (Permanent/Variable), load group
             Dim SE_lgroups(LoadGroups.Count, 2)
             Dim FlatLGroupList As New List(Of System.Object)()
-            'a load group consists of: name, load type (Permanent/Variable), relation type (Nothing for Permanent, Exclusive/Together/Standard, for Variable)
+            'a load group consists of: name, load type (Permanent/Variable/Accidental/Seismic), relation type (Nothing for Permanent, Exclusive/Together/Standard (variable only), for Variable and Seismic)
 
 
             Dim lcase As String
@@ -97,8 +97,12 @@ Namespace Koala
             For Each lgroup In LoadGroups
                 lgroupname = lgroup.Split(";")(0)
                 lgrouptype = lgroup.Split(";")(1)
-                If Strings.Trim(Strings.UCase(lgrouptype)) = "VARIABLE" Then
+                If Strings.Trim(Strings.UCase(lgrouptype)) = "VARIABLE" Or Strings.Trim(Strings.UCase(lgrouptype)) = "SEISMIC" Then
                     lgrouprel = lgroup.Split(";")(2)
+                    If Strings.Trim(Strings.UCase(lgrouptype)) = "SEISMIC" And Strings.UCase(lgrouprel) = "STANDARD" Then
+                        lgrouprel = "Exclusive"
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "LG relation 'Standard' is incompatible with LG type 'Seismic'")
+                    End If
                 Else
                     lgrouprel = "N/A"
                 End If
