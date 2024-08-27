@@ -32,9 +32,12 @@ Public Class ModelData
     Public SurfaceEdgeSupports(,) As String
     Public SurfaceSupports(,) As String
 
-
     Public LoadCases(,) As String
     Public LoadGroups(,) As String
+
+    Public MassGroups(,) As String
+    Public MassCombinations(,) As String
+    Public SeismicSpectra(,) As String
 
     Public NodePointLoads(,) As String
     Public NodePointMoments(,) As String

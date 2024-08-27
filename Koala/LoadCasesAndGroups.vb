@@ -8,7 +8,7 @@ Imports Rhino.Geometry
 '' folder in Grasshopper.
 '' You can use the _GrasshopperDeveloperSettings Rhino command for that.
 Namespace Koala
-    Public Class LoadCasesAndGroups
+    Public Class LoadCasesAndGroups_OBSOLETE
         Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 

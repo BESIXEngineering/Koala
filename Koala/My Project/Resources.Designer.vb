@@ -377,6 +377,16 @@ Namespace My.Resources
         '''<summary>
         '''  Looks up a localized resource of type System.Drawing.Bitmap.
         '''</summary>
+        Friend ReadOnly Property LoadCase_new() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("LoadCase_new", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
         Friend ReadOnly Property LoadCases() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("LoadCases", resourceCulture)
@@ -397,9 +407,39 @@ Namespace My.Resources
         '''<summary>
         '''  Looks up a localized resource of type System.Drawing.Bitmap.
         '''</summary>
+        Friend ReadOnly Property LoadGroup_new() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("LoadGroup_new", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
         Friend ReadOnly Property LoadPanel() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("LoadPanel", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property MassCombination() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("MassCombination", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property MassGroup() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("MassGroup", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property
@@ -550,6 +590,16 @@ Namespace My.Resources
         Friend ReadOnly Property SectionOnBeam() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("SectionOnBeam", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Drawing.Bitmap.
+        '''</summary>
+        Friend ReadOnly Property SeismicSpectrum() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("SeismicSpectrum", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
             End Get
         End Property

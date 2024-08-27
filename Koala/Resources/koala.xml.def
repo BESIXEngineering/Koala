@@ -703,6 +703,49 @@
     </def_table>
   </def_container>
   
+  <def_container id="{2F9931C2-9E92-11D4-ABE2-00C06C452330}" clsid="{2F9931C2-9E92-11D4-ABE2-00C06C452330}" progid="DataSetScia.EP_MassGroup.1" library="yes">
+	<def_table id="9C398AA1-F886-4F45-9178-A946CC4CC2EE" name="XML\default" type="vertical" clsid="{2F9931C2-9E92-11D4-ABE2-00C06C452330}" progid="DataSetScia.EP_MassGroup.1" size="5">
+		 
+		<def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+
+		<def_property x="1" name="Load case" type="ref" flag="131072" id="{5E12F7C1-C94D-11D4-A46A-00C06C542707}">
+		  <def_ref id="{0908D21F-481F-11D4-AB84-00C06C452330}" progid="DataSetScia.EP_LoadCase.1"/>
+		</def_property>
+ 
+		<def_property x="2" name="Keep masses up-to-date with loads" type="bool" id="{C096877B-2757-43BD-922F-8867E0EC985F}"/>
+		 
+	</def_table>
+  </def_container>
+ 
+  <def_container id="{B1388A92-FF59-11D5-AA88-0050FC1D5C09}" clsid="{B1388A92-FF59-11D5-AA88-0050FC1D5C09}" progid="DataSetSciaTom.EP_MassCombi.1" library="yes">
+    <def_table id="8852C3CE-B944-4312-9DE2-D88A6971E2F6" name="XML\default" type="vertical" clsid="{B1388A92-FF59-11D5-AA88-0050FC1D5C09}" progid="DataSetSciaTom.EP_MassCombi.1" size="13">
+         
+        <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+         
+        <def_property x="1" name="Load cases" type="table" id="{1DC504C3-85BE-4323-B1EB-BADB2FA6A82B}">
+          <def_subtable size="3" type="vertical">
+            <def_property x="0" name="Name" type="string" id="{389B00F7-5EE9-428B-BE8A-15727A8E57D1}"/>
+            <def_property x="1" name="Coeff." type="param" id="{138BF88D-1C80-4702-BE41-9E068C4F6131}"/>
+            <def_property x="2" name="Load case ID" type="ref" id="{138BF88E-1C80-4702-BE41-9E068C4F6131}">
+              <def_ref id="{2F9931C2-9E92-11D4-ABE2-00C06C452330}" progid="DataSetScia.EP_MassGroup.1"/>
+            </def_property>
+         
+          </def_subtable>
+        </def_property>
+         
+    </def_table>
+  </def_container>
+  
+  <def_container id="{0A946EBF-5E4F-11D4-A3EC-000000000000}" clsid="{0A946EBF-5E4F-11D4-A3EC-000000000000}" progid="DataLibScia.EP_FreqSpectrum.1" library="yes">
+    <def_table id="68415D3F-D0C7-4B03-881C-E741D70D11BD" name="XML\default" type="vertical" clsid="{0A946EBF-5E4F-11D4-A3EC-000000000000}" progid="DataLibScia.EP_FreqSpectrum.1" size="6">
+         
+        <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+ 
+        <def_property x="1" name="Freq./Period/Accel." type="real3" id="{2DBE63E3-83E2-11D4-B37D-000000000000}"/>
+         
+    </def_table>
+  </def_container>
+ 
   <def_container id="{BC16B3C6-F464-11D4-94D3-000000000000}" clsid="{BC16B3C6-F464-11D4-94D3-000000000000}" progid="DataAddLoad.EP_LineForceLine.1">
     <def_table id="891E5370-4DB8-4D23-93F9-B6391D3AE73E" name="XML\default" type="vertical" clsid="{BC16B3C6-F464-11D4-94D3-000000000000}" progid="DataAddLoad.EP_LineForceLine.1" size="15">
       <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>

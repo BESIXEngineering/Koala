@@ -1,4 +1,9 @@
-﻿Imports System.IO
+﻿Imports System.Collections.Generic
+Imports System.ComponentModel
+Imports System.Diagnostics.Eventing.Reader
+Imports System.IO
+Imports System.Windows.Forms
+Imports Eto.Forms
 Imports Grasshopper.Kernel.Geometry.SpatialTrees
 Imports Grasshopper.Kernel.Parameters
 Imports Grasshopper.Kernel.Types.Transforms
@@ -923,6 +928,9 @@ Module HelperTools
     Private Function ConCat_pv1v2v3(p, v1, v2, v3)
         ConCat_pv1v2v3 = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ v3=""" & v3 & """/>"
     End Function
+    Private Function ConCat_pv1v2v3x(p, v1, v2, v3, x)
+        ConCat_pv1v2v3x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ v3=""" & v3 & """ x=""" & x & """/>"
+    End Function
     Private Function ConCat_pv1v2x(p, v1, v2, x)
         ConCat_pv1v2x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ x=""" & x & """/>"
     End Function
@@ -953,7 +961,9 @@ Module HelperTools
     Public Sub CreateXMLFile(FileName As String, StructureType As String, Materials As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
                              projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_sections As List(Of String),
                              in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
-                             in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String), in_lloads As List(Of String), in_sloads As List(Of String),
+                             in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String),
+                             in_mgroups As List(Of String), in_mcombis As List(Of String), in_spectra As List(Of String),
+                             in_lloads As List(Of String), in_sloads As List(Of String),
                              in_fploads As List(Of String), in_flloads As List(Of String), in_fsloads As List(Of String), in_hinges As List(Of String), in_edgeLoads As List(Of String), in_pointLoadsPoints As List(Of String), in_pointLoadsBeams As List(Of String),
                              in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String),
                              in_CrossLinks As List(Of String), in_presstensionElem As List(Of String), in_gapElem As List(Of String), in_limitforceElem As List(Of String),
@@ -1031,6 +1041,9 @@ Module HelperTools
             .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 27, "surface edge support"),
             .LoadCases = UnflattenObjectData(in_lcases, 3, "load case"),
             .LoadGroups = UnflattenObjectData(in_lgroups, 3, "load group"),
+            .MassGroups = UnflattenObjectData(in_mgroups, 3, "mass group"),
+            .MassCombinations = UnflattenObjectData(in_mcombis, 2, "mass combination"),
+            .SeismicSpectra = UnflattenObjectData(in_spectra, 4, "seismic spectra"),
             .NodePointLoads = UnflattenObjectData(in_pointLoadsPoints, 6, "point load"),
             .NodePointMoments = UnflattenObjectData(in_pointMomentPoint, 5, "point moment"),
             .BeamPointLoads = UnflattenObjectData(in_pointLoadsBeams, 12, "beam point load"),
@@ -1498,6 +1511,7 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
+        'Define load cases before mass groups!
         If modelData.LoadCases IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadCase)
             Call WriteLoadCaseHeaders(oSB)
@@ -1562,7 +1576,55 @@ Module HelperTools
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... stability combination: " + Str(i))
                 End If
+
                 Call WriteStabilityCombination(oSB, i, modelData.StabilityCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Mass Groups after load cases!
+        If modelData.MassGroups IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.MassGroup)
+            Call WriteMassGroupHeader(oSB)
+
+            For i = 0 To modelData.MassGroups.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XMl file string in memory... mass group: " + Str(i))
+                End If
+
+                Call WriteMassGroup(oSB, i, modelData.MassGroups)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Mass combinations after mass groups!
+        If modelData.MassCombinations IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.MassCombination)
+            Call WriteMassCombinationHeader(oSB)
+
+            For i = 0 To modelData.MassCombinations.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... mass combination: " + Str(i))
+                End If
+
+                Call WriteMassCombinations(oSB, i, modelData.MassCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SeismicSpectra IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SeismicSpectrum)
+            Call WriteSeismicSpectrumHeader(oSB)
+
+            For i = 0 To modelData.SeismicSpectra.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... seismic spectrum: " + Str(i))
+                End If
+
+                Call WriteSeismicSpectrum(oSB, i, modelData.SeismicSpectra)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -3874,7 +3936,81 @@ Module HelperTools
         oSB.AppendLine("</obj>")
 
     End Sub
+    Private Sub WriteMassGroupHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Keep masses up-to-date-with loads"))
+        oSB.AppendLine("</h>")
+    End Sub
 
+    Private Sub WriteMassGroup(ByRef oSB, igroup, groups(,)) 'write 1 mass group to the XML stream
+
+        oSB.AppendLine("<obj id=""" & Trim(Str(igroup)) & """ nm=""" & groups(igroup, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", groups(igroup, 0)))
+        oSB.Appendline(ConCat_pn("1", groups(igroup, 1)))
+        oSB.AppendLine(ConCat_pv("2", groups(igroup, 2)))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteMassCombinationHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load cases"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteMassCombinations(ByRef oSB, icombi, combinations(,)) 'write 1 mass combination to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
+        'Write combination tables
+        oSB.AppendLine(ConCat_pv("0", combinations(icombi, 0)))
+        Dim parts As String() = combinations(icombi, 1).Split(New Char() {";"c})
+        Dim Name As String
+        Dim Coeff As String
+        Dim i As Integer = 0
+        oSB.AppendLine(ConCat_opentable("1", ""))
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Coeff."))
+        oSB.AppendLine(ConCat_ht("2", "Load case ID"))
+        oSB.AppendLine("</h>")
+        For Each item In parts
+            Coeff = item.Split("*")(0)
+            Name = item.Split("*")(1)
+            oSB.AppendLine(ConCat_row(i))
+            oSB.AppendLine(ConCat_pv("0", Name))
+            oSB.appendline(ConCat_pv("1", Coeff))
+            oSB.appendline(ConCat_pin("2", i + 1, Name))
+            oSB.AppendLine("</row>")
+            i += 1
+        Next item
+        oSB.AppendLine(ConCat_closetable("1"))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteSeismicSpectrumHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Freq./Period/Accel."))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSeismicSpectrum(ByRef oSB, ispectrum, spectrums(,)) 'write 1 seismic spectrum to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(ispectrum)) & """ nm=""" & spectrums(ispectrum, 0) & """>")
+
+        'Write the freq/wavelength/accel data
+        oSB.AppendLine(ConCat_pv("0", spectrums(ispectrum, 0)))
+
+        Dim freqs As String() = Split(spectrums(ispectrum, 1), ";")
+        Dim wavelengths As String() = Split(spectrums(ispectrum, 2), ";")
+        Dim accelerations As String() = Split(spectrums(ispectrum, 3), ";")
+        Dim i As Integer = 0
+        For Each item In freqs
+            oSB.AppendLine(ConCat_pv1v2v3x("1", freqs(i), wavelengths(i), accelerations(i), i))
+            i += 1
+        Next item
+        oSB.AppendLine("</obj>")
+    End Sub
     Private Sub WriteLineLoadBeamHeaders(ByRef oSB)
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Name"))

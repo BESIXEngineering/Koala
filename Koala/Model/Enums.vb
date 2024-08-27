@@ -295,6 +295,7 @@ Namespace Koala
         Structure2D
         BoundaryCondition
         LoadCase
+        MassGroup
         PointLoad
         LineLoad
         SurfaceLoad
@@ -342,6 +343,10 @@ Namespace Koala
         LinearCombination
         NonLinearCombination
         StabilityCombination
+
+        MassGroup
+        MassCombination
+        SeismicSpectrum
 
         PointLoadNode
         PointMomentNode
@@ -528,5 +533,40 @@ Namespace Koala
         node = 3
     End Enum
 
+    Public Enum MGUpdate
+        <Description("no")>
+        no = 0
+        <Description("yes")>
+        yes = 1
+    End Enum
+
+    Public Enum LoadGroupType
+        <Description("permanent")>
+        permanent = 0
+        <Description("variable")>
+        variable = 1
+        <Description("accidental")>
+        accidental = 2
+        <Description("seismic")>
+        seismic = 3
+    End Enum
+
+    Public Enum LoadGroupRelation
+        <Description("standard")>
+        standard = 0
+        <Description("exclusive")>
+        exclusive = 1
+        <Description("together")>
+        together = 2
+    End Enum
+
+    Public Enum LoadCaseType
+        <Description("SW")>
+        SW = 0
+        <Description("permanent")>
+        permanent = 1
+        <Description("variable")>
+        variable = 2
+    End Enum
 End Namespace
 

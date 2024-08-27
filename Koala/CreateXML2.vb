@@ -55,6 +55,10 @@ Namespace Koala
                 EsaObjectType.LinearCombination,
                 EsaObjectType.NonLinearCombination,
                 EsaObjectType.StabilityCombination}},
+            {EsaObjectCategory.MassGroup, New EsaObjectType() {
+                EsaObjectType.MassGroup,
+                EsaObjectType.MassCombination,
+                EsaObjectType.SeismicSpectrum}},
             {EsaObjectCategory.PointLoad, New EsaObjectType() {
                 EsaObjectType.PointLoadNode,
                 EsaObjectType.PointMomentNode,
@@ -235,6 +239,9 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.SurfaceEdgeSupport),
                           GetInputText(DA, EsaObjectType.LoadCase),
                           GetInputText(DA, EsaObjectType.LoadGroup),
+                          GetInputText(DA, EsaObjectType.MassGroup),
+                          GetInputText(DA, EsaObjectType.MassCombination),
+                          GetInputText(DA, EsaObjectType.SeismicSpectrum),
                           GetInputText(DA, EsaObjectType.LineLoadBeam),
                           GetInputText(DA, EsaObjectType.SurfaceLoad),
                           GetInputText(DA, EsaObjectType.FreePointLoad),

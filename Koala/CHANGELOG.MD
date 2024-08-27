@@ -6,6 +6,15 @@
 ### Fixed
 ### Security
 
+## 3.19 (2024-08-27)
+### Added
+- LoadGroups component (replaces original LoadCases&LoadGroups component)
+- LoadCases component (replaces original LoadCases&LoadGroups component)
+- SeismicSpectrums component
+
+### Deprecated
+- LoadCases&LoadGroups component
+
 ## 3.18 (2024-08-26)
 ### Added
 - Added functionality for Accidental and Seismic Load Groups

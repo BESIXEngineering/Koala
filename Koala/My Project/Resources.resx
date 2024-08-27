@@ -211,11 +211,23 @@
   <data name="LoadCases" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LoadCases.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="LoadCase_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LoadCase_new.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="LoadGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LoadGroup.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="LoadGroup_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\LoadGroup_new.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="LoadPanel" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LoadPanel.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MassCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MassCombination.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MassGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\MassGroup.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Node" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Node.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -261,6 +273,9 @@
   </data>
   <data name="SectionOnBeam" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SectionOnBeam.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SeismicSpectrum" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SeismicSpectrum.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="StabilityCombination" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\StabilityCombination.bmp;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
