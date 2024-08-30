@@ -67,6 +67,7 @@ Public Class ModelData
     Public LinearCombinations(,) As String
     Public NonLinearCombinations(,) As String
     Public StabilityCombinations(,) As String
+    Public ResultClasses(,) As String
 
     Public GapElements(,) As String
     Public PretensionElements(,) As String

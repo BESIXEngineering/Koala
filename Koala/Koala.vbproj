@@ -108,6 +108,7 @@
     <Compile Include="Components\Geometry\SectionOn2D.vb" />
     <Compile Include="Components\Loads\LoadCase.vb" />
     <Compile Include="Components\Loads\LoadGroup.vb" />
+    <Compile Include="Components\Loads\ResultClass.vb" />
     <Compile Include="Components\Loads\SeismicSpectrum.vb" />
     <Compile Include="Components\Tools\NamedSelection.vb" />
     <Compile Include="Components\GH_KoalaComponent.vb" />
@@ -289,6 +290,7 @@
     <None Include="Resources\SaveSelection.bmp" />
     <None Include="Resources\SectionOn2D.bmp" />
     <None Include="Resources\SeismicSpectrum.bmp" />
+    <None Include="Resources\ResultClass.bmp" />
     <Content Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
   <ItemGroup />

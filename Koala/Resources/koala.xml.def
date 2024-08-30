@@ -1358,6 +1358,53 @@
       </def_property>
     </def_table>
   </def_container>
+
+	<def_container id="{8E5A5442-7217-460C-853D-9D35EC18FAB9}" clsid="{8E5A5442-7217-460C-853D-9D35EC18FAB9}" progid="DataSetSciaTom.EP_SelectedLC.1">
+		<def_table id="3AD98F79-B273-43D7-8590-2FD30EA6FABE" name="XML\default" type="vertical" clsid="{8E5A5442-7217-460C-853D-9D35EC18FAB9}" progid="DataSetSciaTom.EP_SelectedLC.1" size="3">
+
+			<def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+			
+			<def_property x="1" name="Case" type="table" id="{7FFBE0C1-5215-461E-98C4-282DA7B38F1A}">
+				<def_subtable size="5" type="vertical">
+					<def_property x="0" name="Load case ID" type="ref" id="{C59AC131-BCB9-4629-9CF5-D09D21457FF8}">
+						<def_ref id="{0908D21F-481F-11D4-AB84-00C06C452330}" progid="DataSetScia.EP_LoadCase.1"/>
+					</def_property>
+					<def_property x="1" name="Load combi ID" type="ref" id="{DCE3A0FB-C21C-4590-8385-018AA5C52FA8}">
+						<def_ref id="{C0FBF7E1-4A71-11D4-AB86-00C06C452330}" progid="DataSetSciaTom.EP_LoadCombi.1"/>
+					</def_property>
+					<!--<def_property x="2" name="Concrete combi ID" type="ref" id="{CD260302-282B-4577-934A-ADA732D7326A}">
+						<def_ref id="{18EC9088-B8DB-4015-85FE-2049A9DFAACF}" progid="DataSetSciaTom.EP_ConcreteCombi.1"/>
+					</def_property>-->
+					<def_property x="2" name="Nonlinear combi ID" type="ref" id="{F255996E-B42E-4031-9FDD-D92BD5AA6FDF}">
+						<def_ref id="{1E28F6C2-DD8B-11D5-AA60-0050FC1D5C09}" progid="DataSetSciaTom.EP_NonlinearCombi.1"/>
+					</def_property>
+					<!--<def_property x="4" name="Mass combi ID" type="ref" id="{D4385C7A-ED99-4D8E-8C82-9C2D7BD16AFE}">
+						<def_ref id="{B1388A92-FF59-11D5-AA88-0050FC1D5C09}" progid="DataSetSciaTom.EP_MassCombi.1"/>
+					</def_property>-->
+					<!--<def_property x="5" name="Stability combi ID" type="ref" id="{A9799475-6024-46B7-A215-88CFF6140AB9}">
+						<def_ref id="{B6CCD4B2-DDDC-11D5-AA60-0050FC1D5C09}" progid="DataSetSciaTom.EP_StabilityCombi.1"/>
+					</def_property>-->
+					<!--<def_property x="6" name="Case_InxLc" type="integer" id="{C9BBABEB-AB69-4EAE-8B16-05957E94AC49}"/>-->
+					<def_property x="3" name="Case_Type" type="integer" id="{407B48D5-BB97-4C60-8784-D9BA7BE15B47}"/>
+					<!--<def_property x="8" name="Case_Model" type="integer" id="{0C9F774F-7BCB-41DD-BE28-E29CFCFDFEEE}"/>-->
+					<def_property x="4" name="Case_tUS" type="integer" id="{2F490ABC-1D7A-4EF3-8157-B28A6C9A1F1A}"/>
+				</def_subtable>
+			</def_property>
+
+			<def_property x="2" name="AllType" type="table" id="{A90512F3-5997-4052-A7EC-CDAB209F6D29}">
+				<def_subtable size="7" type="vertical">
+					<def_property x="0" name="All Type Name" type="string" id="{EB6256B0-85C4-4E6F-8BD0-43448ED07DD2}"/>
+					<!--<def_property x="1" name="All Type GUID" type="string" id="{669038CB-466F-4E0E-81C1-5F93D17A4D9A}"/>-->
+					<def_property x="2" name="All Type All" type="integer" id="{05B3A023-A65C-42EA-9069-646E8B6AD779}"/>
+					<def_property x="3" name="All Type Type" type="integer" id="{1C0B7202-9C8A-4C93-936E-D82F5875303D}"/>
+					<def_property x="4" name="All Type tUS" type="integer" id="{52FE45E0-E26A-4B24-B263-32610AD1A5F3}"/>
+					<def_property x="5" name="All Type FilterType1" type="integer" id="{831FD8CA-A4B3-4B6E-965F-173C24CAACA3}"/>
+					<def_property x="6" name="All Type FilterType2" type="integer" id="{ACB0B00A-081E-4DBF-98D9-C6653FDFA1A6}"/>
+					<def_property x="7" name="All Type Size" type="integer" id="{5E36A390-7DC7-498D-B3CF-89DF1607DACC}"/>
+				</def_subtable>
+			</def_property>
+		</def_table>
+	</def_container>
   
   <def_container id="{02AC59F3-478B-44C3-A350-E78DA69D7520}" clsid="{02AC59F3-478B-44C3-A350-E78DA69D7520}" progid="DataAddSupport.EP_NonlinearityInitStress.1">
     <def_table id="7E7FED2A-5579-4B4C-B0A9-4AD2F7E49F66" name="XML\default" type="vertical" clsid="{02AC59F3-478B-44C3-A350-E78DA69D7520}" progid="DataAddSupport.EP_NonlinearityInitStress.1" size="3">

@@ -343,6 +343,7 @@ Namespace Koala
         LinearCombination
         NonLinearCombination
         StabilityCombination
+        ResultClass
 
         MassGroup
         MassCombination

@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.20 (2024-08-30)
+### Added
+- ResultClasses component
+
 ## 3.19 (2024-08-27)
 ### Added
 - LoadGroups component (replaces original LoadCases&LoadGroups component)

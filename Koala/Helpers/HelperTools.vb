@@ -965,7 +965,7 @@ Module HelperTools
                              in_mgroups As List(Of String), in_mcombis As List(Of String), in_spectra As List(Of String),
                              in_lloads As List(Of String), in_sloads As List(Of String),
                              in_fploads As List(Of String), in_flloads As List(Of String), in_fsloads As List(Of String), in_hinges As List(Of String), in_edgeLoads As List(Of String), in_pointLoadsPoints As List(Of String), in_pointLoadsBeams As List(Of String),
-                             in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String),
+                             in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String), in_ResultClass As List(Of String),
                              in_CrossLinks As List(Of String), in_presstensionElem As List(Of String), in_gapElem As List(Of String), in_limitforceElem As List(Of String),
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
@@ -1065,6 +1065,7 @@ Module HelperTools
             .LinearCombinations = UnflattenObjectData(in_LinCombinations, 3, "linear combination"),
             .NonLinearCombinations = UnflattenObjectData(in_NonLinCombinations, 4, "non-linear combination"),
             .StabilityCombinations = UnflattenObjectData(in_StabCombinations, 2, "stability combination"),
+            .ResultClasses = UnflattenObjectData(in_ResultClass, 4, "result class"),
             .GapElements = UnflattenObjectData(in_gapElem, 4, "gap element"),
             .PretensionElements = UnflattenObjectData(in_presstensionElem, 2, "pretension element"),
             .LimitForceElements = UnflattenObjectData(in_limitforceElem, 4, "limit force element"),
@@ -1578,6 +1579,22 @@ Module HelperTools
                 End If
 
                 Call WriteStabilityCombination(oSB, i, modelData.StabilityCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Result classes after load cases and combinations!
+        If modelData.ResultClasses IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ResultClass)
+            Call WriteResultClassHeaders(oSB)
+
+            For i = 0 To modelData.ResultClasses.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... stability combination: " + Str(i))
+                End If
+
+                Call WriteResultClass(oSB, i, modelData.ResultClasses)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -3877,6 +3894,14 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
+    Private Sub WriteResultClassHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.Appendline(ConCat_ht("0", "Name"))
+        oSB.Appendline(ConCat_ht("1", "Case"))
+        oSB.Appendline(ConCat_ht("2", "AllType"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteStabilityCombination(ByRef oSB, icombi, combinations(,)) 'write 1 nonlinear combination to the XML stream
         oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", combinations(icombi, 0)))
@@ -3901,6 +3926,103 @@ Module HelperTools
             i += 1
         Next item
         oSB.AppendLine(ConCat_closetable("1"))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteResultclass(ByRef oSB, iclass, classes(,)) 'write 1 result class to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(iclass)) & """ nm=""" & classes(iclass, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", classes(iclass, 0)))
+
+        Dim names As String() = classes(iclass, 1).Split(New Char() {";"c})
+        Dim types As String() = classes(iclass, 2).Split(New Char() {";"c})
+        Dim subtypes As String() = classes(iclass, 3).Split(New Char() {";"c})
+        Dim i As Integer = 0
+        Dim p_id As Integer = 0
+
+        oSB.AppendLine(ConCat_opentable("1", ""))
+
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case ID"))
+        oSB.AppendLine(ConCat_ht("1", "Load combi ID"))
+        'oSB.AppendLine(ConCat_ht("2", "Concrete combi ID"))
+        oSB.AppendLine(ConCat_ht("2", "Nonlinear combi ID"))
+        'oSB.AppendLine(ConCat_ht("4", "Mass combi ID"))
+        'oSB.AppendLine(ConCat_ht("5", "Stability combi ID"))
+        'oSB.AppendLine(ConCat_ht("6", "Case_InxLc"))
+        oSB.AppendLine(ConCat_ht("3", "Case_Type"))
+        'oSB.AppendLine(ConCat_ht("8", "Case_Model"))
+        oSB.AppendLine(ConCat_ht("4", "Case_tUS"))
+        oSB.AppendLine("</h>")
+
+        For Each item In names
+            oSB.AppendLine(ConCat_row(i))
+            If types(i) = "1001" Then 'loadcases and linear combinations
+                If subtypes(i) = "-1" Then
+                    p_id = 0 'loadcases
+                ElseIf subtypes(i) = "0" Or subtypes(i) = 1 Then
+                    p_id = 1 'linear combinations
+                End If
+            ElseIf types(i) = "1002" Then
+                p_id = 2 'nonlinear combinations
+            End If
+
+            oSB.AppendLine(ConCat_pn(p_id, item))
+            oSB.AppendLine(ConCat_pv("3", types(i)))
+            oSB.AppendLine(ConCat_pv("4", subtypes(i)))
+            oSB.AppendLine("</row>")
+            i += 1
+        Next
+
+        oSB.AppendLine(ConCat_closetable("1"))
+
+        Dim all_type_names() As String = {"Load case",
+                                          "Ultimate combination",
+                                          "Serviceability combination",
+                                          "Nonlinear ultimate combination",
+                                          "Nonlinear serviceability combination"}
+
+        Dim all_type_types() As String = {"1001",
+                                          "1001",
+                                          "1001",
+                                          "1002",
+                                          "1002"}
+
+        Dim all_type_tus() As String = {"-1",
+                                        "0",
+                                        "1",
+                                        "0",
+                                        "1"}
+
+        Dim all_type_filter() As String = {"0",
+                                           "0",
+                                           "0",
+                                           "1",
+                                           "2"}
+
+        oSB.AppendLine(ConCat_opentable("2", ""))
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "All Type Name"))
+        oSB.AppendLine(ConCat_ht("2", "All Type All"))
+        oSB.AppendLine(ConCat_ht("3", "All Type Type"))
+        oSB.AppendLine(ConCat_ht("4", "All Type tUS"))
+        oSB.AppendLine(ConCat_ht("5", "All Type FilterType1"))
+        oSB.AppendLine(ConCat_ht("6", "All Type FilterType2"))
+        oSB.AppendLine(ConCat_ht("7", "All Type Size"))
+        oSB.AppendLine("</h>")
+
+        For i = 0 To all_type_names.Length - 1
+            oSB.AppendLine(ConCat_row(i))
+            oSB.AppendLine(ConCat_pv("0", all_type_names(i)))
+            oSB.AppendLine(ConCat_pv("2", "0"))
+            oSB.AppendLine(ConCat_pv("3", all_type_types(i)))
+            oSB.AppendLine(ConCat_pv("4", all_type_tus(i)))
+            oSB.AppendLine(ConCat_pv("5", all_type_filter(i)))
+            oSB.AppendLine(ConCat_pv("6", "0"))
+            oSB.AppendLine("</row>")
+        Next
+
+        oSB.AppendLine(ConCat_closetable("2"))
+
         oSB.AppendLine("</obj>")
     End Sub
 
@@ -3930,6 +4052,21 @@ Module HelperTools
             Case "VARIABLE"
                 oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
                 oSB.AppendLine(ConCat_pvt("2", "0", "Static"))
+                'oSB.AppendLine(ConCat_pvt("2", "0", "Dynamic")) for dynamic loads (e.g. earthquakes)
+                'Parameters to add for earthquake load cases :
+                'Specification 'seismicity'
+                'Mass Combination to consider
+                'Response spectrum
+                'Factor X
+                'Factor Y
+                'Factor Z
+                'acceleration factor (default 1)
+                'overturning reference level (default 0)
+                'method (4 options)
+                'Superposition type
+                'Required total mass ratio
+                'Required minimall mass ratio
+                'Use dominant mode (no=0, yes=1)
 
         End Select
         oSB.AppendLine(ConCat_pn("4", cases(icase, 2)))

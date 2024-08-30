@@ -54,7 +54,8 @@ Namespace Koala
                 EsaObjectType.LoadGroup,
                 EsaObjectType.LinearCombination,
                 EsaObjectType.NonLinearCombination,
-                EsaObjectType.StabilityCombination}},
+                EsaObjectType.StabilityCombination,
+                EsaObjectType.ResultClass}},
             {EsaObjectCategory.MassGroup, New EsaObjectType() {
                 EsaObjectType.MassGroup,
                 EsaObjectType.MassCombination,
@@ -254,6 +255,7 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.LinearCombination),
                           GetInputText(DA, EsaObjectType.NonLinearCombination),
                           GetInputText(DA, EsaObjectType.StabilityCombination),
+                          GetInputText(DA, EsaObjectType.ResultClass),
                           GetInputText(DA, EsaObjectType.CrossLink),
                           GetInputText(DA, EsaObjectType.PreTensionElement),
                           GetInputText(DA, EsaObjectType.GapElement),
