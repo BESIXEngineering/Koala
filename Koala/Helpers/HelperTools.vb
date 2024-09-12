@@ -1040,7 +1040,7 @@ Module HelperTools
             .SurfaceSupports = UnflattenObjectData(in_SurfaceSupports, 3, "surface support"),
             .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 27, "surface edge support"),
             .LoadCases = UnflattenObjectData(in_lcases, 3, "load case"),
-            .LoadGroups = UnflattenObjectData(in_lgroups, 3, "load group"),
+            .LoadGroups = UnflattenObjectData(in_lgroups, 4, "load group"),
             .MassGroups = UnflattenObjectData(in_mgroups, 3, "mass group"),
             .MassCombinations = UnflattenObjectData(in_mcombis, 2, "mass combination"),
             .SeismicSpectra = UnflattenObjectData(in_spectra, 4, "seismic spectra"),
@@ -3747,6 +3747,7 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("0", "Name"))
         oSB.AppendLine(ConCat_ht("1", "Load")) '0: Permanent, 1: Variable
         oSB.AppendLine(ConCat_ht("2", "Relation"))
+        oSB.AppendLine(ConCat_ht("3", "Type"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -3759,13 +3760,40 @@ Module HelperTools
                 oSB.AppendLine(ConCat_pvt("1", "0", "Permanent"))
             Case "VARIABLE"
                 oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
-                If Strings.UCase(groups(igroup, 2)) = "STANDARD" Then
-                    oSB.AppendLine(ConCat_pvt("2", "0", "Standard"))
-                ElseIf Strings.UCase(groups(igroup, 2)) = "EXCLUSIVE" Then
-                    oSB.AppendLine(ConCat_pvt("2", "1", "Exclusive"))
-                ElseIf Strings.UCase(groups(igroup, 2)) = "TOGETHER" Then
-                    oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
-                End If
+                Select Case Strings.UCase(groups(igroup, 2))
+                    Case "STANDARD"
+                        oSB.AppendLine(ConCat_pvt("2", "0", "Standard"))
+                    Case "EXCLUSIVE"
+                        oSB.AppendLine(ConCat_pvt("2", "1", "Exclusive"))
+                    Case "TOGETHER"
+                        oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
+                End Select
+
+                Select Case Strings.UCase(groups(igroup, 3))
+                    Case "CAT A : DOMESTIC"
+                        oSB.AppendLine(ConCat_pvt("3", "0", "Cat A : Domestic"))
+                    Case "CAT B : OFFICES"
+                        oSB.AppendLine(ConCat_pvt("3", "1", "Cat B : Offices"))
+                    Case "CAT C : CONGREGATION"
+                        oSB.AppendLine(ConCat_pvt("3", "2", "Cat C : Congregation"))
+                    Case "CAT D : SHOPPING"
+                        oSB.AppendLine(ConCat_pvt("3", "3", "Cat D : Shopping"))
+                    Case "CAT E : STORAGE"
+                        oSB.AppendLine(ConCat_pvt("3", "4", "Cat E : Storage"))
+                    Case "CAT F : VEHICLE <30KN"
+                        oSB.AppendLine(ConCat_pvt("3", "5", "Cat F : Vehicle &lt;30kN"))
+                    Case "CAT G : VEHICLE >30KN"
+                        oSB.AppendLine(ConCat_pvt("3", "6", "Cat G : Vehicle &gt;30kN"))
+                    Case "CAT H : ROOFS"
+                        oSB.AppendLine(ConCat_pvt("3", "7", "Cat H : Roofs"))
+                    Case "SNOW"
+                        oSB.AppendLine(ConCat_pvt("3", "8", "Snow"))
+                    Case "WIND"
+                        oSB.AppendLine(ConCat_pvt("3", "11", "Wind"))
+                    Case "TEMPERATURE"
+                        oSB.AppendLine(ConCat_pvt("3", "12", "Temperature"))
+                End Select
+
             Case "ACCIDENTAL"
                 oSB.AppendLine(ConCat_pvt("1", "2", "Accidental"))
             Case "SEISMIC"
@@ -4030,9 +4058,10 @@ Module HelperTools
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Name"))
         oSB.AppendLine(ConCat_ht("1", "Action type")) '0: Permanent, 1: Variable
-        oSB.AppendLine(ConCat_ht("2", "Load type"))
+        oSB.AppendLine(ConCat_ht("2", "Load type")) '0: Self-weight, 1: Standard, 2: Primary
         oSB.AppendLine(ConCat_ht("3", "Direction")) '0: -Z, 1: +Z, 2: -Y etc.
-        oSB.AppendLine(ConCat_ht("4", "Load group")) '0: Self-weight, 1: Standard, 2: Primary
+        oSB.AppendLine(ConCat_ht("4", "Load group"))
+        oSB.AppendLine(ConCat_ht("5", "Specification"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -4052,6 +4081,9 @@ Module HelperTools
             Case "VARIABLE"
                 oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
                 oSB.AppendLine(ConCat_pvt("2", "0", "Static"))
+            Case "SEISMIC"
+                oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
+                oSB.AppendLine(ConCat_pvt("2", "1", "Dynamic"))
                 'oSB.AppendLine(ConCat_pvt("2", "0", "Dynamic")) for dynamic loads (e.g. earthquakes)
                 'Parameters to add for earthquake load cases :
                 'Specification 'seismicity'
@@ -4069,7 +4101,13 @@ Module HelperTools
                 'Use dominant mode (no=0, yes=1)
 
         End Select
+
         oSB.AppendLine(ConCat_pn("4", cases(icase, 2)))
+
+        If Strings.UCase(cases(icase, 1)) = "SEISMIC" Then
+            oSB.AppendLine(ConCat_pvt("5", "100", "Seismicity"))
+        End If
+
         oSB.AppendLine("</obj>")
 
     End Sub

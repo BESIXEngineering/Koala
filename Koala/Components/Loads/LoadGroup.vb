@@ -23,8 +23,9 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Name of the LoadGroup (e.g. LG1)", GH_ParamAccess.item)
-            pManager.AddTextParameter("Type", "Type", "LoadGroup type (permanent, variable, accidental, or seismic)", GH_ParamAccess.item, "permanent")
+            pManager.AddTextParameter("Load", "Load", "LoadGroup load type (permanent, variable, accidental, or seismic)", GH_ParamAccess.item, "permanent")
             pManager.AddTextParameter("Relation", "Relation", "LoadGroup relation (standard, exclusive, or together)", GH_ParamAccess.item, "N/A")
+            pManager.AddTextParameter("Type", "Type", "Variable load type (Cat A : Domestic, Cat B : Offices, etc.)", GH_ParamAccess.item, "")
             'It might be nicer to do this with Enums, but current component outputs Strings
             'pManager.AddParameter(New Param_Enum("Type", "Type", GH_ParamAccess.item, LoadGroupType.variable))
             'pManager.AddParameter(New Param_Enum("Relation", "Relation", GH_ParamAccess.item, LoadGroupRelation.standard))
@@ -43,11 +44,12 @@ Namespace Koala
         ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
-            Dim SE_lgroups(2) As String
+            Dim SE_lgroups(3) As String
 
             Dim lgroupname As String = ""
             Dim lgrouptype As String = "permanent"
             Dim lgrouprelation As String = "N/A"
+            Dim lgrouploadtype As String = ""
             'Dim lgrouptype As LoadGroupType
             'Dim lgrouptypeIdx As Integer = 1
             'Dim lgrouprelation As LoadGroupRelation
@@ -57,6 +59,7 @@ Namespace Koala
             DA.GetData(0, lgroupname)
             DA.GetData(1, lgrouptype)
             DA.GetData(2, lgrouprelation)
+            DA.GetData(3, lgrouploadtype)
             'DA.GetData(1, lgrouptypeIdx)
             'lgrouptype = CType(lgrouptypeIdx, LoadGroupType)
             'DA.GetData(2, lgrouprelationIdx)
@@ -86,6 +89,7 @@ Namespace Koala
             SE_lgroups(0) = lgroupname
             SE_lgroups(1) = lgrouptype
             SE_lgroups(2) = lgrouprelation
+            SE_lgroups(3) = lgrouploadtype
 
             DA.SetDataList(0, SE_lgroups)
 

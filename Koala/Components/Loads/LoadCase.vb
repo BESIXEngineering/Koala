@@ -23,7 +23,7 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Load case name (e.g. LC1-selfweight)", GH_ParamAccess.item)
-            pManager.AddTextParameter("Type", "Type", "Load case type (SW, permanent, or variable)", GH_ParamAccess.item, "permanent")
+            pManager.AddTextParameter("Type", "Type", "Load case type (SW, permanent, variable, or dynamic)", GH_ParamAccess.item, "permanent")
             'It might be nicer to do this with Enums, but current component outputs Strings
             'pManager.AddParameter(New Param_Enum("Type", "Type", GH_ParamAccess.item, LoadCaseType.permanent))
             pManager.AddTextParameter("LoadGroup", "LoadGroup", "Name of the belonging load group (e.g. LG1)", GH_ParamAccess.item)

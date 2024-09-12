@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.21 (2024-09-12)
+### Changed
+- Added LoadGroup type input to LoadGroup component
+
 ## 3.20 (2024-08-30)
 ### Added
 - ResultClasses component
