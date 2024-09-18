@@ -8,10 +8,11 @@ Public Class ModelData
     Public MeshSize As Double
     Public UILanguage As String
     Public StructureType As String
+    Public MaterialTypes As List(Of String)
 
     Public Sections(,) As String
     Public Layers(,) As String
-    Public Materials As List(Of String)
+    Public Materials As List(Of Material)
     Public ProjectInfo As List(Of String)
     Public Selections(,) As String
 

@@ -27,7 +27,7 @@ Namespace Koala
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Name of the MassGroup (e.g. MG1)", GH_ParamAccess.item, "MG1")
             pManager.AddTextParameter("Base Lc Name", "BaseLc", "Base LoadCase for the MG (e.g. LC1)", GH_ParamAccess.item, "LC1")
-            pManager.AddParameter(New Param_Enum("Update", "Update", GH_ParamAccess.item, MGUpdate.yes))
+            pManager.AddBooleanParameter("Update", "Update", "Update", GH_ParamAccess.item, True)
         End Sub
 
         ''' <summary>
@@ -48,7 +48,7 @@ Namespace Koala
 
             Dim mgroupname As String = "MG1"
             Dim mgrouplcase As String = "LC1"
-            Dim updateflag As Integer = 1
+            Dim updateflag As Boolean = True
 
             DA.GetData(0, mgroupname)
             DA.GetData(1, mgrouplcase)
@@ -56,10 +56,9 @@ Namespace Koala
 
             SE_mgroups(0) = mgroupname
             SE_mgroups(1) = mgrouplcase
-            SE_mgroups(2) = updateflag
+            SE_mgroups(2) = CInt(updateflag)
 
             DA.SetDataList(0, SE_mgroups)
-
         End Sub
 
         ''' <summary>

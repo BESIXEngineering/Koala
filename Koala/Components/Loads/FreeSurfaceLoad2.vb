@@ -104,8 +104,6 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
 
             If (Not DA.GetData(11, selected2DMembers)) Then Return
 
-            Dim j As Long
-
             Dim SE_fsloads(11)
             Dim FlatList As New List(Of System.Object)()
             'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 or 2 values (kN/m^2), BoundaryShape

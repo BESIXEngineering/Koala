@@ -24,11 +24,11 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Result class name", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("LoadCases", "LoadCases", "Load case names as list (e.g. 'LC1;LC2;LC3;...')", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("ULS", "ULS", "ULS (linear) combination names as list (e.g. 'ULS1;ULS2;ULS3;...)", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("SLS", "SLS", "SLS (linear) combination names as list (e.g. 'SLS1;SLS2;SLS3;...')", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("NL ULS", "NL ULS", "ULS (non-linear) combination names as list (e.g. 'NLU1;NLU2,NLU3;...')", GH_ParamAccess.item, "")
-            pManager.AddTextParameter("NL SLS", "NL SLS", "SLS (non-linear) combination names as list (e.g. 'NLS1;NLS2;NLS3;...')", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("LoadCases", "LoadCases", "Load case names (e.g. 'LC1;LC2;LC3;...')", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("ULS", "ULS", "ULS (linear) combination names (e.g. 'ULS1;ULS2;ULS3;...)", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("SLS", "SLS", "SLS (linear) combination names (e.g. 'SLS1;SLS2;SLS3;...')", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("NL ULS", "NL ULS", "ULS (non-linear) combination names (e.g. 'NLU1;NLU2,NLU3;...')", GH_ParamAccess.item, "")
+            pManager.AddTextParameter("NL SLS", "NL SLS", "SLS (non-linear) combination names (e.g. 'NLS1;NLS2;NLS3;...')", GH_ParamAccess.item, "")
         End Sub
 
         ''' <summary>

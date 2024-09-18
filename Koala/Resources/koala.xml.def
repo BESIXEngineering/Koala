@@ -40,6 +40,485 @@
     </def_table>
   </def_container>
   
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="8E2AC277-26A8-48ED-948B-6B62EC2E026F" name="XML\default" type="vertical" clsid="{F1AF9DD4-5AF2-41F9-B402-7111BBE4CE94}" progid="EP_MaterialEC.EP_MaterialPSteelEC_EN.1" size="63">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="5">
+          <it_enum v="0" t="Plain round wire"/>
+          <it_enum v="1" t="Indented wire"/>
+          <it_enum v="2" t="Prestressing strand"/>
+          <it_enum v="3" t="Plain round bar"/>
+          <it_enum v="4" t="Ribbed bar"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="12" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="13" name="Diameter" type="real" id="{E2EFADA3-F80F-428A-B201-01F55E50A717}"/>
+      <def_property x="14" name="Area" type="real" id="{E2EFADA4-F80F-428A-B201-01F55E50A717}"/>
+      <def_property x="15" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="16" name="Characteristic value of maximum force (Fm)" type="real" id="{8C09AC31-B88C-464B-A26A-87B7DD5EA946}"/>
+      <def_property x="17" name="Characteristic 0,1% proof force (Fp0,1)" type="real" id="{8C09AC32-B88C-464B-A26A-87B7DD5EA946}"/>
+      <def_property x="18" name="Total elongation at maximum force (Agt)" type="real" id="{8C09AC33-B88C-464B-A26A-87B7DD5EA946}"/>
+      <def_property x="19" name="Fatigue stress range (Fr)" type="real" id="{8C09AC34-B88C-464B-A26A-87B7DD5EA946}"/>
+      <def_property x="20" name="Characteristic tensile strength (fpk)" type="real" id="{33A97461-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="21" name="Characteristic 0,1% proof stress (fp0,1k)" type="real" id="{33A97462-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="22" name="Characteristic strain at  maximum load (eps uk)" type="real" id="{33A97463-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="23" name="Ductility factor (k = fpk / fp01k)" type="real" id="{33A97464-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="24" name="Design yield strength - persistent (fpd = fp0,1k / gamma p_p)" type="real" id="{33A97465-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="25" name="Design yield strength - accidental (fpd = fp0,1k / gamma p_a)" type="real" id="{33A9746B-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="26" name="Design strain limit (eps ud)" type="real" id="{33A97466-F004-4C3E-9EEF-0BB03E6B41D9}"/>
+      <def_property x="27" name="Surface characteristics" type="enum" id="{33A97467-F004-4C3E-9EEF-0BB03E6B41D9}">
+        <def_enum size="3">
+          <it_enum v="1" t="Plain"/>
+          <it_enum v="2" t="Indented"/>
+          <it_enum v="3" t="Ribbed"/>
+        </def_enum>
+      </def_property>
+      <def_property x="28" name="Relaxation class" type="enum" id="{33A97468-F004-4C3E-9EEF-0BB03E6B41D9}">
+        <def_enum size="3">
+          <it_enum v="1" t="Class 1 - wire or strand - ordinary"/>
+          <it_enum v="2" t="Class 2 - low relaxation wires and strands"/>
+          <it_enum v="3" t="Class 3 - hot rolled and processed bars"/>
+        </def_enum>
+      </def_property>
+      <def_property x="29" name="Production" type="enum" id="{E2EFADA5-F80F-428A-B201-01F55E50A717}">
+        <def_enum size="4">
+          <it_enum v="1" t="Patented"/>
+          <it_enum v="2" t="Cold drawn"/>
+          <it_enum v="3" t="Stress-relieved"/>
+          <it_enum v="4" t="Low-relaxation"/>
+        </def_enum>
+      </def_property>
+      <def_property x="30" name="User relaxation" type="bool" id="{E2EFADA6-F80F-428A-B201-01F55E50A717}"/>
+      <def_property x="31" name="Tendon stress/char.tensile strength" type="enum" id="{27D3FCF2-2539-480F-B4A1-F02BE425D3C8}">
+        <def_enum size="11">
+          <it_enum v="0" t="0.000000"/>
+          <it_enum v="1" t="0.100000"/>
+          <it_enum v="2" t="0.200000"/>
+          <it_enum v="3" t="0.300000"/>
+          <it_enum v="4" t="0.400000"/>
+          <it_enum v="5" t="0.500000"/>
+          <it_enum v="6" t="0.600000"/>
+          <it_enum v="7" t="0.700000"/>
+          <it_enum v="8" t="0.800000"/>
+          <it_enum v="9" t="0.900000"/>
+          <it_enum v="10" t="1.000000"/>
+        </def_enum>
+      </def_property>
+      <def_property x="32" name="Type of diagram" type="enum" id="{F10C9E91-334C-4F41-89A0-5B4FFAC24C1F}">
+        <def_enum size="2">
+          <it_enum v="1" t="Bi-linear with an inclined top branch "/>
+          <it_enum v="2" t="Bi-linear without an inclined top branch "/>
+        </def_enum>
+      </def_property>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="62418600-E01A-4580-ADF7-FD8CCAC8D2A8" name="XML\default" type="vertical" clsid="{D4447D3C-B0AA-11D4-BAE3-006008A4560F}" progid="EP_MaterialEC.EP_MaterialSteelEC.1" size="44">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Steel"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Thermal expansion (for fire resistance) " type="real" id="{AC3DB8F9-EF9F-40B8-96A3-CE7815BBF8E7}"/>
+      <def_property x="12" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="13" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="14" name="Ultimate strength" type="real" id="{0BE3B3D1-86FA-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="15" name="Yield strength" type="real" id="{0BE3B3D2-86FA-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="16" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="17" name="Lower limit" type="real" id="{22E3672B-70B7-4E09-AF42-707C36ACE9B2}"/>
+      <def_property x="18" name="Upper limit" type="real" id="{0182B8D6-2E58-46E9-B370-011A9D1DBB65}"/>
+      <def_property x="19" name="Fu (range)" type="real" id="{D5E75B00-6919-44D8-83E4-ADEDE838BEA5}"/>
+      <def_property x="20" name="Fy (range)" type="real" id="{B3EF0095-9644-457B-8CB6-42E3718C0FC9}"/>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="D0AFF031-9D60-4737-8D7C-24140478CBE7" name="XML\default" type="vertical" clsid="{76931F32-9F6E-4651-ADCE-26BB24F9650A}" progid="EP_MaterialEC.EP_MaterialCrtEC_EN.1" size="75">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Concrete"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="Density in fresh state" type="real" id="{4BE9740F-D6E1-4619-9BF2-07C29E51FEFB}"/>
+      <def_property x="6" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="8" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="9" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="10" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="11" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="12" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="13" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="14" name="Order in code" type="integer" id="{F782ADE0-2E50-46B7-A5E4-8484A0CD145B}"/>
+      <def_property x="15" name="Stone diameter (dg)" type="real" id="{0BE3B3D3-86FA-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="16" name="Cement class" type="enum" flag="262144" id="{0BE3B3D4-86FA-11D4-B3AC-00104BC3B531}">
+        <def_enum size="3">
+          <it_enum v="0" t="S (slow hardening - CEM 32,5 N)"/>
+          <it_enum v="1" t="N (normal hardening - CEM 32,5 R, CEM 42,5 N)"/>
+          <it_enum v="2" t="R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)"/>
+        </def_enum>
+      </def_property>
+      <def_property x="17" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="18" name="Characteristic compressive cylinder strength fck(28)" type="real" id="{551852E1-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="19" name="Calculated depended values" type="bool" id="{551852E2-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="20" name="Mean compressive strength  fcm(28)" type="real" id="{551852E3-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="21" name="fcm(28) - fck(28)" type="real" id="{551852ED-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="22" name="Mean tensile strength fctm(28)" type="real" id="{551852E4-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="23" name="fctk 0,05(28)" type="real" id="{551852E5-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="24" name="fctk 0,95(28)" type="real" id="{551852E6-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="25" name="Design compressive strength - persistent (fcd = fck / gamma c_p)" type="real" id="{551852EE-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="26" name="Design compressive strength - accidental (fcd = fck / gamma c_a)" type="real" id="{551852EF-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="27" name="Strain at reaching maximum strength eps c2" type="real" id="{551852E7-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="28" name="Ultimate strain eps cu2" type="real" id="{551852E8-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="29" name="Strain at reaching maximum strength eps c3" type="real" id="{551852E9-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="30" name="Ultimate strain eps cu3" type="real" id="{551852EA-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="31" name="n" type="real" id="{551852EC-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="32" name="Type of aggregate" type="enum" id="{551852EB-8C31-4C50-90EE-E2B8747CCF87}">
+        <def_enum size="4">
+          <it_enum v="1" t="Quartzite"/>
+          <it_enum v="2" t="Limestone"/>
+          <it_enum v="3" t="Sandstone"/>
+          <it_enum v="4" t="Basalt"/>
+        </def_enum>
+      </def_property>
+      <def_property x="33" name="Measured values of mean compressive strength (influence of ageing)" type="bool" id="{F982E250-AAB4-4B6F-B525-E4A5B6973A76}"/>
+      <def_property x="34" name="Type of diagram" type="enum" id="{542D5F62-619E-4625-A3FF-4B6296E0D2D3}">
+        <def_enum size="2">
+          <it_enum v="1" t="Bi-linear stress-strain diagram"/>
+          <it_enum v="2" t="Parabola-rectangle stress-strain diagram"/>
+        </def_enum>
+      </def_property>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="3A27E97B-74F5-483B-8D29-4BCB1938C231" name="XML\default" type="vertical" clsid="{5557EFCB-39CA-4ECF-9A14-F064D4BBE531}" progid="EP_MaterialEC.EP_MaterialCrtEC_EN_2.1" size="76">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Concrete"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="Density in fresh state" type="real" id="{4BE9740F-D6E1-4619-9BF2-07C29E51FEFB}"/>
+      <def_property x="6" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="8" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="9" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="10" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="11" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="12" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="13" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="14" name="Order in code" type="integer" id="{F782ADE0-2E50-46B7-A5E4-8484A0CD145B}"/>
+      <def_property x="15" name="Stone diameter (dg)" type="real" id="{0BE3B3D3-86FA-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="16" name="Cement class" type="enum" flag="262144" id="{0BE3B3D4-86FA-11D4-B3AC-00104BC3B531}">
+        <def_enum size="3">
+          <it_enum v="0" t="S (slow hardening - CEM 32,5 N)"/>
+          <it_enum v="1" t="N (normal hardening - CEM 32,5 R, CEM 42,5 N)"/>
+          <it_enum v="2" t="R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)"/>
+        </def_enum>
+      </def_property>
+      <def_property x="17" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="18" name="Characteristic compressive cylinder strength fck(28)" type="real" id="{551852E1-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="19" name="Calculated depended values" type="bool" id="{551852E2-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="20" name="Mean compressive strength  fcm(28)" type="real" id="{551852E3-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="21" name="fcm(28) - fck(28)" type="real" id="{551852ED-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="22" name="Mean tensile strength fctm(28)" type="real" id="{551852E4-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="23" name="fctk 0,05(28)" type="real" id="{551852E5-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="24" name="fctk 0,95(28)" type="real" id="{551852E6-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="25" name="Design compressive strength - persistent (fcd = fck / gamma c_p)" type="real" id="{551852EE-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="26" name="Design compressive strength - accidental (fcd = fck / gamma c_a)" type="real" id="{551852EF-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="27" name="Strain at reaching maximum strength eps c2" type="real" id="{551852E7-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="28" name="Ultimate strain eps cu2" type="real" id="{551852E8-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="29" name="Strain at reaching maximum strength eps c3" type="real" id="{551852E9-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="30" name="Ultimate strain eps cu3" type="real" id="{551852EA-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="31" name="n" type="real" id="{551852EC-8C31-4C50-90EE-E2B8747CCF87}"/>
+      <def_property x="32" name="Type of aggregate" type="enum" id="{551852EB-8C31-4C50-90EE-E2B8747CCF87}">
+        <def_enum size="4">
+          <it_enum v="1" t="Quartzite"/>
+          <it_enum v="2" t="Limestone"/>
+          <it_enum v="3" t="Sandstone"/>
+          <it_enum v="4" t="Basalt"/>
+        </def_enum>
+      </def_property>
+      <def_property x="33" name="Measured values of mean compressive strength (influence of ageing)" type="bool" id="{F982E250-AAB4-4B6F-B525-E4A5B6973A76}"/>
+      <def_property x="34" name="Type of diagram" type="enum" id="{542D5F62-619E-4625-A3FF-4B6296E0D2D3}">
+        <def_enum size="2">
+          <it_enum v="1" t="Bi-linear stress-strain diagram"/>
+          <it_enum v="2" t="Parabola-rectangle stress-strain diagram"/>
+        </def_enum>
+      </def_property>
+      <def_property x="35" name="Silica fume" type="bool" id="{087A02D2-331A-4915-86CD-FE2DD0197F17}"/>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="B2A05380-A3FA-469F-A210-A54423FAE627" name="XML\default" type="vertical" clsid="{231042E2-E86A-431C-8242-E860D536C56D}" progid="EP_MaterialEC.EP_MaterialRfEC_EN.1" size="63">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Reinforcement steel"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="12" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="13" name="Order in code" type="integer" id="{F782ADE0-2E50-46B7-A5E4-8484A0CD145B}"/>
+      <def_property x="14" name="Bar surface" type="enum" id="{E2EFADA2-F80F-428A-B201-01F55E50A717}">
+        <def_enum size="2">
+          <it_enum v="0" t="Smooth"/>
+          <it_enum v="1" t="Ribbed"/>
+        </def_enum>
+      </def_property>
+      <def_property x="15" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="16" name="Characteristic yield strength fyk" type="real" id="{521DEFB1-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="17" name="Calculated depended values" type="bool" id="{521DEFB2-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="18" name="Characteristic maximum tensile strength ftk" type="real" id="{521DEFB3-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="19" name="Coefficient k = ftk / fyk" type="real" id="{521DEFB4-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="20" name="Design yield strength - persistent (fyd = fyk / gamma s_p)" type="real" id="{521DEFB9-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="21" name="Design yield strength - accidental (fyd = fyk / gamma s_a)" type="real" id="{521DEFBA-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="22" name="Maximum elongation eps uk" type="real" id="{521DEFB5-6CC7-42D2-8534-8C4BC4026D7A}"/>
+      <def_property x="23" name="Class" type="enum" id="{521DEFB6-6CC7-42D2-8534-8C4BC4026D7A}">
+        <def_enum size="3">
+          <it_enum v="1" t="A"/>
+          <it_enum v="2" t="B"/>
+          <it_enum v="3" t="C"/>
+        </def_enum>
+      </def_property>
+      <def_property x="24" name="Reinforcement type" type="enum" id="{521DEFB8-6CC7-42D2-8534-8C4BC4026D7A}">
+        <def_enum size="4">
+          <it_enum v="1" t="Bars"/>
+          <it_enum v="2" t="De-coiled rods"/>
+          <it_enum v="3" t="Wire fabrics"/>
+          <it_enum v="4" t="Lattice girders"/>
+        </def_enum>
+      </def_property>
+      <def_property x="25" name="Fabrication" type="enum" id="{521DEFB7-6CC7-42D2-8534-8C4BC4026D7A}">
+        <def_enum size="2">
+          <it_enum v="1" t="Hot rolled"/>
+          <it_enum v="2" t="Cold worked"/>
+        </def_enum>
+      </def_property>
+      <def_property x="26" name="Type of diagram" type="enum" id="{5441A162-6E64-43CD-8799-80AEB0864296}">
+        <def_enum size="2">
+          <it_enum v="1" t="Bi-linear with an inclined top branch "/>
+          <it_enum v="2" t="Bi-linear without an inclined top branch "/>
+        </def_enum>
+      </def_property>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="E92D6BC5-5AC7-441D-813B-AC37A7E30093" name="XML\default" type="vertical" clsid="{5B11F086-B37A-44BF-8FB6-EC02716CCC6E}" progid="EP_MaterialEC.EP_MaterialTimberEC.1" size="49">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Timber"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="12" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="13" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="14" name="Bending (fm,k)" type="real" id="{0BF71A1F-0381-4DFE-9DD5-622F21322514}"/>
+      <def_property x="15" name="Tension (ft,0,k)" type="real" id="{6546BCB2-DAB4-4E18-B6DB-F2D9CE4355EE}"/>
+      <def_property x="16" name="Tension (ft,90,k)" type="real" id="{0899AACB-7BD6-422E-A53B-1FA5DDED0D5C}"/>
+      <def_property x="17" name="Compression (fc,0,k)" type="real" id="{F24C272A-E678-4D80-A458-613B4078A6E1}"/>
+      <def_property x="18" name="Compression (fc,90,k)" type="real" id="{5C9FC67C-5E18-4B6C-A305-079BE88184A1}"/>
+      <def_property x="19" name="Shear (fv,k)" type="real" id="{9311E51E-133F-410C-8746-B634095DAAE0}"/>
+      <def_property x="20" name="Modulus (E0.05)" type="real" id="{1E6E3307-8AFB-4178-9B66-474DF28A4989}"/>
+      <def_property x="21" name="Modulus (E90 mean)" type="real" id="{D2B6AA5E-67D5-4CE8-B925-82A50BB823E3}"/>
+      <def_property x="22" name="Type of timber" type="enum" id="{0607EB1B-AF51-4433-B345-3BFD1546F981}">
+        <def_enum size="3">
+          <it_enum v="0" t="Solid"/>
+          <it_enum v="1" t="Glued, laminated"/>
+          <it_enum v="2" t="Cross-laminated"/>
+        </def_enum>
+      </def_property>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="C329F7C0-1971-4BA7-8365-795C8626B310" name="XML\default" type="vertical" clsid="{789A467F-0EFF-4B21-8286-D60DCE068B66}" progid="EP_MaterialEC.EP_MaterialAluminiun_EN.1" size="47">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Aluminium"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="12" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="13" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="14" name="0.2% proof strength (fo)" type="real" id="{0BF71A1F-0381-4DFE-9DD5-622F21322514}"/>
+      <def_property x="15" name="ultimate tensile strength (fu)" type="real" id="{6546BCB2-DAB4-4E18-B6DB-F2D9CE4355EE}"/>
+      <def_property x="16" name="min elongation" type="real" id="{0899AACB-7BD6-422E-A53B-1FA5DDED0D5C}"/>
+      <def_property x="17" name="0.2% proof strength (fo,haz)" type="real" id="{F24C272A-E678-4D80-A458-613B4078A6E1}"/>
+      <def_property x="18" name="ultimate tensile strength for HAZ (fu,haz)" type="real" id="{5C9FC67C-5E18-4B6C-A305-079BE88184A1}"/>
+      <def_property x="19" name="buckling class (BC)" type="enum" id="{9311E51E-133F-410C-8746-B634095DAAE0}">
+        <def_enum size="2">
+          <it_enum v="0" t="A"/>
+          <it_enum v="1" t="B"/>
+        </def_enum>
+      </def_property>
+      <def_property x="20" name="n-value for plastic analysis (np)" type="integer" id="{1E6E3307-8AFB-4178-9B66-474DF28A4989}"/>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="6CEC1330-4B0B-4522-A208-44AFD3FEDBDA" name="XML\default" type="vertical" clsid="{0574B6BF-0C88-4FF3-A26F-500CE824757A}" progid="EP_MaterialEC.10.00.EP_MaterialMasonry_EN.1" size="47">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Masonry"/>
+        </def_enum>
+      </def_property>
+      <def_property x="3" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="4" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="5" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="6" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="7" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="8" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="9" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="10" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="11" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="12" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="13" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="14" name="Characteristic compressive strength (fk)" type="param" flag="33619968" id="{EA5E7BB0-81C8-4D36-BD97-98A660570DFD}"/>
+      <def_property x="15" name="Calculate dependent values" type="bool" flag="167772160" id="{8C61823E-3705-428F-929E-9AA404937891}"/>
+      <def_property x="16" name="Coefficient for modulus of elasticity (KE)" type="param" flag="33619968" id="{1B95BB2A-E520-4548-A007-8046252153F2}"/>
+      <def_property x="17" name="Partial factor for ULS for masonry (gamma_M)" type="param" flag="33619968" id="{5DE10014-EA59-4ACA-AAEC-CD7BB243028C}"/>
+      <def_property x="18" name="Characteristic initial shear strength (fvko)" type="param" flag="33619968" id="{C69CFBA5-622C-4AB7-9163-5BF533C3AE42}"/>
+      <def_property x="19" name="Characteristic flexural strength having a plane of failure parallel to the bed points (fxk1)" type="param" flag="33619968" id="{0F57960E-0199-4F27-A00A-69D592FA786F}"/>
+      <def_property x="20" name="Characteristic flexural strength having a plane of failure perpendicular to the bed points (fxk2)" type="param" flag="33619968" id="{82027A09-D316-4046-91ED-00A2775F45D9}"/>
+    </def_table>
+  </def_container>
+
+  <def_container id="{16B20277-A13B-4689-97D5-68F2BACF1318}" clsid="{16B20277-A13B-4689-97D5-68F2BACF1318}" progid="EP_MaterialEC.EP_MaterialHeaderEC_EN.1" library="yes" readonly="no" hetero="yes">
+    <def_table id="98BFBC79-B3E8-402C-B97D-4EBEB4025B89" name="XML\default" type="vertical" clsid="{9EC35AC0-FB75-422C-B800-B33729789199}" progid="EP_MaterialEC.14.00.EP_MaterialFibreCrtEC.1" size="84">
+      <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>
+      <def_property x="2" name="Characteristic compressive cylinder strength fck(28)" type="real" id="{45A88DBD-3779-4136-96E5-479C3A34B705}"/>
+      <def_property x="3" name="Calculated depended values" type="bool" id="{0AC44D78-A1BB-4F50-A3DA-493C83350408}"/>
+      <def_property x="4" name="Mean compressive strength  fcm(28)" type="real" id="{E75DFB17-91A6-479A-A1F2-F0A93117B4F4}"/>
+      <def_property x="5" name="fcm(28) - fck(28)" type="real" id="{265C2C2F-D6A4-49D4-A05E-384EA15CB261}"/>
+      <def_property x="6" name="Mean tensile strength fctm(28)" type="real" id="{BF7D81F2-A22D-43FE-9F50-9AA1996FD7CA}"/>
+      <def_property x="7" name="fctk 0,05(28)" type="real" id="{CF0A57B7-D1D7-47FB-A900-FF9D807019A4}"/>
+      <def_property x="8" name="fctk 0,95(28)" type="real" id="{CF4A8FF8-9F9C-404C-B05F-2401411AEE25}"/>
+      <def_property x="9" name="Design compressive strength - persistent (fcd = fck / gamma c_p)" type="real" id="{3ED2F6F9-1930-4005-BC2A-881F321544D1}"/>
+      <def_property x="10" name="Strain at reaching maximum strength eps c2" type="real" id="{F0D342CF-1294-4128-AFFC-7298BF0CCAEB}"/>
+      <def_property x="11" name="Ultimate strain eps cu2" type="real" id="{9873608E-6D70-450F-925E-32D7EB293148}"/>
+      <def_property x="12" name="Strain at reaching maximum strength eps c3" type="real" id="{E7D6D2D2-DF87-48B7-9189-1C2D9732DED6}"/>
+      <def_property x="13" name="Ultimate strain eps cu3" type="real" id="{517991EA-C54D-4D57-8639-475361461239}"/>
+      <def_property x="14" name="Fibre type" type="ref" flag="131072" id="{A250E458-D573-42C0-AEBB-F989DFE02948}">
+        <def_ref id="{D094FB8B-E147-453A-961B-9DE1855C10E4}" progid="DataLibScia.14.00.EP_Fibres.1"/>
+      </def_property>
+      <def_property x="15" name="Fibre dosage" type="real" id="{28A3C9A9-3B0F-4B29-AD80-9A934491240E}"/>
+      <def_property x="16" name="Member size effect" type="real" id="{3C7F6E0C-FE56-41DB-B96C-16B7D743A06E}"/>
+      <def_property x="17" name="Fibre orientation effect (general)" type="real" id="{14845276-6249-4A55-8955-8809EDB480FD}"/>
+      <def_property x="18" name="Fibre orientation effect (shear check)" type="real" id="{3C8E4D11-73A8-4130-947F-8131722C8DEE}"/>
+      <def_property x="19" name="Characteristic basic residual tensile strength in performance class 1 f_ct0,L1" type="real" id="{FDC294E8-7117-4436-A29A-1A2DF58B8A06}"/>
+      <def_property x="20" name="Characteristic basic residual tensile strength in performance class 2 f_ct0,L2" type="real" id="{4D2D5C84-7381-4506-9E24-779A436365AB}"/>
+      <def_property x="21" name="Characteristic basic residual tensile strength ULS f_ct0,u" type="real" id="{0AACD5BA-76BF-4F3E-A49C-43B29DD8F037}"/>
+      <def_property x="22" name="Characteristic basic residual tensile strength SLS f_ct0,s" type="real" id="{F90EE804-38DF-432E-BBD9-F1A47A5A8DAF}"/>
+      <def_property x="23" name="Strain at reaching residual tensile strength in performance class 1 eps_ct,L11" type="real" id="{452B1DAC-F7CA-4E23-B9A2-EC20C54B040A}"/>
+      <def_property x="24" name="Strain at starting descending branch of residual tensile strength in performance class 1 eps_ct,L12" type="real" id="{8D98188C-5BD1-43D3-BDFE-2231011F2F2C}"/>
+      <def_property x="25" name="Strain at reaching residual tensile strength in preformance class 2 eps_ct,L2" type="real" id="{3A68F9CF-92E7-4B78-B0BC-6A1934BD3DC4}"/>
+      <def_property x="26" name="Strain at reaching mean concrete tensile strength eps_c,fctm" type="real" id="{DB443FE8-29EB-4D43-A2FD-F8DFEDBD9658}"/>
+      <def_property x="27" name="Strain at starting reaching residual tensile strength in performance class 1 eps_ct,L13" type="real" id="{82B36464-1711-4172-830F-35B0EFD3FE20}"/>
+      <def_property x="28" name="Characteristic residual tensile strength in performance class 1 ffctR,L1" type="real" id="{4212BB62-0B56-4C87-9C64-533963E03B54}"/>
+      <def_property x="29" name="Characteristic residual tensile strength in performance class 2 ffctR,L2" type="real" id="{2A58DA88-98DE-4126-9DA8-4952E706FFD3}"/>
+      <def_property x="30" name="Characteristic residual tensile strength in ULS ffctR,u" type="real" id="{A8873DFA-0ECF-40B8-A4D7-D882F3E93CB5}"/>
+      <def_property x="31" name="Characteristic residual tensile strength in SLS ffctR,s" type="real" id="{869D4CA9-F78F-4CC5-970E-F26FC6BE6D4A}"/>
+      <def_property x="32" name="Design residual tensile strength in performance class 1 ffctd,L1" type="real" id="{36B05420-4CA2-493B-A35C-B068FC8D5BC7}"/>
+      <def_property x="33" name="Design residual tensile strength in performance class 2 ffctd,L2" type="real" id="{EA1827F7-D322-416E-8789-8FC91E30300F}"/>
+      <def_property x="34" name="Design residual tensile strength in ULS ffctd,u" type="real" id="{D651DE89-782E-4F89-9D18-E09FE1570BAD}"/>
+      <def_property x="35" name="Design residual tensile strength in SLS ffctd,s" type="real" id="{E8DE1CD1-8690-45DF-9589-1CD53A845DDE}"/>
+      <def_property x="36" name="Material type" type="enum" flag="262144" id="{C7421D33-AF0C-11D4-BAE2-006008A4560F}">
+        <def_enum size="1">
+          <it_enum v="0" t="Steel fibre concrete"/>
+        </def_enum>
+      </def_property>
+      <def_property x="37" name="Thermal expansion " type="real" id="{0BE3B3D1-86F1-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="38" name="Unit mass" type="real" id="{FD667020-AB1A-11D4-A0DA-0001029E5330}"/>
+      <def_property x="39" name="E modulus" type="real" id="{C7421D31-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="40" name="Poisson coeff." type="real" id="{C7421D32-AF0C-11D4-BAE2-006008A4560F}"/>
+      <def_property x="41" name="Independent G modulus" type="bool" id="{97671FB7-B5BA-4919-AB8D-F5C4EEB88E9D}"/>
+      <def_property x="42" name="G modulus" type="real" id="{EFE9E250-A71F-4CE9-8981-372A1AD5A321}"/>
+      <def_property x="43" name="Log. decrement (non-uniform damping only)" type="real" id="{AAD0FAB0-2ACF-44E9-845A-12E43260524E}"/>
+      <def_property x="44" name="Colour" type="integer" id="{5FF9EA16-063B-41AE-83DD-F3208D528BBE}"/>
+      <def_property x="45" name="Specific heat" type="real" id="{FEC68EE3-07B2-4D4F-9E83-D3C468458371}"/>
+      <def_property x="46" name="Thermal conductivity" type="real" id="{573962BE-2376-48E6-9527-098F1A4D736C}"/>
+      <def_property x="47" name="Order in code" type="integer" id="{F782ADE0-2E50-46B7-A5E4-8484A0CD145B}"/>
+      <def_property x="48" name="Stone diameter (dg)" type="real" id="{0BE3B3D3-86FA-11D4-B3AC-00104BC3B531}"/>
+      <def_property x="49" name="Cement class" type="enum" flag="262144" id="{0BE3B3D4-86FA-11D4-B3AC-00104BC3B531}">
+        <def_enum size="3">
+          <it_enum v="0" t="S (slow hardening - CEM 32,5 N)"/>
+          <it_enum v="1" t="N (normal hardening - CEM 32,5 R, CEM 42,5 N)"/>
+          <it_enum v="2" t="R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)"/>
+        </def_enum>
+      </def_property>
+      <def_property x="50" name="Price per unit" type="real" id="{72979343-4BDF-4BD7-B42A-AFF96F9FC625}"/>
+      <def_property x="51" name="Type of aggregate" type="enum" id="{7C0137B7-77CF-435E-884A-7420E5890B90}">
+        <def_enum size="4">
+          <it_enum v="1" t="Quartzite"/>
+          <it_enum v="2" t="Limestone"/>
+          <it_enum v="3" t="Sandstone"/>
+          <it_enum v="4" t="Basalt"/>
+        </def_enum>
+      </def_property>
+      <def_property x="52" name="Type of diagram in compression" type="enum" id="{356E96C8-F360-4939-AD39-E28190781926}">
+        <def_enum size="2">
+          <it_enum v="1" t="Bi-linear stress-strain diagram"/>
+          <it_enum v="2" t="Parabola-rectangle stress-strain diagram"/>
+        </def_enum>
+      </def_property>
+    </def_table>
+  </def_container>
+  
   <def_container id="{2127A9B3-36BD-11D4-B337-00104BC3B531}" clsid="{2127A9B3-36BD-11D4-B337-00104BC3B531}" progid="CrossSection.EP_CrossSection.1" library="yes" hetero="yes">
     <def_table id="CDB98AF7-B4FE-4360-8240-C9F4A34065B3" name="XML\default" type="vertical" clsid="{CA5EE7E6-8EC1-44ED-A0F6-B8A83F5D5540}" progid="CrossSection.EP_CssGeometry.1" size="4">
       <def_property x="0" name="Name" type="string" id="{4364BC01-AAB7-11D4-B3D9-00104BC3B531}"/>

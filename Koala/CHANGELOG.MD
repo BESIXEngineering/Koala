@@ -6,9 +6,17 @@
 ### Fixed
 ### Security
 
+## 3.22 (2024-09-18)
+### Added
+- Added Material input to CreateXML component to modify steel and concrete material properties of materials already existing in the esa file
+### Changed
+- Enabled parsing Enum Parameter values from its string representation
+- LoadCase and LoadGroup components: Modified input parameters to Enum type
+- LoadGroup component: Reduced amount of output values to 3 (corresponding to the LoadCases&LoadGroups component) for backward compatibility
+
 ## 3.21 (2024-09-12)
 ### Changed
-- Added LoadGroup type input to LoadGroup component
+- Added LoadGroup VariableLoadType input to LoadGroup component
 
 ## 3.20 (2024-08-30)
 ### Added
@@ -19,7 +27,6 @@
 - LoadGroups component (replaces original LoadCases&LoadGroups component)
 - LoadCases component (replaces original LoadCases&LoadGroups component)
 - SeismicSpectrums component
-
 ### Deprecated
 - LoadCases&LoadGroups component
 

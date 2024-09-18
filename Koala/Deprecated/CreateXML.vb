@@ -309,7 +309,7 @@ Namespace Koala
             End If
 
             CreateXMLFile(FileName, StructureType, Materials, UILanguage, Scale, MeshSize, RemDuplNodes, Tolerance,
-                          projectInfo, Nothing, in_layers, in_sections,
+                          projectInfo, Nothing, in_layers, Nothing, in_sections,
                           in_nodes, in_beams, in_surfaces, in_openings,
                           in_nodesupports, in_edgesupports, in_lcases, in_lgroups, Nothing, Nothing, Nothing, in_lloads, in_sloads, in_fploads, in_flloads, in_fsloads, in_hinges,
                           in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, in_LinCombinations, in_NonLinCombinations, in_StabCombinations, Nothing,

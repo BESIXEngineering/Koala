@@ -118,7 +118,7 @@ Namespace Koala
                 Dim validMaterials As New List(Of String)
                 For Each mat In materials
                     If Not String.IsNullOrWhiteSpace(mat) Then
-                        Dim matEnum = GetEnum(Of Material)(mat)
+                        Dim matEnum = GetEnum(Of ProjectMaterialType)(mat)
                         validMaterials.Add(GetEnumDescription(matEnum))
                     End If
                 Next

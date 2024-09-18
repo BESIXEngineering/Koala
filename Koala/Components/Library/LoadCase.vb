@@ -23,11 +23,8 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Load case name (e.g. LC1-selfweight)", GH_ParamAccess.item)
-            pManager.AddTextParameter("Type", "Type", "Load case type (SW, permanent, variable, or dynamic)", GH_ParamAccess.item, "permanent")
-            'It might be nicer to do this with Enums, but current component outputs Strings
-            'pManager.AddParameter(New Param_Enum("Type", "Type", GH_ParamAccess.item, LoadCaseType.permanent))
+            pManager.AddParameter(New Param_Enum("Type", "Load case type", GH_ParamAccess.item, LoadCaseType.Permanent))
             pManager.AddTextParameter("LoadGroup", "LoadGroup", "Name of the belonging load group (e.g. LG1)", GH_ParamAccess.item)
-
         End Sub
 
         ''' <summary>
@@ -46,18 +43,16 @@ Namespace Koala
             Dim SE_loadcases(2) As String
 
             Dim lcasename As String = ""
-            Dim lcasetype As String = "permanent"
-            'Dim lcasetype As LoadCaseType
-            'Dim lcasetypeIdx As Integer = 1
+            Dim lcasetype As LoadCaseType = LoadCaseType.Permanent
             Dim lcasegroup As String = ""
 
             If (Not DA.GetData(0, lcasename)) Then Return
             DA.GetData(0, lcasename)
-            DA.GetData(1, lcasetype)
-            'DA.GetData(1, lcasetypeIdx)
-            'lcasetype = CType(lcasetypeIdx, LoadCaseType)
-            If (Not DA.GetData(0, lcasegroup)) Then Return
-            DA.GetData(2, lcasegroup)
+
+            Dim i As Integer
+            If DA.GetData(1, i) Then lcasetype = CType(i, LoadCaseType)
+
+            If (Not DA.GetData(2, lcasegroup)) Then Return
 
             'Check and process input data
             If String.IsNullOrEmpty(lcasename) Then
@@ -71,8 +66,7 @@ Namespace Koala
             End If
 
             SE_loadcases(0) = lcasename
-            SE_loadcases(1) = lcasetype
-            'SE_loadcases(1) = GetEnumDescription(lcasetype)
+            SE_loadcases(1) = GetEnumDescription(lcasetype)
             SE_loadcases(2) = lcasegroup
 
             DA.SetDataList(0, SE_loadcases)

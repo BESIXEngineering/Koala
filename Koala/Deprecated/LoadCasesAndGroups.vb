@@ -8,6 +8,7 @@ Imports Rhino.Geometry
 '' folder in Grasshopper.
 '' You can use the _GrasshopperDeveloperSettings Rhino command for that.
 Namespace Koala
+    <System.Obsolete("Use the new components to define LoadCases and LoadGroups individually")>
     Public Class LoadCasesAndGroups_OBSOLETE
         Inherits GH_KoalaComponent
         ''' <summary>
@@ -22,6 +23,11 @@ Namespace Koala
                 "Definition of loadcases",
                 "Libraries", New EsaObjectType() {EsaObjectType.LoadCase, EsaObjectType.LoadGroup})
         End Sub
+        Public Overrides ReadOnly Property Exposure As GH_Exposure
+            Get
+                Return GH_Exposure.hidden
+            End Get
+        End Property
 
         ''' <summary>
         ''' Registers all the input parameters for this component.

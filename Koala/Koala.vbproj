@@ -106,10 +106,10 @@
   <ItemGroup>
     <Compile Include="Components\Geometry\AveragingStrip.vb" />
     <Compile Include="Components\Geometry\SectionOn2D.vb" />
-    <Compile Include="Components\Loads\LoadCase.vb" />
-    <Compile Include="Components\Loads\LoadGroup.vb" />
-    <Compile Include="Components\Loads\ResultClass.vb" />
-    <Compile Include="Components\Loads\SeismicSpectrum.vb" />
+    <Compile Include="Components\Library\LoadCase.vb" />
+    <Compile Include="Components\Library\LoadGroup.vb" />
+    <Compile Include="Components\Library\ResultClass.vb" />
+    <Compile Include="Components\Library\SeismicSpectrum.vb" />
     <Compile Include="Components\Tools\NamedSelection.vb" />
     <Compile Include="Components\GH_KoalaComponent.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
@@ -117,7 +117,7 @@
     <Compile Include="Components\Supports\NodeSupport2.vb" />
     <Compile Include="Components\Supports\BeamPointSupport.vb" />
     <Compile Include="Components\Supports\SurfaceSupport2.vb" />
-    <Compile Include="CreateXML2.vb" />
+    <Compile Include="Components\CreateXML2.vb" />
     <Compile Include="Components\Geometry\IntegrationStrip.vb" />
     <Compile Include="Components\Geometry\InternalNode1D.vb" />
     <Compile Include="Components\Geometry\LoadPanel.vb" />
@@ -136,8 +136,8 @@
     <Compile Include="CrossLink.vb" />
     <Compile Include="EdgeLoad.vb" />
     <Compile Include="Deprecated\EdgeSupport.vb" />
-    <Compile Include="MassCombination.vb" />
-    <Compile Include="MassGroup.vb" />
+    <Compile Include="Components\Library\MassCombination.vb" />
+    <Compile Include="Components\Library\MassGroup.vb" />
     <Compile Include="Model\Enums.vb" />
     <Compile Include="FreePointMoment.vb" />
     <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
@@ -155,11 +155,12 @@
     <Compile Include="LineHinge.vb" />
     <Compile Include="LineMomentOnBeam.vb" />
     <Compile Include="LineMomentOnEdge.vb" />
-    <Compile Include="LoadCasesAndGroups.vb" />
+    <Compile Include="Deprecated\LoadCasesAndGroups.vb" />
     <Compile Include="KoalaInfo.vb" />
     <Compile Include="Deprecated\LoadPanels.vb" />
     <Compile Include="Helpers\ContainerData.vb" />
     <Compile Include="Model\ModelData.vb" />
+    <Compile Include="Model\Material.vb" />
     <Compile Include="Model\Node.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">

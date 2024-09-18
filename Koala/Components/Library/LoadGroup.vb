@@ -23,12 +23,9 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_InputParamManager)
             pManager.AddTextParameter("Name", "Name", "Name of the LoadGroup (e.g. LG1)", GH_ParamAccess.item)
-            pManager.AddTextParameter("Load", "Load", "LoadGroup load type (permanent, variable, accidental, or seismic)", GH_ParamAccess.item, "permanent")
-            pManager.AddTextParameter("Relation", "Relation", "LoadGroup relation (standard, exclusive, or together)", GH_ParamAccess.item, "N/A")
-            pManager.AddTextParameter("Type", "Type", "Variable load type (Cat A : Domestic, Cat B : Offices, etc.)", GH_ParamAccess.item, "")
-            'It might be nicer to do this with Enums, but current component outputs Strings
-            'pManager.AddParameter(New Param_Enum("Type", "Type", GH_ParamAccess.item, LoadGroupType.variable))
-            'pManager.AddParameter(New Param_Enum("Relation", "Relation", GH_ParamAccess.item, LoadGroupRelation.standard))
+            pManager.AddParameter(New Param_Enum("LoadType", "LoadGroup load type", GH_ParamAccess.item, LoadGroupLoadType.Permanent))
+            pManager.AddParameter(New Param_Enum("Relation", "LoadGroup relation", GH_ParamAccess.item, LoadGroupRelation.Undefined))
+            pManager.AddParameter(New Param_Enum("VariableType", "LoadGroup variable load type", GH_ParamAccess.item, LoadGroupVariableLoadType.Undefined))
         End Sub
 
         ''' <summary>
@@ -44,26 +41,19 @@ Namespace Koala
         ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
         ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
-            Dim SE_lgroups(3) As String
+            Dim SE_lgroups(2) As String
 
             Dim lgroupname As String = ""
-            Dim lgrouptype As String = "permanent"
-            Dim lgrouprelation As String = "N/A"
-            Dim lgrouploadtype As String = ""
-            'Dim lgrouptype As LoadGroupType
-            'Dim lgrouptypeIdx As Integer = 1
-            'Dim lgrouprelation As LoadGroupRelation
-            'Dim lgrouprelationIdx As Integer = 0
+            Dim lgrouptype As LoadGroupLoadType = LoadGroupLoadType.Permanent
+            Dim lgrouprelation As LoadGroupRelation = LoadGroupRelation.Undefined
+            Dim lgroupvarloadtype As LoadGroupVariableLoadType = LoadGroupVariableLoadType.Undefined
 
             If (Not DA.GetData(0, lgroupname)) Then Return
             DA.GetData(0, lgroupname)
-            DA.GetData(1, lgrouptype)
-            DA.GetData(2, lgrouprelation)
-            DA.GetData(3, lgrouploadtype)
-            'DA.GetData(1, lgrouptypeIdx)
-            'lgrouptype = CType(lgrouptypeIdx, LoadGroupType)
-            'DA.GetData(2, lgrouprelationIdx)
-            'lgrouprelation = CType(lgrouprelationIdx, LoadGroupRelation)
+            Dim i As Integer
+            If DA.GetData(1, i) Then lgrouptype = CType(i, LoadGroupLoadType)
+            If DA.GetData(2, i) Then lgrouprelation = CType(i, LoadGroupRelation)
+            If DA.GetData(3, i) Then lgroupvarloadtype = CType(i, LoadGroupVariableLoadType)
 
             'Check input data
             If String.IsNullOrEmpty(lgroupname) Then
@@ -72,27 +62,31 @@ Namespace Koala
             End If
 
             'Check coherence between Type and Relation inputs + adapt where needed (a warning will be given)
-            If Strings.LCase(lgrouptype) = "permanent" Then
-                lgrouprelation = "N/A"
+            If lgrouptype = LoadGroupLoadType.Permanent Then
+                lgrouprelation = LoadGroupRelation.Undefined
             End If
 
-            If Strings.LCase(lgrouptype) = "accidental" Then
-                lgrouprelation = "exclusive"
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "LG type 'accidental' requires LG relation 'exclusive'")
+            If lgrouptype = LoadGroupLoadType.Accidental Then
+                If lgrouprelation <> LoadGroupRelation.Exclusive And lgrouprelation <> LoadGroupRelation.Undefined Then
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "LG type 'accidental' requires LG relation 'exclusive'")
+                End If
+                lgrouprelation = LoadGroupRelation.Exclusive
             End If
 
-            If Strings.LCase(lgrouptype) = "seismic" And Strings.LCase(lgrouprelation) = "standard" Then
-                lgrouprelation = "exclusive"
+            If lgrouptype = LoadGroupLoadType.Seismic And lgrouprelation = LoadGroupRelation.Standard Then
+                lgrouprelation = LoadGroupRelation.Exclusive
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "LG relation 'standard' is incompatible with LG type 'seismic'")
             End If
 
             SE_lgroups(0) = lgroupname
-            SE_lgroups(1) = lgrouptype
-            SE_lgroups(2) = lgrouprelation
-            SE_lgroups(3) = lgrouploadtype
+            If lgrouptype = LoadGroupLoadType.Variable And lgroupvarloadtype <> LoadGroupVariableLoadType.Undefined Then
+                SE_lgroups(1) = GetEnumDescription(lgrouptype) & "|" & GetEnumDescription(lgroupvarloadtype)
+            Else
+                SE_lgroups(1) = GetEnumDescription(lgrouptype)
+            End If
+            SE_lgroups(2) = GetEnumDescription(lgrouprelation)
 
             DA.SetDataList(0, SE_lgroups)
-
         End Sub
 
         ''' <summary>
