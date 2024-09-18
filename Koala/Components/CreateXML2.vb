@@ -22,6 +22,7 @@ Namespace Koala
                 EsaObjectType.Selection}},
             {EsaObjectCategory.Library, New EsaObjectType() {
                 EsaObjectType.Layer,
+                EsaObjectType.Material,
                 EsaObjectType.CrossSection}},
             {EsaObjectCategory.Structure0D, New EsaObjectType() {
                 EsaObjectType.Node}},
@@ -54,7 +55,12 @@ Namespace Koala
                 EsaObjectType.LoadGroup,
                 EsaObjectType.LinearCombination,
                 EsaObjectType.NonLinearCombination,
-                EsaObjectType.StabilityCombination}},
+                EsaObjectType.StabilityCombination,
+                EsaObjectType.ResultClass}},
+            {EsaObjectCategory.MassGroup, New EsaObjectType() {
+                EsaObjectType.MassGroup,
+                EsaObjectType.MassCombination,
+                EsaObjectType.SeismicSpectrum}},
             {EsaObjectCategory.PointLoad, New EsaObjectType() {
                 EsaObjectType.PointLoadNode,
                 EsaObjectType.PointMomentNode,
@@ -138,7 +144,7 @@ Namespace Koala
             Dim projectInfo As New List(Of String)
             Dim structureTypeString As String = ""
             Dim uilanguage As UILanguage = UILanguage.EN
-            Dim materials As New List(Of String)
+            Dim materialTypes As New List(Of String)
             Dim meshSize As Double = -1
             Dim scale As Double = 1
             Dim remDuplNodes As Boolean = False
@@ -171,11 +177,12 @@ Namespace Koala
                     End If
                 End If
 
+                ' Material types activated in the project
                 If dataCount > 7 AndAlso projectData(7) IsNot Nothing Then
                     If projectData(7).CastTo(stringValue) AndAlso Not String.IsNullOrEmpty(stringValue) Then
-                        materials = (From s In Split(stringValue, ";")
-                                     Where Not String.IsNullOrWhiteSpace(s)
-                                     Select s.Trim).ToList
+                        materialTypes = (From s In Split(stringValue, ";")
+                                         Where Not String.IsNullOrWhiteSpace(s)
+                                         Select s.Trim).ToList
                     End If
                 End If
 
@@ -218,7 +225,9 @@ Namespace Koala
                 End If
             End If
 
-            CreateXMLFile(fileName, structureTypeString, materials, GetEnumDescription(uilanguage),
+            CreateXMLFile(fileName, structureTypeString,
+                          materialTypes, ' Material types enabled in the project settings
+                          GetEnumDescription(uilanguage),
                           scale,
                           meshSize,
                           remDuplNodes,
@@ -226,6 +235,7 @@ Namespace Koala
                           projectInfo,
                           GetInputText(DA, EsaObjectType.Selection),
                           GetInputText(DA, EsaObjectType.Layer),
+                          GetInputText(DA, EsaObjectType.Material), ' Material property definitions
                           GetInputText(DA, EsaObjectType.CrossSection),
                           GetInputText(DA, EsaObjectType.Node),
                           GetInputText(DA, EsaObjectType.Member1D),
@@ -235,6 +245,9 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.SurfaceEdgeSupport),
                           GetInputText(DA, EsaObjectType.LoadCase),
                           GetInputText(DA, EsaObjectType.LoadGroup),
+                          GetInputText(DA, EsaObjectType.MassGroup),
+                          GetInputText(DA, EsaObjectType.MassCombination),
+                          GetInputText(DA, EsaObjectType.SeismicSpectrum),
                           GetInputText(DA, EsaObjectType.LineLoadBeam),
                           GetInputText(DA, EsaObjectType.SurfaceLoad),
                           GetInputText(DA, EsaObjectType.FreePointLoad),
@@ -247,6 +260,7 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.LinearCombination),
                           GetInputText(DA, EsaObjectType.NonLinearCombination),
                           GetInputText(DA, EsaObjectType.StabilityCombination),
+                          GetInputText(DA, EsaObjectType.ResultClass),
                           GetInputText(DA, EsaObjectType.CrossLink),
                           GetInputText(DA, EsaObjectType.PreTensionElement),
                           GetInputText(DA, EsaObjectType.GapElement),
@@ -543,6 +557,11 @@ Namespace Koala
         ''' </summary>
         Private Function CreateInputParameter(name As String, idx As Integer) As IGH_Param
             Dim description As String = "Flattened data list of " & name
+
+            If name = "Material" Then
+                description = "Provide a string of comma-separated material properties to modify the properties of existing materials (e.g. Name:DummyMaterial, Type:Steel, fy:230MPa); required properties: Name, Type; optional properties: Density, E, G, nu, alpha, lambda, cp, fy, fu, fc, StoneDiameter, AggregateType, CementClass, DiagramType"
+            End If
+
             Dim newInputParam As IGH_Param = CreateInputParameter(idx, name, description)
             Params.RegisterInputParam(newInputParam, idx)
             ' By default flatten the input parameter data

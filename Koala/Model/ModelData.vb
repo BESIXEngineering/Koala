@@ -8,10 +8,11 @@ Public Class ModelData
     Public MeshSize As Double
     Public UILanguage As String
     Public StructureType As String
+    Public MaterialTypes As List(Of String)
 
     Public Sections(,) As String
     Public Layers(,) As String
-    Public Materials As List(Of String)
+    Public Materials As List(Of Material)
     Public ProjectInfo As List(Of String)
     Public Selections(,) As String
 
@@ -32,9 +33,12 @@ Public Class ModelData
     Public SurfaceEdgeSupports(,) As String
     Public SurfaceSupports(,) As String
 
-
     Public LoadCases(,) As String
     Public LoadGroups(,) As String
+
+    Public MassGroups(,) As String
+    Public MassCombinations(,) As String
+    Public SeismicSpectra(,) As String
 
     Public NodePointLoads(,) As String
     Public NodePointMoments(,) As String
@@ -64,6 +68,7 @@ Public Class ModelData
     Public LinearCombinations(,) As String
     Public NonLinearCombinations(,) As String
     Public StabilityCombinations(,) As String
+    Public ResultClasses(,) As String
 
     Public GapElements(,) As String
     Public PretensionElements(,) As String

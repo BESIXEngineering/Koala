@@ -61,7 +61,7 @@ Namespace Koala
 
             Dim Beams As String = ""
             Dim NamePrefix As String = DefaultNamePrefix
-            Dim Section As String
+            Dim Section As String = Nothing
 
             Dim CoordDefinitionIdx As Integer = 1
             Dim CoordDefinition As CoordinateDefinition

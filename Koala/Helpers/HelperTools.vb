@@ -1,4 +1,9 @@
-﻿Imports System.IO
+﻿Imports System.Collections.Generic
+Imports System.ComponentModel
+Imports System.Diagnostics.Eventing.Reader
+Imports System.IO
+Imports System.Windows.Forms
+Imports Eto.Forms
 Imports Grasshopper.Kernel.Geometry.SpatialTrees
 Imports Grasshopper.Kernel.Parameters
 Imports Grasshopper.Kernel.Types.Transforms
@@ -891,10 +896,14 @@ Module HelperTools
     End Function
 
     Private Sub OpenContainerAndTable(ByRef oSB As Text.StringBuilder, type As Koala.EsaObjectType)
-        oSB.AppendLine("")
-        oSB.AppendLine("<container id=""" & ContainerIds(type) & """ t=""" & ContainerTypes(type) & """>")
+        OpenContainer(oSB, type)
         oSB.AppendLine("<table id=""" & TableIds(type) & """ t=""" & TableTypes(type) & """>")
     End Sub
+    Private Sub OpenContainer(ByRef oSB As Text.StringBuilder, type As Koala.EsaObjectType)
+        oSB.AppendLine("")
+        oSB.AppendLine("<container id=""" & ContainerIds(type) & """ t=""" & ContainerTypes(type) & """>")
+    End Sub
+
 
     Private Sub CloseContainerAndTable(ByRef oSB As Text.StringBuilder)
         oSB.AppendLine("</table>")
@@ -923,6 +932,9 @@ Module HelperTools
     Private Function ConCat_pv1v2v3(p, v1, v2, v3)
         ConCat_pv1v2v3 = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ v3=""" & v3 & """/>"
     End Function
+    Private Function ConCat_pv1v2v3x(p, v1, v2, v3, x)
+        ConCat_pv1v2v3x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ v3=""" & v3 & """ x=""" & x & """/>"
+    End Function
     Private Function ConCat_pv1v2x(p, v1, v2, x)
         ConCat_pv1v2x = "<p" & p & " v1=""" & v1 & """ v2=""" & v2 & """ x=""" & x & """/>"
     End Function
@@ -950,12 +962,14 @@ Module HelperTools
 
     '<Custom additional code> 
 
-    Public Sub CreateXMLFile(FileName As String, StructureType As String, Materials As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
-                             projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_sections As List(Of String),
+    Public Sub CreateXMLFile(FileName As String, StructureType As String, MaterialTypes As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
+                             projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_materials As List(Of String), in_sections As List(Of String),
                              in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
-                             in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String), in_lloads As List(Of String), in_sloads As List(Of String),
+                             in_openings As List(Of String), in_nodesupports As List(Of String), in_edgesupports As List(Of String), in_lcases As List(Of String), in_lgroups As List(Of String),
+                             in_mgroups As List(Of String), in_mcombis As List(Of String), in_spectra As List(Of String),
+                             in_lloads As List(Of String), in_sloads As List(Of String),
                              in_fploads As List(Of String), in_flloads As List(Of String), in_fsloads As List(Of String), in_hinges As List(Of String), in_edgeLoads As List(Of String), in_pointLoadsPoints As List(Of String), in_pointLoadsBeams As List(Of String),
-                             in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String),
+                             in_LinCombinations As List(Of String), in_NonLinCombinations As List(Of String), in_StabCombinations As List(Of String), in_ResultClass As List(Of String),
                              in_CrossLinks As List(Of String), in_presstensionElem As List(Of String), in_gapElem As List(Of String), in_limitforceElem As List(Of String),
                              in_BeamLineSupport As List(Of String), in_PointSupportOnBeam As List(Of String), in_Subsoils As List(Of String), in_SurfaceSupports As List(Of String), in_loadpanels As List(Of String), in_pointMomentPoint As List(Of String),
                              in_pointMomentBeam As List(Of String), in_lineMomentBeam As List(Of String), in_lineMomentEdge As List(Of String), in_freePointMoment As List(Of String), in_nonlinearfunctions As List(Of String),
@@ -1006,13 +1020,20 @@ Module HelperTools
             Next i
         End If
 
+        Dim materials = New List(Of Material)
+        If (in_materials IsNot Nothing) Then
+            For Each materialDef In in_materials
+                materials.Add(New Material(materialDef))
+            Next
+        End If
+
         Dim model As New ModelData With {
             .Scale = scale,
             .MeshSize = meshSize,
             .UILanguage = UILanguage,
             .StructureType = StructureType,
             .Sections = UnflattenObjectData(in_sections, 4, "section"),
-            .Materials = Materials,
+            .MaterialTypes = MaterialTypes,
             .ProjectInfo = projectInfo,
             .Selections = UnflattenObjectData(in_selections, 2, "selections"),
             .Nodes = allNodes,
@@ -1020,6 +1041,7 @@ Module HelperTools
             .Beams = UnflattenObjectData(in_beams, 14, "beam"),
             .Surfaces = UnflattenObjectData(in_surfaces, 12, "surface"),
             .Layers = UnflattenObjectData(in_layers, 3, "layer"),
+            .Materials = materials,
             .LoadPanels = UnflattenObjectData(in_loadpanels, 8, "load panel"),
             .Openings = UnflattenObjectData(in_openings, 3, "opening"),
             .SlabInternalEdges = UnflattenObjectData(in_slabinternalEdges, 3, "slab internal edge"),
@@ -1031,6 +1053,9 @@ Module HelperTools
             .SurfaceEdgeSupports = UnflattenObjectData(in_edgesupports, 27, "surface edge support"),
             .LoadCases = UnflattenObjectData(in_lcases, 3, "load case"),
             .LoadGroups = UnflattenObjectData(in_lgroups, 3, "load group"),
+            .MassGroups = UnflattenObjectData(in_mgroups, 3, "mass group"),
+            .MassCombinations = UnflattenObjectData(in_mcombis, 2, "mass combination"),
+            .SeismicSpectra = UnflattenObjectData(in_spectra, 4, "seismic spectra"),
             .NodePointLoads = UnflattenObjectData(in_pointLoadsPoints, 6, "point load"),
             .NodePointMoments = UnflattenObjectData(in_pointMomentPoint, 5, "point moment"),
             .BeamPointLoads = UnflattenObjectData(in_pointLoadsBeams, 12, "beam point load"),
@@ -1052,6 +1077,7 @@ Module HelperTools
             .LinearCombinations = UnflattenObjectData(in_LinCombinations, 3, "linear combination"),
             .NonLinearCombinations = UnflattenObjectData(in_NonLinCombinations, 4, "non-linear combination"),
             .StabilityCombinations = UnflattenObjectData(in_StabCombinations, 2, "stability combination"),
+            .ResultClasses = UnflattenObjectData(in_ResultClass, 4, "result class"),
             .GapElements = UnflattenObjectData(in_gapElem, 4, "gap element"),
             .PretensionElements = UnflattenObjectData(in_presstensionElem, 2, "pretension element"),
             .LimitForceElements = UnflattenObjectData(in_limitforceElem, 4, "limit force element"),
@@ -1067,14 +1093,13 @@ Module HelperTools
 
         'write the XML file
         '---------------------------------------------------
-        Rhino.RhinoApp.Write("Creating the XML file string in memory...")
+        Rhino.RhinoApp.WriteLine("Creating the XML file string in memory...")
 
         Dim fileNameXMLdef As String
         fileNameXMLdef = Path.GetFileName(FileName) + ".def"
 
         Call WriteXMLFile(oSB, model, fileNameXMLdef)
 
-        Rhino.RhinoApp.Write(" Done." & Convert.ToChar(13))
         Rhino.RhinoApp.Write("Writing to file: " & FileName & "...")
 
         objstream = oSB.ToString()
@@ -1109,7 +1134,7 @@ Module HelperTools
         oSB.AppendLine("<project xmlns=""http://www.scia.cz"">")
         oSB.AppendLine("<def uri=""" & fileNameXMLdef & """/>")
 
-        If Not String.IsNullOrEmpty(modelData.StructureType) Or modelData.Materials.Count <> 0 Or modelData.ProjectInfo.Count >= 5 Then
+        If Not String.IsNullOrEmpty(modelData.StructureType) Or modelData.MaterialTypes.Count <> 0 Or modelData.ProjectInfo.Count >= 5 Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ProjectData)
 
             'header
@@ -1161,22 +1186,22 @@ Module HelperTools
                 Next
             End If
 
-            If modelData.Materials.Count <> 0 Then
-                Dim materialEnums As New List(Of Koala.Material)
-                For Each material In modelData.Materials
+            If modelData.MaterialTypes.Count <> 0 Then
+                Dim materialEnums As New List(Of Koala.ProjectMaterialType)
+                For Each material In modelData.MaterialTypes
                     If Not String.IsNullOrEmpty(material) Then
-                        Dim matEnum = Koala.GetEnum(Of Koala.Material)(material)
+                        Dim matEnum = Koala.GetEnum(Of Koala.ProjectMaterialType)(material)
                         materialEnums.Add(matEnum)
                     End If
                 Next
                 If materialEnums.Count > 0 Then
-                    oSB.AppendLine(ConCat_pv("6", IIf(materialEnums.Contains(Koala.Material.Concrete), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("7", IIf(materialEnums.Contains(Koala.Material.Steel), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("8", IIf(materialEnums.Contains(Koala.Material.Timber), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("9", IIf(materialEnums.Contains(Koala.Material.SteelFibreConcrete), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("10", IIf(materialEnums.Contains(Koala.Material.Other), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("11", IIf(materialEnums.Contains(Koala.Material.Aluminium), "1", "0")))
-                    oSB.AppendLine(ConCat_pv("12", IIf(materialEnums.Contains(Koala.Material.Masonry), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("6", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Concrete), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("7", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Steel), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("8", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Timber), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("9", IIf(materialEnums.Contains(Koala.ProjectMaterialType.SteelFibreConcrete), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("10", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Other), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("11", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Aluminium), "1", "0")))
+                    oSB.AppendLine(ConCat_pv("12", IIf(materialEnums.Contains(Koala.ProjectMaterialType.Masonry), "1", "0")))
                 End If
                 'Else
                 '    oSB.AppendLine(ConCat_pv("6", "1"))
@@ -1232,6 +1257,97 @@ Module HelperTools
             oSB.AppendLine("</obj>")
 
             Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.Materials IsNot Nothing Then
+            Dim concreteMaterials = modelData.Materials.Where(Function(m) m.Type = MaterialType.Concrete_EC_EN1)
+            Dim steelMaterials = modelData.Materials.Where(Function(m) m.Type = MaterialType.Steel_EC1)
+
+            If concreteMaterials.Any Then
+                OpenContainer(oSB, Koala.EsaObjectType.Material)
+                oSB.AppendLine("<table id=""D0AFF031-9D60-4737-8D7C-24140478CBE7"" t=""EP_MaterialEC.EP_MaterialCrtEC_EN.1"">")
+
+                'headers
+                oSB.AppendLine("<h>")
+                oSB.AppendLine(ConCat_ht("0", "Name"))
+                oSB.AppendLine(ConCat_ht("2", "Material type"))
+                oSB.AppendLine(ConCat_ht("3", "Thermal expansion"))
+                oSB.AppendLine(ConCat_ht("4", "Unit mass"))
+                oSB.AppendLine(ConCat_ht("5", "Density in fresh state"))
+                oSB.AppendLine(ConCat_ht("6", "E modulus"))
+                oSB.AppendLine(ConCat_ht("7", "Poisson coeff."))
+                oSB.AppendLine(ConCat_ht("8", "Independent G modulus"))
+                oSB.AppendLine(ConCat_ht("9", "G modulus"))
+                oSB.AppendLine(ConCat_ht("10", "Log. decrement (non-uniform damping only)"))
+                oSB.AppendLine(ConCat_ht("11", "Colour"))
+                oSB.AppendLine(ConCat_ht("12", "Specific heat"))
+                oSB.AppendLine(ConCat_ht("13", "Thermal conductivity"))
+                oSB.AppendLine(ConCat_ht("14", "Order in code"))
+                oSB.AppendLine(ConCat_ht("15", "Stone diameter (dg)"))
+                oSB.AppendLine(ConCat_ht("16", "Cement class"))
+                oSB.AppendLine(ConCat_ht("17", "Price per unit"))
+                oSB.AppendLine(ConCat_ht("18", "Characteristic compressive cylinder strength fck(28)"))
+                oSB.AppendLine(ConCat_ht("19", "Calculated depended values"))
+                oSB.AppendLine(ConCat_ht("20", "Mean compressive strength  fcm(28)"))
+                oSB.AppendLine(ConCat_ht("21", "fcm(28) - fck(28)"))
+                oSB.AppendLine(ConCat_ht("22", "Mean tensile strength fctm(28)"))
+                oSB.AppendLine(ConCat_ht("23", "fctk 0,05(28)"))
+                oSB.AppendLine(ConCat_ht("24", "fctk 0,95(28)"))
+                oSB.AppendLine(ConCat_ht("25", "Design compressive strength - persistent (fcd = fck / gamma c_p)"))
+                oSB.AppendLine(ConCat_ht("26", "Design compressive strength - accidental (fcd = fck / gamma c_a)"))
+                oSB.AppendLine(ConCat_ht("27", "Strain at reaching maximum strength eps c2"))
+                oSB.AppendLine(ConCat_ht("28", "Ultimate strain eps cu2"))
+                oSB.AppendLine(ConCat_ht("29", "Strain at reaching maximum strength eps c3"))
+                oSB.AppendLine(ConCat_ht("30", "Ultimate strain eps cu3"))
+                oSB.AppendLine(ConCat_ht("31", "n"))
+                oSB.AppendLine(ConCat_ht("32", "Type of aggregate"))
+                oSB.AppendLine(ConCat_ht("33", "Measured values of mean compressive strength (influence of ageing)"))
+                oSB.AppendLine(ConCat_ht("34", "Type of diagram"))
+                oSB.AppendLine("</h>")
+
+                'data
+                For Each concrete In concreteMaterials
+                    Call WriteConcrete(oSB, concrete)
+                Next
+
+                Call CloseContainerAndTable(oSB)
+            End If
+
+            If steelMaterials.Any Then
+                OpenContainer(oSB, Koala.EsaObjectType.Material)
+                oSB.AppendLine("<table id=""62418600-E01A-4580-ADF7-FD8CCAC8D2A8"" t=""EP_MaterialEC.EP_MaterialSteelEC.1"">")
+
+                'headers
+                oSB.AppendLine("<h>")
+                oSB.AppendLine(ConCat_ht("0", "Name"))
+                oSB.AppendLine(ConCat_ht("2", "Material type"))
+                oSB.AppendLine(ConCat_ht("3", "Thermal expansion"))
+                oSB.AppendLine(ConCat_ht("4", "Unit mass"))
+                oSB.AppendLine(ConCat_ht("5", "E modulus"))
+                oSB.AppendLine(ConCat_ht("6", "Poisson coeff."))
+                oSB.AppendLine(ConCat_ht("7", "Independent G modulus"))
+                oSB.AppendLine(ConCat_ht("8", "G modulus"))
+                oSB.AppendLine(ConCat_ht("9", "Log. decrement (non-uniform damping only)"))
+                oSB.AppendLine(ConCat_ht("10", "Colour"))
+                oSB.AppendLine(ConCat_ht("11", "Thermal expansion (for fire resistance)"))
+                oSB.AppendLine(ConCat_ht("12", "Specific heat"))
+                oSB.AppendLine(ConCat_ht("13", "Thermal conductivity"))
+                oSB.AppendLine(ConCat_ht("14", "Ultimate strength"))
+                oSB.AppendLine(ConCat_ht("15", "Yield strength"))
+                oSB.AppendLine(ConCat_ht("16", "Price per unit"))
+                oSB.AppendLine(ConCat_ht("17", "Lower limit"))
+                oSB.AppendLine(ConCat_ht("18", "Upper limit"))
+                oSB.AppendLine(ConCat_ht("19", "Fu (range)"))
+                oSB.AppendLine(ConCat_ht("20", "Fy (range)"))
+                oSB.AppendLine("</h>")
+
+                'data
+                For Each steel In steelMaterials
+                    Call WriteSteel(oSB, steel)
+                Next
+
+                Call CloseContainerAndTable(oSB)
+            End If
         End If
 
         If modelData.Sections IsNot Nothing Then
@@ -1498,6 +1614,7 @@ Module HelperTools
             Call CloseContainerAndTable(oSB)
         End If
 
+        'Define load cases before mass groups!
         If modelData.LoadCases IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadCase)
             Call WriteLoadCaseHeaders(oSB)
@@ -1562,7 +1679,71 @@ Module HelperTools
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... stability combination: " + Str(i))
                 End If
+
                 Call WriteStabilityCombination(oSB, i, modelData.StabilityCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Result classes after load cases and combinations!
+        If modelData.ResultClasses IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.ResultClass)
+            Call WriteResultClassHeaders(oSB)
+
+            For i = 0 To modelData.ResultClasses.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... stability combination: " + Str(i))
+                End If
+
+                Call WriteResultclass(oSB, i, modelData.ResultClasses)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Mass Groups after load cases!
+        If modelData.MassGroups IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.MassGroup)
+            Call WriteMassGroupHeader(oSB)
+
+            For i = 0 To modelData.MassGroups.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XMl file string in memory... mass group: " + Str(i))
+                End If
+
+                Call WriteMassGroup(oSB, i, modelData.MassGroups)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        'Define Mass combinations after mass groups!
+        If modelData.MassCombinations IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.MassCombination)
+            Call WriteMassCombinationHeader(oSB)
+
+            For i = 0 To modelData.MassCombinations.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... mass combination: " + Str(i))
+                End If
+
+                Call WriteMassCombinations(oSB, i, modelData.MassCombinations)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
+        If modelData.SeismicSpectra IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.SeismicSpectrum)
+            Call WriteSeismicSpectrumHeader(oSB)
+
+            For i = 0 To modelData.SeismicSpectra.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... seismic spectrum: " + Str(i))
+                End If
+
+                Call WriteSeismicSpectrum(oSB, i, modelData.SeismicSpectra)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -1970,6 +2151,112 @@ Module HelperTools
                 oSB.AppendLine(ConCat_pv("2", "0"))
         End Select
         oSB.AppendLine(ConCat_pv("3", "1"))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteConcrete(oSB As Object, material As Material)
+        oSB.AppendLine("<obj nm=""" & Trim(material.Name) & """>")
+        oSB.AppendLine(ConCat_pv("0", Trim(material.Name)))
+        oSB.AppendLine(ConCat_pvt("2", "0", "Concrete"))
+
+        Dim value As String = Nothing
+        If material.Properties.TryGetValue(Material.MaterialProperty.ThermalExpansion, value) Then
+            oSB.AppendLine(ConCat_pv("3", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.Density, value) Then
+            oSB.AppendLine(ConCat_pv("4", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.E, value) Then
+            oSB.AppendLine(ConCat_pv("6", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.Poisson, value) Then
+            oSB.AppendLine(ConCat_pv("7", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.G, value) Then
+            oSB.AppendLine(ConCat_pv("8", "1"))
+            oSB.AppendLine(ConCat_pv("9", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.SpecificHeat, value) Then
+            oSB.AppendLine(ConCat_pv("12", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.ThermalConductivity, value) Then
+            oSB.AppendLine(ConCat_pv("13", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.AggregateSize, value) Then
+            oSB.AppendLine(ConCat_pv("15", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.CementClass, value) Then
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.CementClass)(16, value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.CompressiveStrength, value) Then
+            oSB.AppendLine(ConCat_pv("18", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.AggregateType, value) Then
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.TypeOfAggregate)(32, value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.DiagramType, value) Then
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.TypeOfDiagram)(34, value))
+        End If
+
+        'todo add support for additional concrete properties
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteSteel(oSB As Object, material As Material)
+        oSB.AppendLine("<obj nm=""" & Trim(material.Name) & """>")
+        oSB.AppendLine(ConCat_pv("0", Trim(material.Name)))
+        oSB.AppendLine(ConCat_pvt("2", "0", "Steel"))
+
+        Dim value As String = Nothing
+        If material.Properties.TryGetValue(Material.MaterialProperty.ThermalExpansion, value) Then
+            oSB.AppendLine(ConCat_pv("3", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.Density, value) Then
+            oSB.AppendLine(ConCat_pv("4", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.E, value) Then
+            oSB.AppendLine(ConCat_pv("5", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.Poisson, value) Then
+            oSB.AppendLine(ConCat_pv("6", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.G, value) Then
+            oSB.AppendLine(ConCat_pv("7", "1"))
+            oSB.AppendLine(ConCat_pv("8", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.SpecificHeat, value) Then
+            oSB.AppendLine(ConCat_pv("12", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.ThermalConductivity, value) Then
+            oSB.AppendLine(ConCat_pv("13", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.UltimateStrength, value) Then
+            oSB.AppendLine(ConCat_pv("14", value))
+        End If
+
+        If material.Properties.TryGetValue(Material.MaterialProperty.YieldStrength, value) Then
+            oSB.AppendLine(ConCat_pv("15", value))
+        End If
+
+        'todo add support for additional steel properties
         oSB.AppendLine("</obj>")
     End Sub
 
@@ -3668,37 +3955,37 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("0", "Name"))
         oSB.AppendLine(ConCat_ht("1", "Load")) '0: Permanent, 1: Variable
         oSB.AppendLine(ConCat_ht("2", "Relation"))
+        oSB.AppendLine(ConCat_ht("3", "Type"))
         oSB.AppendLine("</h>")
     End Sub
 
     Private Sub WriteLoadGroup(ByRef oSB, igroup, groups(,)) 'write 1 load group to the XML stream
-
         oSB.AppendLine("<obj id=""" & Trim(Str(igroup)) & """ nm=""" & groups(igroup, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", groups(igroup, 0)))
-        Select Case Strings.UCase(groups(igroup, 1))
-            Case "PERMANENT"
-                oSB.AppendLine(ConCat_pvt("1", "0", "Permanent"))
-            Case "VARIABLE"
-                oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
-                If Strings.UCase(groups(igroup, 2)) = "STANDARD" Then
-                    oSB.AppendLine(ConCat_pvt("2", "0", "Standard"))
-                ElseIf Strings.UCase(groups(igroup, 2)) = "EXCLUSIVE" Then
-                    oSB.AppendLine(ConCat_pvt("2", "1", "Exclusive"))
-                ElseIf Strings.UCase(groups(igroup, 2)) = "TOGETHER" Then
-                    oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
-                End If
-            Case "ACCIDENTAL"
-                oSB.AppendLine(ConCat_pvt("1", "2", "Accidental"))
-            Case "SEISMIC"
-                oSB.AppendLine(ConCat_pvt("1", "3", "Seismic"))
-                If Strings.UCase(groups(igroup, 2)) = "EXCLUSIVE" Then
-                    oSB.AppendLine(ConCat_pvt("2", "1", "Exclusive"))
-                ElseIf Strings.UCase(groups(igroup, 2)) = "TOGETHER" Then
-                    oSB.AppendLine(ConCat_pvt("2", "2", "Together"))
-                End If
-        End Select
-        oSB.AppendLine("</obj>")
 
+        Dim loadTypeDescr = CStr(groups(igroup, 1))
+        Dim loadTypeParts = loadTypeDescr.Split("|")
+
+        Dim loadType As LoadGroupLoadType = Koala.GetEnum(Of LoadGroupLoadType)(loadTypeParts(0))
+        oSB.AppendLine(ConCat_pvt("1", Convert.ToInt32(loadType), Koala.GetEnumDescription(loadType)))
+
+        If loadType = LoadGroupLoadType.Variable Then
+            oSB.AppendLine(ConCat_pvt_enum(Of Koala.LoadGroupRelation)(2, groups(igroup, 2)))
+
+            If loadTypeParts.Length > 1 Then
+                Dim variableLoadType As Koala.LoadGroupVariableLoadType = Koala.GetEnum(Of LoadGroupVariableLoadType)(loadTypeParts(1))
+                oSB.AppendLine(ConCat_pvt("3", Convert.ToInt32(variableLoadType), Koala.GetEnumDescription(variableLoadType)))
+            End If
+
+        ElseIf loadType = LoadGroupLoadType.Seismic Then
+            Dim relation As Koala.LoadGroupRelation = Koala.GetEnum(Of LoadGroupRelation)(groups(igroup, 2))
+
+            If relation = LoadGroupRelation.Exclusive Or relation = LoadGroupRelation.Together Then
+                oSB.AppendLine(ConCat_pvt("2", Convert.ToInt32(relation), Koala.GetEnumDescription(relation)))
+            End If
+        End If
+
+        oSB.AppendLine("</obj>")
     End Sub
 
     Private Sub WriteLinCombinationHeaders(ByRef oSB)
@@ -3815,6 +4102,14 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
+    Private Sub WriteResultClassHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.Appendline(ConCat_ht("0", "Name"))
+        oSB.Appendline(ConCat_ht("1", "Case"))
+        oSB.Appendline(ConCat_ht("2", "AllType"))
+        oSB.AppendLine("</h>")
+    End Sub
+
     Private Sub WriteStabilityCombination(ByRef oSB, icombi, combinations(,)) 'write 1 nonlinear combination to the XML stream
         oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", combinations(icombi, 0)))
@@ -3842,13 +4137,111 @@ Module HelperTools
         oSB.AppendLine("</obj>")
     End Sub
 
+    Private Sub WriteResultclass(ByRef oSB, iclass, classes(,)) 'write 1 result class to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(iclass)) & """ nm=""" & classes(iclass, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", classes(iclass, 0)))
+
+        Dim names As String() = classes(iclass, 1).Split(New Char() {";"c})
+        Dim types As String() = classes(iclass, 2).Split(New Char() {";"c})
+        Dim subtypes As String() = classes(iclass, 3).Split(New Char() {";"c})
+        Dim i As Integer = 0
+        Dim p_id As Integer = 0
+
+        oSB.AppendLine(ConCat_opentable("1", ""))
+
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Load case ID"))
+        oSB.AppendLine(ConCat_ht("1", "Load combi ID"))
+        'oSB.AppendLine(ConCat_ht("2", "Concrete combi ID"))
+        oSB.AppendLine(ConCat_ht("2", "Nonlinear combi ID"))
+        'oSB.AppendLine(ConCat_ht("4", "Mass combi ID"))
+        'oSB.AppendLine(ConCat_ht("5", "Stability combi ID"))
+        'oSB.AppendLine(ConCat_ht("6", "Case_InxLc"))
+        oSB.AppendLine(ConCat_ht("3", "Case_Type"))
+        'oSB.AppendLine(ConCat_ht("8", "Case_Model"))
+        oSB.AppendLine(ConCat_ht("4", "Case_tUS"))
+        oSB.AppendLine("</h>")
+
+        For Each item In names
+            oSB.AppendLine(ConCat_row(i))
+            If types(i) = "1001" Then 'loadcases and linear combinations
+                If subtypes(i) = "-1" Then
+                    p_id = 0 'loadcases
+                ElseIf subtypes(i) = "0" Or subtypes(i) = 1 Then
+                    p_id = 1 'linear combinations
+                End If
+            ElseIf types(i) = "1002" Then
+                p_id = 2 'nonlinear combinations
+            End If
+
+            oSB.AppendLine(ConCat_pn(p_id, item))
+            oSB.AppendLine(ConCat_pv("3", types(i)))
+            oSB.AppendLine(ConCat_pv("4", subtypes(i)))
+            oSB.AppendLine("</row>")
+            i += 1
+        Next
+
+        oSB.AppendLine(ConCat_closetable("1"))
+
+        Dim all_type_names() As String = {"Load case",
+                                          "Ultimate combination",
+                                          "Serviceability combination",
+                                          "Nonlinear ultimate combination",
+                                          "Nonlinear serviceability combination"}
+
+        Dim all_type_types() As String = {"1001",
+                                          "1001",
+                                          "1001",
+                                          "1002",
+                                          "1002"}
+
+        Dim all_type_tus() As String = {"-1",
+                                        "0",
+                                        "1",
+                                        "0",
+                                        "1"}
+
+        Dim all_type_filter() As String = {"0",
+                                           "0",
+                                           "0",
+                                           "1",
+                                           "2"}
+
+        oSB.AppendLine(ConCat_opentable("2", ""))
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "All Type Name"))
+        oSB.AppendLine(ConCat_ht("2", "All Type All"))
+        oSB.AppendLine(ConCat_ht("3", "All Type Type"))
+        oSB.AppendLine(ConCat_ht("4", "All Type tUS"))
+        oSB.AppendLine(ConCat_ht("5", "All Type FilterType1"))
+        oSB.AppendLine(ConCat_ht("6", "All Type FilterType2"))
+        oSB.AppendLine(ConCat_ht("7", "All Type Size"))
+        oSB.AppendLine("</h>")
+
+        For i = 0 To all_type_names.Length - 1
+            oSB.AppendLine(ConCat_row(i))
+            oSB.AppendLine(ConCat_pv("0", all_type_names(i)))
+            oSB.AppendLine(ConCat_pv("2", "0"))
+            oSB.AppendLine(ConCat_pv("3", all_type_types(i)))
+            oSB.AppendLine(ConCat_pv("4", all_type_tus(i)))
+            oSB.AppendLine(ConCat_pv("5", all_type_filter(i)))
+            oSB.AppendLine(ConCat_pv("6", "0"))
+            oSB.AppendLine("</row>")
+        Next
+
+        oSB.AppendLine(ConCat_closetable("2"))
+
+        oSB.AppendLine("</obj>")
+    End Sub
+
     Private Sub WriteLoadCaseHeaders(ByRef oSB)
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Name"))
         oSB.AppendLine(ConCat_ht("1", "Action type")) '0: Permanent, 1: Variable
-        oSB.AppendLine(ConCat_ht("2", "Load type"))
+        oSB.AppendLine(ConCat_ht("2", "Load type")) '0: Self-weight, 1: Standard, 2: Primary
         oSB.AppendLine(ConCat_ht("3", "Direction")) '0: -Z, 1: +Z, 2: -Y etc.
-        oSB.AppendLine(ConCat_ht("4", "Load group")) '0: Self-weight, 1: Standard, 2: Primary
+        oSB.AppendLine(ConCat_ht("4", "Load group"))
+        oSB.AppendLine(ConCat_ht("5", "Specification"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -3857,24 +4250,125 @@ Module HelperTools
         oSB.AppendLine("<obj id=""" & Trim(Str(icase)) & """ nm=""" & cases(icase, 0) & """>")
         oSB.AppendLine(ConCat_pv("0", cases(icase, 0)))
 
-        Select Case Strings.UCase(cases(icase, 1))
-            Case "SW"
+        Dim lctype As Koala.LoadCaseType = Koala.GetEnum(Of LoadCaseType)(cases(icase, 1))
+        Select Case lctype
+            Case Koala.LoadCaseType.SW
                 oSB.AppendLine(ConCat_pvt("1", "0", "Permanent"))
                 oSB.AppendLine(ConCat_pvt("2", "0", "Self weight"))
                 oSB.AppendLine(ConCat_pvt("3", "0", "-Z"))
-            Case "PERMANENT"
+
+            Case Koala.LoadCaseType.Permanent
                 oSB.AppendLine(ConCat_pvt("1", "0", "Permanent"))
                 oSB.AppendLine(ConCat_pvt("2", "1", "Standard"))
-            Case "VARIABLE"
+
+            Case Koala.LoadCaseType.Variable
                 oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
                 oSB.AppendLine(ConCat_pvt("2", "0", "Static"))
 
+            Case Koala.LoadCaseType.Seismic
+                oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
+                oSB.AppendLine(ConCat_pvt("2", "1", "Dynamic"))
+                'Parameters to add for earthquake load cases :
+                'Specification 'seismicity'
+                'Mass Combination to consider
+                'Response spectrum
+                'Factor X
+                'Factor Y
+                'Factor Z
+                'acceleration factor (default 1)
+                'overturning reference level (default 0)
+                'method (4 options)
+                'Superposition type
+                'Required total mass ratio
+                'Required minimall mass ratio
+                'Use dominant mode (no=0, yes=1)
+
         End Select
+
         oSB.AppendLine(ConCat_pn("4", cases(icase, 2)))
+
+        If lctype = Koala.LoadCaseType.Seismic Then
+            oSB.AppendLine(ConCat_pvt("5", "100", "Seismicity"))
+        End If
+
         oSB.AppendLine("</obj>")
 
     End Sub
+    Private Sub WriteMassGroupHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load case"))
+        oSB.AppendLine(ConCat_ht("2", "Keep masses up-to-date-with loads"))
+        oSB.AppendLine("</h>")
+    End Sub
 
+    Private Sub WriteMassGroup(ByRef oSB, igroup, groups(,)) 'write 1 mass group to the XML stream
+
+        oSB.AppendLine("<obj id=""" & Trim(Str(igroup)) & """ nm=""" & groups(igroup, 0) & """>")
+        oSB.AppendLine(ConCat_pv("0", groups(igroup, 0)))
+        oSB.Appendline(ConCat_pn("1", groups(igroup, 1)))
+        oSB.AppendLine(ConCat_pv("2", groups(igroup, 2)))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteMassCombinationHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Load cases"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteMassCombinations(ByRef oSB, icombi, combinations(,)) 'write 1 mass combination to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(icombi)) & """ nm=""" & combinations(icombi, 0) & """>")
+        'Write combination tables
+        oSB.AppendLine(ConCat_pv("0", combinations(icombi, 0)))
+        Dim parts As String() = combinations(icombi, 1).Split(New Char() {";"c})
+        Dim Name As String
+        Dim Coeff As String
+        Dim i As Integer = 0
+        oSB.AppendLine(ConCat_opentable("1", ""))
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Coeff."))
+        oSB.AppendLine(ConCat_ht("2", "Load case ID"))
+        oSB.AppendLine("</h>")
+        For Each item In parts
+            Coeff = item.Split("*")(0)
+            Name = item.Split("*")(1)
+            oSB.AppendLine(ConCat_row(i))
+            oSB.AppendLine(ConCat_pv("0", Name))
+            oSB.appendline(ConCat_pv("1", Coeff))
+            oSB.appendline(ConCat_pin("2", i + 1, Name))
+            oSB.AppendLine("</row>")
+            i += 1
+        Next item
+        oSB.AppendLine(ConCat_closetable("1"))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteSeismicSpectrumHeader(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Freq./Period/Accel."))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteSeismicSpectrum(ByRef oSB, ispectrum, spectrums(,)) 'write 1 seismic spectrum to the XML stream
+        oSB.AppendLine("<obj id=""" & Trim(Str(ispectrum)) & """ nm=""" & spectrums(ispectrum, 0) & """>")
+
+        'Write the freq/wavelength/accel data
+        oSB.AppendLine(ConCat_pv("0", spectrums(ispectrum, 0)))
+
+        Dim freqs As String() = Split(spectrums(ispectrum, 1), ";")
+        Dim wavelengths As String() = Split(spectrums(ispectrum, 2), ";")
+        Dim accelerations As String() = Split(spectrums(ispectrum, 3), ";")
+        Dim i As Integer = 0
+        For Each item In freqs
+            oSB.AppendLine(ConCat_pv1v2v3x("1", freqs(i), wavelengths(i), accelerations(i), i))
+            i += 1
+        Next item
+        oSB.AppendLine("</obj>")
+    End Sub
     Private Sub WriteLineLoadBeamHeaders(ByRef oSB)
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Name"))

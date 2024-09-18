@@ -2,6 +2,7 @@
 Imports System.Reflection
 Imports Grasshopper.Kernel
 Imports Grasshopper.Kernel.Parameters
+Imports Grasshopper.Kernel.Types
 
 Namespace Koala
     Module EnumExtensions
@@ -25,6 +26,62 @@ Namespace Koala
                     SetPersistentData(Convert.ToInt32(_default))
                 End If
             End Sub
+
+            ' Get the private field "m_namedValues" using reflection
+            Dim namedValuesField As FieldInfo = Me.GetType().BaseType.GetField("m_namedValues", BindingFlags.NonPublic Or BindingFlags.Instance)
+
+            Public ReadOnly Property NamedValuesDictionary As Dictionary(Of Integer, String)
+                Get
+                    Dim dictionary As New Dictionary(Of Integer, String)()
+                    ' Access the value of the private field
+                    Dim namedValuesValue As Object = namedValuesField.GetValue(Me)
+
+                    For Each namedValue In CType(namedValuesValue, IEnumerable)
+                        dictionary.Add(namedValue.Value, namedValue.Name)
+                    Next
+                    Return dictionary
+                End Get
+            End Property
+
+            Private Function CastFromString(ByVal s As String) As GH_Integer
+                If HasNamedValues Then
+                    Dim i As Integer
+                    If Integer.TryParse(s, i) Then
+                        Return New GH_Integer(i)
+                    End If
+
+                    Dim namedValues = NamedValuesDictionary
+                    For Each nv In namedValues
+                        If nv.Value.Equals(s, StringComparison.CurrentCultureIgnoreCase) Then
+                            Return New GH_Integer(nv.Key)
+                        End If
+                    Next
+                End If
+                Return Nothing
+            End Function
+
+            Protected Overrides Function PreferredCast(ByVal data As Object) As GH_Integer
+                ' Enable assigning the enum based on its string representation
+                Dim s As String = Nothing
+
+                If TypeOf data Is String Then
+                    s = DirectCast(data, String)
+                ElseIf TypeOf data Is GH_String Then
+                    Dim s_goo As GH_String = DirectCast(data, GH_String)
+                    s = s_goo.Value
+                ElseIf TypeOf data Is Integer Then
+                    Return New GH_Integer(CInt(data))
+                End If
+
+                If s IsNot Nothing Then
+                    Dim result = CastFromString(s)
+                    If result IsNot Nothing Then
+                        Return result
+                    End If
+                End If
+
+                Return MyBase.PreferredCast(data)
+            End Function
         End Class
 
         'Public Sub AddEnumOptions(Of T)(param As Param_Integer)
@@ -295,6 +352,7 @@ Namespace Koala
         Structure2D
         BoundaryCondition
         LoadCase
+        MassGroup
         PointLoad
         LineLoad
         SurfaceLoad
@@ -311,6 +369,7 @@ Namespace Koala
         ProjectData
         MeshSetup
         Layer
+        Material
         CrossSection
         Selection
 
@@ -342,6 +401,11 @@ Namespace Koala
         LinearCombination
         NonLinearCombination
         StabilityCombination
+        ResultClass
+
+        MassGroup
+        MassCombination
+        SeismicSpectrum
 
         PointLoadNode
         PointMomentNode
@@ -405,7 +469,7 @@ Namespace Koala
         TributaryArea = 3
     End Enum
 
-    Public Enum Material
+    Public Enum ProjectMaterialType
         Concrete
         Steel
         Timber
@@ -413,6 +477,46 @@ Namespace Koala
         Masonry
         SteelFibreConcrete
         Other
+    End Enum
+
+    Public Enum MaterialType
+        Undefined
+        Concrete_EC_EN1
+        Steel_EC1
+        <Description("Reinforcement steel")>
+        Reinforcement_EC_EN1
+        'Timber_EC1
+        'Aluminium_EN1
+        'Masonry_EN1
+        '<Description("Steel fibre concrete")>
+        'SteelFibreConcrete_EC1
+    End Enum
+
+    Public Enum CementClass
+        <Description("S (slow hardening - CEM 32,5 N)")>
+        S = 0
+        <Description("N (normal hardening - CEM 32,5 R, CEM 42,5 N)")>
+        N = 1
+        <Description("R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)")>
+        R = 2
+    End Enum
+
+    Public Enum TypeOfAggregate
+        <Description("Quartzite")>
+        Quartzite = 1
+        <Description("Limestone")>
+        Limestone = 2
+        <Description("Sandstone")>
+        Sandstone = 3
+        <Description("Basalt")>
+        Basalt = 4
+    End Enum
+
+    Public Enum TypeOfDiagram
+        <Description("Bi-linear stress-strain diagram")>
+        BiLinear = 1
+        <Description("Parabola-rectangle stress-strain diagram")>
+        ParabolaRectangle = 2
     End Enum
 
     Public Enum MemberSystemLine
@@ -528,5 +632,65 @@ Namespace Koala
         node = 3
     End Enum
 
+    Public Enum MGUpdate
+        <Description("no")>
+        no = 0
+        <Description("yes")>
+        yes = 1
+    End Enum
+
+    Public Enum LoadGroupLoadType
+        <Description("Permanent")>
+        Permanent = 0
+        <Description("Variable")>
+        Variable = 1
+        <Description("Accidental")>
+        Accidental = 2
+        <Description("Seismic")>
+        Seismic = 3
+    End Enum
+
+    Public Enum LoadGroupRelation
+        Undefined = -1
+        <Description("Standard")>
+        Standard = 0
+        <Description("Exclusive")>
+        Exclusive = 1
+        <Description("Together")>
+        Together = 2
+    End Enum
+
+    Public Enum LoadGroupVariableLoadType
+        Undefined = -1
+        <Description("Cat A : Domestic")>
+        CatA = 0
+        <Description("Cat B : Offices")>
+        CatB = 1
+        <Description("Cat C : Congregation")>
+        CatC = 2
+        <Description("Cat D : Shopping")>
+        CatD = 3
+        <Description("Cat E : Storage")>
+        CatE = 4
+        <Description("Cat F : Vehicle <30kN")>
+        CatF = 5
+        <Description("Cat G : Vehicle >30kN")>
+        CatG = 6
+        <Description("Cat H : Roofs")>
+        CatH = 7
+        <Description("Snow")>
+        Snow = 8
+        <Description("Wind")>
+        Wind = 11
+        <Description("Temperature")>
+        Temperature = 12
+    End Enum
+
+    Public Enum LoadCaseType
+        SW = 0
+        Permanent = 1
+        Variable = 2
+        Seismic = 2
+    End Enum
 End Namespace
 

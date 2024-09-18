@@ -133,7 +133,7 @@
         ElseIf line.IsPolyline Then
             LineType = "Polyline"
             arrPoints.Clear()
-            Dim polyline As Rhino.Geometry.Polyline
+            Dim polyline As Rhino.Geometry.Polyline = Nothing
             line.TryGetPolyline(polyline)
             For i = 0 To polyline.Count - 1
                 arrPoints.Add(polyline.ElementAt(i))

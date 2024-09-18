@@ -309,10 +309,10 @@ Namespace Koala
             End If
 
             CreateXMLFile(FileName, StructureType, Materials, UILanguage, Scale, MeshSize, RemDuplNodes, Tolerance,
-                          projectInfo, Nothing, in_layers, in_sections,
+                          projectInfo, Nothing, in_layers, Nothing, in_sections,
                           in_nodes, in_beams, in_surfaces, in_openings,
-                          in_nodesupports, in_edgesupports, in_lcases, in_lgroups, in_lloads, in_sloads, in_fploads, in_flloads, in_fsloads, in_hinges,
-                          in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, in_LinCombinations, in_NonLinCombinations, in_StabCombinations,
+                          in_nodesupports, in_edgesupports, in_lcases, in_lgroups, Nothing, Nothing, Nothing, in_lloads, in_sloads, in_fploads, in_flloads, in_fsloads, in_hinges,
+                          in_edgeLoads, in_pointLoadsPoints, in_pointLoadsBeams, in_LinCombinations, in_NonLinCombinations, in_StabCombinations, Nothing,
                           in_CrossLinks, in_presstensionElem, in_gapElem, in_limitforceElem, in_BeamLineSupport, in_PointSupportsOnBeams,
                           in_Subsoils, in_SurfaceSupports, in_loadpanels, in_pointMomentPoint, in_pointMomentBeam, in_lineMomentBeam, in_lineMomentEdge,
                           in_freePointMoment, in_nonlinearfunctions, in_slabinternalEdges, in_RigidArms, in_Cables, in_BeamInternalNodes, in_LineHiges, in_ThermalLoadBeams, in_ThermalLoadSurfaces,
