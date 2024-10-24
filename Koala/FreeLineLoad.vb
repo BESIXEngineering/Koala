@@ -8,22 +8,12 @@ Namespace Koala
 
     Public Class FreeLineLoad
         Inherits GH_KoalaComponent
-        ''' <summary>
-        ''' Each implementation of GH_Component must provide a public 
-        ''' constructor without any arguments.
-        ''' Category represents the Tab in which the component will appear, 
-        ''' Subcategory the panel. If you use non-existing tab or panel names, 
-        ''' new tabs/panels will automatically be created.
-        ''' </summary>
+
         Public Sub New()
-            MyBase.New("FreeLineLoad", "FreeLineLoad",
-                "FreeLineLoad description",
+            MyBase.New("FreeLineLoad", "FreeLineLoad", "Free Line Load",
                 "Load", New EsaObjectType() {EsaObjectType.FreeLineLoad})
         End Sub
 
-        ''' <summary>
-        ''' Registers all the input parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("LoadCase", "LoadCase", "Name of load case", GH_ParamAccess.item, "LC2")
             pManager.AddParameter(New Param_Enum("Validity", "Validity", GH_ParamAccess.item, Validity.All))
@@ -39,19 +29,11 @@ Namespace Koala
             'pManager.AddTextParameter("Selected2Dmembers", "Selected2Dmembers", "Selected 2D members as list if Selection is put as Selected", GH_ParamAccess.list, {})
         End Sub
 
-        ''' <summary>
-        ''' Registers all the output parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
 
             pManager.AddTextParameter("FreeLineLoad", "FreeLineLoad", "FreeLineLoad data", GH_ParamAccess.list)
         End Sub
 
-        ''' <summary>
-        ''' This is the method that actually does the work.
-        ''' </summary>
-        ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
             Dim LoadCase As String = ""
@@ -112,11 +94,11 @@ Namespace Koala
                 End If
 
                 SE_flloads(itemcount, 0) = LoadCase
-                SE_flloads(itemcount, 1) = GetEnumDescription(Validity)
-                SE_flloads(itemcount, 2) = GetEnumDescription(Selection)
-                SE_flloads(itemcount, 3) = GetEnumDescription(CoordSys)
-                SE_flloads(itemcount, 4) = GetEnumDescription(Direction)
-                SE_flloads(itemcount, 5) = GetEnumDescription(Distribution)
+                SE_flloads(itemcount, 1) = GetEnumDescription(validity)
+                SE_flloads(itemcount, 2) = GetEnumDescription(selection)
+                SE_flloads(itemcount, 3) = GetEnumDescription(coordSys)
+                SE_flloads(itemcount, 4) = GetEnumDescription(direction)
+                SE_flloads(itemcount, 5) = GetEnumDescription(distribution)
                 SE_flloads(itemcount, 6) = LoadValue1
                 SE_flloads(itemcount, 7) = LoadValue2
                 SE_flloads(itemcount, 8) = BoundaryShape
@@ -126,8 +108,6 @@ Namespace Koala
             Next
 
             'Flatten data for export as simple list
-
-            FlatList.Clear()
 
             For i = 0 To itemcount - 1
                 For j = 0 To 10
@@ -201,12 +181,6 @@ Namespace Koala
 
         End Sub
 
-
-
-        ''' <summary>
-        ''' Provides an Icon for every component that will be visible in the User Interface.
-        ''' Icons need to be 24x24 pixels.
-        ''' </summary>
         Protected Overrides ReadOnly Property Icon() As System.Drawing.Bitmap
             Get
                 'You can add image files to your project resources and access them like this:
@@ -215,11 +189,6 @@ Namespace Koala
             End Get
         End Property
 
-        ''' <summary>
-        ''' Each component must have a unique Guid to identify it. 
-        ''' It is vital this Guid doesn't change otherwise old ghx files 
-        ''' that use the old ID will partially fail during loading.
-        ''' </summary>
         Public Overrides ReadOnly Property ComponentGuid() As Guid
             Get
                 Return New Guid("82294a3a-b741-4dd0-99bb-b02c0365020a")

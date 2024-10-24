@@ -61,13 +61,7 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
             'note: only straight segments are supported in SCIA Engineer's XML today (SE 18.1.3035) > limitation of Koala as well
-
             Dim LoadCase As String = "LC1"
-            Dim validity As Validity = Validity.All
-            Dim selection As Selection = Selection.Auto
-            Dim coordSys As CoordSystemFreeLoad = CoordSystemFreeLoad.GCSLength
-            Dim direction As Direction = Direction.Z
-            Dim distribution As DistributionOfSurfaceLoad = DistributionOfSurfaceLoad.Uniform
             Dim LoadValue1 As Double = -1.0
             Dim LoadValue2 As Double = -1.0
             Dim boundary As Curve = Nothing
@@ -80,20 +74,22 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
 
             If (Not DA.GetData(0, LoadCase)) Then Return
             If (Not DA.GetData(1, i)) Then Return
-            validity = CType(i, Validity)
+            Dim validity As Validity = CType(i, Validity)
             If (Not DA.GetData(2, i)) Then Return
-            selection = CType(i, Selection)
+            Dim selection As Selection = CType(i, Selection)
             If (Not DA.GetData(3, i)) Then Return
-            coordSys = CType(i, CoordSystemFreeLoad)
+            Dim coordSys As CoordSystemFreeLoad = CType(i, CoordSystemFreeLoad)
             If (Not DA.GetData(4, i)) Then Return
-            direction = CType(i, Direction)
+            Dim direction As Direction = CType(i, Direction)
             If (Not DA.GetData(5, i)) Then Return
-            distribution = CType(i, DistributionOfSurfaceLoad)
+            Dim distribution As DistributionOfSurfaceLoad = CType(i, DistributionOfSurfaceLoad)
 
             If (Not DA.GetData(6, LoadValue1)) Then Return
             Select Case distribution
                 Case DistributionOfSurfaceLoad.DirectionX, DistributionOfSurfaceLoad.DirectionY
                     DA.GetData(7, LoadValue2)
+                Case DistributionOfSurfaceLoad.ThreePoints
+                    Throw New NotImplementedException("Distribution '3 points' not yet implemented")
                 Case Else
                     LoadValue2 = LoadValue1
             End Select
@@ -105,7 +101,6 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
             If (Not DA.GetData(11, selected2DMembers)) Then Return
 
             Dim SE_fsloads(11)
-            Dim FlatList As New List(Of System.Object)()
             'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 or 2 values (kN/m^2), BoundaryShape
 
             Dim segments() As Rhino.Geometry.Curve

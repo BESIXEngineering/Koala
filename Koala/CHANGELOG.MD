@@ -6,6 +6,12 @@
 ### Fixed
 ### Security
 
+## 3.22.1 (2024-10-23)
+### Fixed
+- NonLinear Function Positive/Negative End Definition
+- LineHinge Tx|Ty|Tz|Rx input parameter names
+- FreePointLoad & FreeMomentLoad validity and system parameters
+
 ## 3.22 (2024-09-18)
 ### Added
 - Added Material input to CreateXML component to modify steel and concrete material properties of materials already existing in the esa file

@@ -1,11 +1,7 @@
-﻿Imports System.Collections.Generic
-
-Imports Grasshopper.Kernel
-Imports Rhino.Geometry
+﻿Imports Grasshopper.Kernel
 
 
 Namespace Koala
-
     Public Class LineHinge
         Inherits GH_KoalaComponent
         ''' <summary>
@@ -38,18 +34,18 @@ Namespace Koala
             pManager.AddNumberParameter("Position2", "Position2", "End position of loado n beam", GH_ParamAccess.item, 1)
             pManager.AddIntegerParameter("Origin", "Origin", "Origin of load: From start| From end", GH_ParamAccess.item, 0)
             AddOptionsToMenuOrigin(pManager.Param(4))
-            pManager.AddIntegerParameter("Rx", "Rx", "Rotation around X axis, Right click and select from options", GH_ParamAccess.item, 1)
-            AddOptionstoMenuDOFRotation(pManager.Param(5))
             pManager.AddIntegerParameter("Tx", "Tx", "Translation in X axis, Right click and select from options", GH_ParamAccess.item, 1)
-            AddOptionstoMenuDOFRotation(pManager.Param(6))
+            AddOptionstoMenuDOFRotation(pManager.Param(5))
             pManager.AddIntegerParameter("Ty", "Ty", "Translation in Y axis, Right click and select from options", GH_ParamAccess.item, 1)
-            AddOptionstoMenuDOFRotation(pManager.Param(7))
+            AddOptionstoMenuDOFRotation(pManager.Param(6))
             pManager.AddIntegerParameter("Tz", "Tz", "Translation in Z axis, Right click and select from options", GH_ParamAccess.item, 1)
+            AddOptionstoMenuDOFRotation(pManager.Param(7))
+            pManager.AddIntegerParameter("Rx", "Rx", "Rotation around X axis, Right click and select from options", GH_ParamAccess.item, 1)
             AddOptionstoMenuDOFRotation(pManager.Param(8))
-            pManager.AddNumberParameter("StiffnessRx", "StiffnessRx", "Stiffness for Rx", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessTx", "StiffnessTx", "Stiffness for Tx", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessTy", "StiffnessTy", "Stiffness for Ty", GH_ParamAccess.item, 0.0)
             pManager.AddNumberParameter("StiffnessTz", "StiffnessTz", "Stiffness for Tz", GH_ParamAccess.item, 0.0)
+            pManager.AddNumberParameter("StiffnessRx", "StiffnessRx", "Stiffness for Rx", GH_ParamAccess.item, 0.0)
         End Sub
 
         ''' <summary>
@@ -77,10 +73,6 @@ Namespace Koala
             Dim TyStiffness As Double
             Dim TzStiffness As Double
             Dim i As Integer
-
-
-
-
 
             Dim CoordDefinition As String = "Rela"
             Dim Position1 As Double = 0.0

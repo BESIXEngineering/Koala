@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 Imports System.Windows.Forms
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 
 
 Namespace Koala
@@ -382,6 +383,73 @@ Namespace Koala
                 Return New Guid("a0d394f8-b648-4b3b-bb9e-16330a2f4a9e")
             End Get
         End Property
+
+
+        Private Sub AddOptionstoMenuStructureType(menuItem As Param_Integer)
+            menuItem.AddNamedValue("Beam", 0)
+            menuItem.AddNamedValue("Truss XZ", 1)
+            menuItem.AddNamedValue("Frame XZ", 2)
+            menuItem.AddNamedValue("Truss XYZ", 3)
+            menuItem.AddNamedValue("Frame XYZ", 4)
+            menuItem.AddNamedValue("Grid XY", 5)
+            menuItem.AddNamedValue("Plate XY", 6)
+            menuItem.AddNamedValue("Wall XY", 7)
+            menuItem.AddNamedValue("General XYZ", 8)
+        End Sub
+
+        Private Function GetStringForStructureType(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Beam"
+                Case 1
+                    Return "Truss XZ"
+                Case 2
+                    Return "Frame XZ"
+                Case 3
+                    Return "Truss XYZ"
+                Case 4
+                    Return "Frame XYZ"
+                Case 5
+                    Return "Grid XY"
+                Case 6
+                    Return "Plate XY"
+                Case 7
+                    Return "Wall XY"
+                Case 8
+                    Return "General XYZ"
+                Case Else
+                    Return "General XYZ"
+            End Select
+        End Function
+
+        Private Sub AddOptionsToMenuLanguage(menuItem As Param_Integer)
+            menuItem.AddNamedValue("English", 0)
+            menuItem.AddNamedValue("Nederlands", 1)
+            menuItem.AddNamedValue("Français", 2)
+            menuItem.AddNamedValue("Deutsch", 3)
+            menuItem.AddNamedValue("Čeština", 4)
+            menuItem.AddNamedValue("Slovenčina", 5)
+
+        End Sub
+        Private Function GetStringForLanguage(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "English"
+                Case 1
+                    Return "Nederlands"
+                Case 2
+                    Return "Français"
+                Case 3
+                    Return "Deutsch"
+                Case 4
+                    Return "Čeština"
+                Case 5
+                    Return "Slovenčina"
+                Case Else
+                    Return "English"
+            End Select
+        End Function
+
     End Class
 
 End Namespace

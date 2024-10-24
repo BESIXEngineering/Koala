@@ -93,6 +93,10 @@ Namespace Koala
         'End Sub
 
         Public Function GetEnumDescription(ByVal e As [Enum]) As String
+            If Not [Enum].IsDefined(e.GetType(), e) Then
+                Throw New ArgumentOutOfRangeException($"{e.GetType().Name} value {e} is invalid")
+            End If
+
             Dim fi As FieldInfo = e.GetType().GetField(e.ToString())
             Dim attr() As DescriptionAttribute =
                           DirectCast(fi.GetCustomAttributes(GetType(DescriptionAttribute),
@@ -208,6 +212,24 @@ Namespace Koala
         TwoCss = 2
     End Enum
 
+    Public Enum AveragingStripType
+        <Description("Strip")>
+        strip = 0
+        <Description("Point")>
+        point = 1
+    End Enum
+
+    Public Enum AveragingStripDirection
+        <Description("longitudinal")>
+        longitudinal = 0
+        <Description("perpendicular")>
+        perpendicular = 1
+        <Description("both")>
+        both = 2
+        <Description("none")>
+        node = 3
+    End Enum
+
     Public Enum BeamEnd
         <Description("Begin")>
         NodeAtStart = 0
@@ -255,6 +277,15 @@ Namespace Koala
         BeamSlab = 13
     End Enum
 
+    Public Enum CementClass
+        <Description("S (slow hardening - CEM 32,5 N)")>
+        S = 0
+        <Description("N (normal hardening - CEM 32,5 R, CEM 42,5 N)")>
+        N = 1
+        <Description("R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)")>
+        R = 2
+    End Enum
+
     Public Enum CoordinateDefinition
         Abso = 0
         Rela = 1
@@ -278,6 +309,15 @@ Namespace Koala
         GCSProjection = 1
         <Description("Member LCS")>
         MemberLCS = 2
+    End Enum
+
+    Public Enum CoordSystemFreePointLoad
+        <Description("GCS")>
+        GCS = 0
+        <Description("Member LCS")>
+        MemberLCS = 1
+        <Description("Load LCS")>
+        LoadLCS = 2
     End Enum
 
     Public Enum DegreeOfFreedomHinge
@@ -324,8 +364,12 @@ Namespace Koala
 
     Public Enum DistributionOfSurfaceLoad
         Uniform = 0
+        <Description("Dir X")>
         DirectionX = 1
+        <Description("Dir Y")>
         DirectionY = 2
+        <Description("3 points")>
+        ThreePoints = 3
     End Enum
 
     Public Enum DrawDiagram
@@ -341,6 +385,20 @@ Namespace Koala
         ZDirection = 4
         <Description("Draw similar as for setting in service properties")>
         ServiceProperties = 5
+    End Enum
+
+    Public Enum EffectiveWidthGeometry
+        <Description("Constant symmeric")>
+        symm = 0
+        <Description("Constant nonsymmetric")>
+        nonsymm = 1
+    End Enum
+
+    Public Enum EffectiveWidthDefinition
+        <Description("Width")>
+        width = 0
+        <Description("Number of thickness")>
+        numberOfThickness = 1
     End Enum
 
     Enum EsaObjectCategory
@@ -440,203 +498,11 @@ Namespace Koala
         SectionOn2D
     End Enum
 
-    Public Enum LoadPanelType
-        <Description("To panel nodes")>
-        ToPanelNode = 0
-        <Description("To panel edges")>
-        ToPanelEdges = 1
-        <Description("To panel edges and beams")>
-        ToPanelEdgesAndBeams = 2
-    End Enum
-
-    Public Enum LoadPanelTransferDirection
-        <Description("X (LCS panel)")>
-        X = 0
-        <Description("Y (LCS panel)")>
-        Y = 1
-        <Description("all (LCS panel)")>
-        Both = 2
-    End Enum
-
-    Public Enum LoadPanelTransferMethod
-        <Description("Accurate(FEM),fixed link with beams")>
-        AccurateFixed = 0
-        <Description("Standard")>
-        Standard = 1
-        <Description("Accurate(FEM),hinged link with beams")>
-        AccurateHinged = 2
-        <Description("Tributary area")>
-        TributaryArea = 3
-    End Enum
-
-    Public Enum ProjectMaterialType
-        Concrete
-        Steel
-        Timber
-        Aluminium
-        Masonry
-        SteelFibreConcrete
-        Other
-    End Enum
-
-    Public Enum MaterialType
-        Undefined
-        Concrete_EC_EN1
-        Steel_EC1
-        <Description("Reinforcement steel")>
-        Reinforcement_EC_EN1
-        'Timber_EC1
-        'Aluminium_EN1
-        'Masonry_EN1
-        '<Description("Steel fibre concrete")>
-        'SteelFibreConcrete_EC1
-    End Enum
-
-    Public Enum CementClass
-        <Description("S (slow hardening - CEM 32,5 N)")>
-        S = 0
-        <Description("N (normal hardening - CEM 32,5 R, CEM 42,5 N)")>
-        N = 1
-        <Description("R (rapidl hardening - CEM 42,5 R, CEM 52,5 N, CEM 52,5 R)")>
-        R = 2
-    End Enum
-
-    Public Enum TypeOfAggregate
-        <Description("Quartzite")>
-        Quartzite = 1
-        <Description("Limestone")>
-        Limestone = 2
-        <Description("Sandstone")>
-        Sandstone = 3
-        <Description("Basalt")>
-        Basalt = 4
-    End Enum
-
-    Public Enum TypeOfDiagram
-        <Description("Bi-linear stress-strain diagram")>
-        BiLinear = 1
-        <Description("Parabola-rectangle stress-strain diagram")>
-        ParabolaRectangle = 2
-    End Enum
-
-    Public Enum MemberSystemLine
-        <Description("Centre")>
-        Centre = 1
-        <Description("Top")>
-        Top = 2
-        <Description("Bottom")>
-        Bottom = 4
-        <Description("Left")>
-        Left = 8
-        <Description("Top left")>
-        TopLeft = 10
-        <Description("Bottom left")>
-        BottomLeft = 12
-        <Description("Right")>
-        Right = 16
-        <Description("Top right")>
-        TopRight = 18
-        <Description("Bottom right")>
-        BottomRight = 20
-    End Enum
-
-    Public Enum MemberSystemPlane
-        Centre = 1
-        Top = 2
-        Bottom = 4
-    End Enum
-
-    Public Enum Selection
-        Auto = 0
-        [Select] = 1
-    End Enum
-
-    Public Enum SlabFEMType
-        <Description("none")>
-        None = 0
-        <Description("Press only")>
-        PressOnly = 1
-        <Description("Membrane")>
-        Membrane = 2
-    End Enum
-
-    Public Enum UILanguage
-        <Description("English")>
-        EN = 0
-        <Description("Nederlands")>
-        NL = 1
-        <Description("Français")>
-        FR = 2
-        <Description("Deutsch")>
-        DE = 3
-        <Description("Čeština")>
-        CZ = 4
-        <Description("Slovenčina")>
-        SI = 5
-    End Enum
-
-    Public Enum Validity
-        <Description("All")>
-        All = 0
-        <Description("-Z")>
-        ZNeg = 1
-        <Description("+Z")>
-        ZPos = 2
-        <Description("From-to")>
-        FromTo = 3
-        <Description("Z=0")>
-        ZZero = 4
-        <Description("-Z (incl. 0)")>
-        ZNegOrZero = 5
-        <Description("+Z (incl. 0)")>
-        ZPosOrZero = 6
-    End Enum
-
-    Public Enum EffectiveWidthGeometry
-        <Description("Constant symmeric")>
-        symm = 0
-        <Description("Constant nonsymmetric")>
-        nonsymm = 1
-    End Enum
-
-
-    Public Enum EffectiveWidthDefinition
-        <Description("Width")>
-        width = 0
-        <Description("Number of thickness")>
-        numberOfThickness = 1
-    End Enum
-
-    Public Enum Origin
-        <Description("From start")>
-        fromStart = 0
-        <Description("From end")>
-        fromEnd = 1
-    End Enum
-
-    Public Enum AveragingStripType
-        <Description("Strip")>
-        strip = 0
-        <Description("Point")>
-        point = 1
-    End Enum
-
-    Public Enum AveragingStripDirection
-        <Description("longitudinal")>
-        longitudinal = 0
-        <Description("perpendicular")>
-        perpendicular = 1
-        <Description("both")>
-        both = 2
-        <Description("none")>
-        node = 3
-    End Enum
-
-    Public Enum MGUpdate
-        <Description("no")>
-        no = 0
-        <Description("yes")>
-        yes = 1
+    Public Enum LoadCaseType
+        SW = 0
+        Permanent = 1
+        Variable = 2
+        Seismic = 2
     End Enum
 
     Public Enum LoadGroupLoadType
@@ -686,11 +552,175 @@ Namespace Koala
         Temperature = 12
     End Enum
 
-    Public Enum LoadCaseType
-        SW = 0
-        Permanent = 1
-        Variable = 2
-        Seismic = 2
+    Public Enum LoadPanelType
+        <Description("To panel nodes")>
+        ToPanelNode = 0
+        <Description("To panel edges")>
+        ToPanelEdges = 1
+        <Description("To panel edges and beams")>
+        ToPanelEdgesAndBeams = 2
+    End Enum
+
+    Public Enum LoadPanelTransferDirection
+        <Description("X (LCS panel)")>
+        X = 0
+        <Description("Y (LCS panel)")>
+        Y = 1
+        <Description("all (LCS panel)")>
+        Both = 2
+    End Enum
+
+    Public Enum LoadPanelTransferMethod
+        <Description("Accurate(FEM),fixed link with beams")>
+        AccurateFixed = 0
+        <Description("Standard")>
+        Standard = 1
+        <Description("Accurate(FEM),hinged link with beams")>
+        AccurateHinged = 2
+        <Description("Tributary area")>
+        TributaryArea = 3
+    End Enum
+
+    Public Enum MaterialType
+        Undefined
+        Concrete_EC_EN1
+        Steel_EC1
+        <Description("Reinforcement steel")>
+        Reinforcement_EC_EN1
+        'Timber_EC1
+        'Aluminium_EN1
+        'Masonry_EN1
+        '<Description("Steel fibre concrete")>
+        'SteelFibreConcrete_EC1
+    End Enum
+
+    Public Enum MemberSystemLine
+        <Description("Centre")>
+        Centre = 1
+        <Description("Top")>
+        Top = 2
+        <Description("Bottom")>
+        Bottom = 4
+        <Description("Left")>
+        Left = 8
+        <Description("Top left")>
+        TopLeft = 10
+        <Description("Bottom left")>
+        BottomLeft = 12
+        <Description("Right")>
+        Right = 16
+        <Description("Top right")>
+        TopRight = 18
+        <Description("Bottom right")>
+        BottomRight = 20
+    End Enum
+
+    Public Enum MemberSystemPlane
+        Centre = 1
+        Top = 2
+        Bottom = 4
+    End Enum
+
+    Public Enum MomentDirection
+        Mx = 0
+        My = 1
+        Mz = 2
+    End Enum
+
+    Public Enum NLFunctionType
+        <Description("Translation")>
+        Translation = 0
+        <Description("Rotation")>
+        Rotation = 1
+        <Description("Nonlinear subsoil")>
+        NLSubsoil = 2
+    End Enum
+
+    Public Enum NLFunctionEndType
+        Rigid = 0
+        Free = 1
+        Flexible = 2
+    End Enum
+
+    Public Enum Origin
+        <Description("From start")>
+        fromStart = 0
+        <Description("From end")>
+        fromEnd = 1
+    End Enum
+
+    Public Enum ProjectMaterialType
+        Concrete
+        Steel
+        Timber
+        Aluminium
+        Masonry
+        SteelFibreConcrete
+        Other
+    End Enum
+
+    Public Enum Selection
+        Auto = 0
+        [Select] = 1
+    End Enum
+
+    Public Enum SlabFEMType
+        <Description("none")>
+        None = 0
+        <Description("Press only")>
+        PressOnly = 1
+        <Description("Membrane")>
+        Membrane = 2
+    End Enum
+
+    Public Enum TypeOfAggregate
+        <Description("Quartzite")>
+        Quartzite = 1
+        <Description("Limestone")>
+        Limestone = 2
+        <Description("Sandstone")>
+        Sandstone = 3
+        <Description("Basalt")>
+        Basalt = 4
+    End Enum
+
+    Public Enum TypeOfDiagram
+        <Description("Bi-linear stress-strain diagram")>
+        BiLinear = 1
+        <Description("Parabola-rectangle stress-strain diagram")>
+        ParabolaRectangle = 2
+    End Enum
+
+    Public Enum UILanguage
+        <Description("English")>
+        EN = 0
+        <Description("Nederlands")>
+        NL = 1
+        <Description("Français")>
+        FR = 2
+        <Description("Deutsch")>
+        DE = 3
+        <Description("Čeština")>
+        CZ = 4
+        <Description("Slovenčina")>
+        SI = 5
+    End Enum
+
+    Public Enum Validity
+        <Description("All")>
+        All = 0
+        <Description("-Z")>
+        ZNeg = 1
+        <Description("+Z")>
+        ZPos = 2
+        <Description("From-to")>
+        FromTo = 3
+        <Description("Z=0")>
+        ZZero = 4
+        <Description("-Z (incl. 0)")>
+        ZNegOrZero = 5
+        <Description("+Z (incl. 0)")>
+        ZPosOrZero = 6
     End Enum
 End Namespace
 

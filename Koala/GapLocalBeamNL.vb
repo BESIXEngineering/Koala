@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -121,6 +122,22 @@ Namespace Koala
                 Return New Guid("5b873ca1-8df8-4b85-9736-a916f00899e3")
             End Get
         End Property
+
+        Private Sub AddOptionsToMenuBeamNLGapPosition(menuitem As Param_Integer)
+            menuitem.AddNamedValue("Begin", 0)
+            menuitem.AddNamedValue("End", 1)
+        End Sub
+
+        Private Function GetStringFromBeamNLGapPosition(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Begin"
+                Case 1
+                    Return "End"
+                Case Else
+                    Return "Begin"
+            End Select
+        End Function
     End Class
 
 End Namespace

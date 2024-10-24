@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -115,6 +116,25 @@ Namespace Koala
                 Return New Guid("91e2c185-7637-42f1-8cdc-970a7bc0a93a")
             End Get
         End Property
+
+
+        Private Sub AddOptionsToMenuCrosslinkType(menuItem As Param_Integer)
+            menuItem.AddNamedValue("Fixed", 0)
+            menuItem.AddNamedValue("Hinged", 1)
+        End Sub
+
+        Private Function GetStringForCrosslinkType(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Fixed"
+                Case 1
+                    Return "Hinged"
+                Case 2
+                    Return "Coupler"
+                Case Else
+                    Return "Fixed"
+            End Select
+        End Function
     End Class
 
 End Namespace

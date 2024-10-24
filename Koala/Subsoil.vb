@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -117,6 +118,23 @@ Namespace Koala
                 Return New Guid("92fa3ece-6d80-48ff-82a2-5d02cc0e2491")
             End Get
         End Property
+
+        Private Sub AddOptionstoMenuC1ztype(menuItem As Param_Integer)
+            menuItem.AddNamedValue("Flexible", 0)
+            menuItem.AddNamedValue("Nonlinear function", 1)
+        End Sub
+
+        Private Function GetStringForC1ztype(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Flexible"
+                Case 1
+                    Return "Nonlinear function"
+
+                Case Else
+                    Return "Flexible"
+            End Select
+        End Function
     End Class
 
 End Namespace

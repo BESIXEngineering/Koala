@@ -133,6 +133,17 @@ Namespace Koala
                 Return New Guid("ba5ea3b4-a31a-4ad9-9007-f842e4f4c821")
             End Get
         End Property
+
+        Private Function GetStringFromBeamNLCableInitialMesh(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Straight"
+                Case 1
+                    Return "Calculated"
+                Case Else
+                    Return "Straight"
+            End Select
+        End Function
     End Class
 
 End Namespace

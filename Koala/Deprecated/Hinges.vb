@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -170,6 +171,26 @@ Namespace Koala
                 Return New Guid("18356149-2e03-4367-ae9e-cd45ba0070f6")
             End Get
         End Property
+
+        Private Sub AddOptionsToMenuHingePosition(menuitem As Param_Integer)
+            menuitem.AddNamedValue("Begin", 0)
+            menuitem.AddNamedValue("End", 1)
+            menuitem.AddNamedValue("Both", 2)
+        End Sub
+
+        Private Function GetStringFromHingePosition(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Begin"
+                Case 1
+                    Return "End"
+                Case 2
+                    Return "Both"
+                Case Else
+                    Return "Both"
+            End Select
+        End Function
+
     End Class
 
 End Namespace

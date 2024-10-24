@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 Imports System.Windows.Forms
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -190,6 +191,28 @@ Namespace Koala
                 Return New Guid("804449ff-866f-4e33-9fcf-b8819e369c19")
             End Get
         End Property
+
+        Private Sub AddOptionsToMenuCalculationType(menuItem As Param_Integer)
+            menuItem.AddNamedValue("LIN", 0)
+            menuItem.AddNamedValue("NEL", 1)
+            menuItem.AddNamedValue("STB", 2)
+            menuItem.AddNamedValue("EIG", 3)
+        End Sub
+
+        Private Function GetStringForCalculationType(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "LIN"
+                Case 1
+                    Return "NEL"
+                Case 2
+                    Return "STB"
+                Case 3
+                    Return "EIG"
+                Case Else
+                    Return "LIN"
+            End Select
+        End Function
     End Class
 
 End Namespace

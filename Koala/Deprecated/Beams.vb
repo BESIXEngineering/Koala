@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -146,17 +147,17 @@ Namespace Koala
             'loop through all segments
             '===========================
 
-            curvecount = Curves.count
+            curvecount = Curves.Count
             'input data check
 
             'Z vectors
-            If zvectors.count = 0 Then
+            If zvectors.Count = 0 Then
                 ' No defined list of Z vectors ! - assigning default SCIA Engineer LCS to all Curves
                 vVector.X = 0
                 vVector.Y = 0
                 vVector.Z = 0
                 For i = 1 To curvecount
-                    zvectors.add(vVector)
+                    zvectors.Add(vVector)
                 Next
             End If
 
@@ -255,14 +256,14 @@ Namespace Koala
                 ' add LCS definition if present
                 ivector = Math.Min(zvectors.Count - 1, i)
 
-                If ZVectors(ivector).IsZero Then 'no Z Vector defined
+                If zvectors(ivector).IsZero Then 'no Z Vector defined
                     SE_beams(i, 4) = 0
                     SE_beams(i, 5) = 0 'default beam LCS orientation
                 Else
                     SE_beams(i, 4) = 2 'assign beam LCS based on Z-vector
-                    SE_beams(i, 5) = ZVectors(ivector).X
-                    SE_beams(i, 6) = ZVectors(ivector).Y
-                    SE_beams(i, 7) = ZVectors(ivector).Z
+                    SE_beams(i, 5) = zvectors(ivector).X
+                    SE_beams(i, 6) = zvectors(ivector).Y
+                    SE_beams(i, 7) = zvectors(ivector).Z
                 End If
 
                 SE_beams(i, 8) = GetStringForBeamType(StructuralTypes(Math.Min(StructuralTypes.Count - 1, i)))
@@ -343,6 +344,70 @@ Namespace Koala
                 Return New Guid("720a3890-2fba-4ae1-96a2-971e3bfe8dec")
             End Get
         End Property
+
+
+        Private Function GetStringForBeamFEMtype(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "standard"
+                Case 1
+                    Return "axial force only"
+                Case Else
+                    Return "standard"
+            End Select
+        End Function
+
+        Private Sub AddOptionsToMenuBeamType(menuItem As Param_Integer)
+            menuItem.AddNamedValue("general", 0)
+            menuItem.AddNamedValue("beam", 1)
+            menuItem.AddNamedValue("column", 2)
+            menuItem.AddNamedValue("gable column", 3)
+            menuItem.AddNamedValue("secondary column", 4)
+            menuItem.AddNamedValue("rafter", 5)
+            menuItem.AddNamedValue("purlin", 6)
+            menuItem.AddNamedValue("roof bracing", 7)
+            menuItem.AddNamedValue("wall bracing", 8)
+            menuItem.AddNamedValue("girt", 9)
+            menuItem.AddNamedValue("truss chord", 10)
+            menuItem.AddNamedValue("truss diagonal", 11)
+            menuItem.AddNamedValue("plate rib", 12)
+            menuItem.AddNamedValue("beam slab", 13)
+        End Sub
+
+        Private Function GetStringForBeamType(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "general"
+                Case 1
+                    Return "beam"
+                Case 2
+                    Return "column"
+                Case 3
+                    Return "gable column"
+                Case 4
+                    Return "secondary column"
+                Case 5
+                    Return "rafter"
+                Case 6
+                    Return "purlin"
+                Case 7
+                    Return "roof bracing"
+                Case 8
+                    Return "wall bracing"
+                Case 9
+                    Return "girt"
+                Case 10
+                    Return "truss chord"
+                Case 11
+                    Return "truss diagonal"
+                Case 12
+                    Return "plate rib"
+                Case 13
+                    Return "beam slab"
+                Case Else
+                    Return "general"
+            End Select
+        End Function
     End Class
 
 End Namespace

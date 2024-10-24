@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -121,6 +122,40 @@ Namespace Koala
                 Return New Guid("fd4d9fdc-4e5c-4b37-902e-bcf088ed4a5e")
             End Get
         End Property
+
+        Private Sub AddOptionsToMenuBeamNLLimitForceType(menuitem As Param_Integer)
+            menuitem.AddNamedValue("Buckling ( results zero )", 0)
+            menuitem.AddNamedValue("Plastic yielding", 1)
+
+        End Sub
+
+        Private Function GetStringFromBeamNLLimitForceType(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Buckling ( results zero )"
+                Case 1
+                    Return "Plastic yielding"
+                Case Else
+                    Return "Buckling ( results zero )"
+            End Select
+        End Function
+
+        Private Sub AddOptionsToMenuBeamNLLimnitForceDirection(menuitem As Param_Integer)
+            menuitem.AddNamedValue("Limit compression", 0)
+            menuitem.AddNamedValue("Limit tension", 1)
+
+        End Sub
+
+        Private Function GetStringFromBeamNLLimnitForceDirection(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Limit compression"
+                Case 1
+                    Return "Limit tension"
+                Case Else
+                    Return "Limit compression"
+            End Select
+        End Function
     End Class
 
 End Namespace

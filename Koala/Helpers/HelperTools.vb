@@ -1,13 +1,9 @@
 ﻿Imports System.Collections.Generic
-Imports System.ComponentModel
-Imports System.Diagnostics.Eventing.Reader
 Imports System.IO
-Imports System.Windows.Forms
-Imports Eto.Forms
-Imports Grasshopper.Kernel.Geometry.SpatialTrees
 Imports Grasshopper.Kernel.Parameters
-Imports Grasshopper.Kernel.Types.Transforms
 Imports Koala.Koala
+
+
 Module HelperTools
 
 #Region "Enum options"
@@ -30,75 +26,6 @@ Module HelperTools
         menuItem.AddNamedValue("Nonlinear", 7)
     End Sub
 
-    Public Sub AddOptionsToMenuLanguage(menuItem As Param_Integer)
-        menuItem.AddNamedValue("English", 0)
-        menuItem.AddNamedValue("Nederlands", 1)
-        menuItem.AddNamedValue("Français", 2)
-        menuItem.AddNamedValue("Deutsch", 3)
-        menuItem.AddNamedValue("Čeština", 4)
-        menuItem.AddNamedValue("Slovenčina", 5)
-
-    End Sub
-    Public Function GetStringForLanguage(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "English"
-            Case 1
-                Return "Nederlands"
-            Case 2
-                Return "Français"
-            Case 3
-                Return "Deutsch"
-            Case 4
-                Return "Čeština"
-            Case 5
-                Return "Slovenčina"
-            Case Else
-                Return "English"
-        End Select
-    End Function
-
-    Public Function GetNumberForUILangauge(item As String) As Long
-        Select Case item
-            Case "English"
-                Return 0
-            Case "Nederlands"
-                Return 1
-            Case "Français"
-                Return 2
-            Case "Deutsch"
-                Return 3
-            Case "Čeština"
-                Return 4
-            Case "Slovenčina"
-                Return 5
-            Case Else
-                Return 0
-        End Select
-    End Function
-
-    Public Sub AddOptionsToMenuCalculationType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("LIN", 0)
-        menuItem.AddNamedValue("NEL", 1)
-        menuItem.AddNamedValue("STB", 2)
-        menuItem.AddNamedValue("EIG", 3)
-    End Sub
-
-    Public Function GetStringForCalculationType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "LIN"
-            Case 1
-                Return "NEL"
-            Case 2
-                Return "STB"
-            Case 3
-                Return "EIG"
-            Case Else
-                Return "LIN"
-        End Select
-    End Function
-
     Public Sub AddOptionstoMenuMemberSystemLine(menuItem As Param_Integer)
         menuItem.AddNamedValue("Centre", 1)
         menuItem.AddNamedValue("Top", 2)
@@ -109,7 +36,6 @@ Module HelperTools
         menuItem.AddNamedValue("Right", 16)
         menuItem.AddNamedValue("Top right", 18)
         menuItem.AddNamedValue("Bottom right", 20)
-
     End Sub
 
     Public Function GetStringForMemberSystemLineOrPlane(item As Integer) As String
@@ -137,70 +63,6 @@ Module HelperTools
         End Select
     End Function
 
-    Public Sub AddOptionstoMenuMemberSystemPlane(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Centre", 1)
-        menuItem.AddNamedValue("Top", 2)
-        menuItem.AddNamedValue("Bottom", 4)
-    End Sub
-
-
-
-    Public Sub AddOptionstoMenuFEMNLType2D(menuItem As Param_Integer)
-        menuItem.AddNamedValue("none", 0)
-        menuItem.AddNamedValue("Press only", 1)
-        menuItem.AddNamedValue("Membrane", 2)
-    End Sub
-
-    Public Function GetStringForFEMNLType2D(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "none"
-            Case 1
-                Return "Press only"
-            Case 2
-                Return "Membrane"
-            Case Else
-                Return "none"
-        End Select
-    End Function
-
-    Public Sub AddOptionstoMenuStructureType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Beam", 0)
-        menuItem.AddNamedValue("Truss XZ", 1)
-        menuItem.AddNamedValue("Frame XZ", 2)
-        menuItem.AddNamedValue("Truss XYZ", 3)
-        menuItem.AddNamedValue("Frame XYZ", 4)
-        menuItem.AddNamedValue("Grid XY", 5)
-        menuItem.AddNamedValue("Plate XY", 6)
-        menuItem.AddNamedValue("Wall XY", 7)
-        menuItem.AddNamedValue("General XYZ", 8)
-    End Sub
-
-    Public Function GetStringForStructureType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Beam"
-            Case 1
-                Return "Truss XZ"
-            Case 2
-                Return "Frame XZ"
-            Case 3
-                Return "Truss XYZ"
-            Case 4
-                Return "Frame XYZ"
-            Case 5
-                Return "Grid XY"
-            Case 6
-                Return "Plate XY"
-            Case 7
-                Return "Wall XY"
-            Case 8
-                Return "General XYZ"
-            Case Else
-                Return "General XYZ"
-        End Select
-    End Function
-
     Public Function GetStringForDOF(item As Integer) As String
         Select Case item
             Case 0
@@ -217,7 +79,6 @@ Module HelperTools
                 Return "Flexible press only"
             Case 6
                 Return "Flexible tension only"
-
             Case 7
                 Return "Nonlinear"
             Case Else
@@ -225,91 +86,6 @@ Module HelperTools
         End Select
 
     End Function
-
-    Public Sub AddOptionsToMenuBeamFEMtype(menuItem As Param_Integer)
-        menuItem.AddNamedValue("standard", 0)
-        menuItem.AddNamedValue("axial force only", 1)
-    End Sub
-
-    Public Function GetStringForBeamFEMtype(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "standard"
-            Case 1
-                Return "axial force only"
-            Case Else
-                Return "standard"
-        End Select
-    End Function
-
-    Public Sub AddOptionsToMenuBeamType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("general", 0)
-        menuItem.AddNamedValue("beam", 1)
-        menuItem.AddNamedValue("column", 2)
-        menuItem.AddNamedValue("gable column", 3)
-        menuItem.AddNamedValue("secondary column", 4)
-        menuItem.AddNamedValue("rafter", 5)
-        menuItem.AddNamedValue("purlin", 6)
-        menuItem.AddNamedValue("roof bracing", 7)
-        menuItem.AddNamedValue("wall bracing", 8)
-        menuItem.AddNamedValue("girt", 9)
-        menuItem.AddNamedValue("truss chord", 10)
-        menuItem.AddNamedValue("truss diagonal", 11)
-        menuItem.AddNamedValue("plate rib", 12)
-        menuItem.AddNamedValue("beam slab", 13)
-    End Sub
-    Public Function GetStringForBeamType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "general"
-            Case 1
-                Return "beam"
-            Case 2
-                Return "column"
-            Case 3
-                Return "gable column"
-            Case 4
-                Return "secondary column"
-            Case 5
-                Return "rafter"
-            Case 6
-                Return "purlin"
-            Case 7
-                Return "roof bracing"
-            Case 8
-                Return "wall bracing"
-            Case 9
-                Return "girt"
-            Case 10
-                Return "truss chord"
-            Case 11
-                Return "truss diagonal"
-            Case 12
-                Return "plate rib"
-            Case 13
-                Return "beam slab"
-            Case Else
-                Return "general"
-        End Select
-    End Function
-    Public Sub AddOptionsToMenuCrosslinkType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Fixed", 0)
-        menuItem.AddNamedValue("Hinged", 1)
-    End Sub
-
-    Public Function GetStringForCrosslinkType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Fixed"
-            Case 1
-                Return "Hinged"
-            Case 2
-                Return "Coupler"
-            Case Else
-                Return "Fixed"
-        End Select
-    End Function
-
 
     Public Sub AddOptionstoMenuLinCombiType(menuitem As Param_Integer)
         menuitem.AddNamedValue("Envelope - ultimate", 0)
@@ -389,25 +165,6 @@ Module HelperTools
         End Select
     End Function
 
-    Public Sub AddOptionsToMenuDistributionOfSurfaceLoad(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Uniform", 0)
-        menuitem.AddNamedValue("DirectionX", 1)
-        menuitem.AddNamedValue("DirectionY", 2)
-    End Sub
-
-    Public Function GetStringFromDistributionOfSurfaceLoad(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Uniform"
-            Case 1
-                Return "DirectionX"
-            Case 2
-                Return "DirectionY"
-            Case Else
-                Return "Uniform"
-        End Select
-    End Function
-
     Public Sub AddOptionsToMenuDirection(menuitem As Param_Integer)
         menuitem.AddNamedValue("X", 0)
         menuitem.AddNamedValue("Y", 1)
@@ -426,7 +183,6 @@ Module HelperTools
                 Return "Z"
         End Select
     End Function
-
 
     Public Sub AddOptionsToMenuDirectionMoment(menuitem As Param_Integer)
         menuitem.AddNamedValue("Mx", 0)
@@ -462,7 +218,6 @@ Module HelperTools
                 Return "From start"
         End Select
     End Function
-
 
     Public Sub AddOptionsToMenuCoordDefinition(menuitem As Param_Integer)
         menuitem.AddNamedValue("Rela", 0)
@@ -508,7 +263,6 @@ Module HelperTools
         menuitem.AddNamedValue("Linear", 1)
     End Sub
 
-
     Public Function GetStringFromMenuThermalDistribution(item As Integer) As String
         Select Case item
             Case 0
@@ -537,82 +291,6 @@ Module HelperTools
         End Select
     End Function
 
-
-    Public Sub AddOptionsToMenuValidity(menuitem As Param_Integer)
-        menuitem.AddNamedValue("All", 0)
-        menuitem.AddNamedValue("-Z", 1)
-        menuitem.AddNamedValue("+Z", 2)
-        menuitem.AddNamedValue("From-to", 3)
-        menuitem.AddNamedValue("Z=0", 4)
-        menuitem.AddNamedValue("-Z (incl. 0)", 5)
-        menuitem.AddNamedValue("+Z (incl. 0)", 6)
-    End Sub
-
-
-    Public Function GetStringFromValidity(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "All"
-            Case 1
-                Return "-Z"
-            Case 2
-                Return "+Z"
-            Case 3
-                Return "From-to"
-            Case 4
-                Return "Z=0"
-            Case 5
-                Return "-Z (incl. 0)"
-            Case 6
-                Return "+Z (incl. 0)"
-            Case Else
-                Return "All"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuSelection(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Auto", 0)
-        menuitem.AddNamedValue("Select", 1)
-
-    End Sub
-    Public Function GetStringFromMenuSelection(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Auto"
-            Case 1
-                Return "Select"
-            Case Else
-                Return "Auto"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuCoordSysFreeLine(menuitem As Param_Integer)
-        menuitem.AddNamedValue("GCS - Length", 0)
-        menuitem.AddNamedValue("GCS - Projection", 1)
-        menuitem.AddNamedValue("Member LCS", 3)
-    End Sub
-    Public Sub AddOptionsToMenuBeamNLTypePT(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Press only", 0)
-        menuitem.AddNamedValue("Tension only", 1)
-    End Sub
-
-    Public Function GetStringFromBeamNLTypePT(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Press only"
-            Case 1
-                Return "Tension only"
-            Case Else
-                Return "Press only"
-        End Select
-    End Function
-    Public Sub AddOptionsToMenuCoordSysFreePoint(menuitem As Param_Integer)
-        menuitem.AddNamedValue("GCS", 4)
-        menuitem.AddNamedValue("Member LCS", 3)
-    End Sub
-
     Public Sub AddOptionsToMenuBeamNLGapDirection(menuitem As Param_Integer)
         menuitem.AddNamedValue("Both directions", 0)
         menuitem.AddNamedValue("Press only", 1)
@@ -629,245 +307,6 @@ Module HelperTools
                 Return "Tension only"
             Case Else
                 Return "Both directions"
-        End Select
-    End Function
-    Public Sub AddOptionsToMenuBeamNLGapPosition(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Begin", 0)
-        menuitem.AddNamedValue("End", 1)
-
-    End Sub
-
-    Public Function GetStringFromBeamNLGapPosition(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Begin"
-            Case 1
-                Return "End"
-            Case Else
-                Return "Begin"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuBeamNLLimitForceType(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Buckling ( results zero )", 0)
-        menuitem.AddNamedValue("Plastic yielding", 1)
-
-    End Sub
-
-    Public Function GetStringFromBeamNLLimitForceType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Buckling ( results zero )"
-            Case 1
-                Return "Plastic yielding"
-            Case Else
-                Return "Buckling ( results zero )"
-        End Select
-    End Function
-    Public Sub AddOptionsToMenuBeamNLLimnitForceDirection(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Limit compression", 0)
-        menuitem.AddNamedValue("Limit tension", 1)
-
-    End Sub
-
-    Public Function GetStringFromBeamNLLimnitForceDirection(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Limit compression"
-            Case 1
-                Return "Limit tension"
-            Case Else
-                Return "Limit compression"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuHingePosition(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Begin", 0)
-        menuitem.AddNamedValue("End", 1)
-        menuitem.AddNamedValue("Both", 2)
-
-    End Sub
-
-    Public Function GetStringFromHingePosition(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Begin"
-            Case 1
-                Return "End"
-            Case 2
-                Return "Both"
-            Case Else
-                Return "Both"
-        End Select
-    End Function
-
-    Public Sub AddOptionstoMenuSwapOrientation(menuItem As Param_Integer)
-        menuItem.AddNamedValue("No", 0)
-        menuItem.AddNamedValue("Yes", 1)
-    End Sub
-
-    Public Function GetStringFromSwapOrientation(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "No"
-            Case 1
-                Return "Yes"
-            Case Else
-                Return "No"
-        End Select
-    End Function
-
-    Public Sub AddOptionsToMenuPanelType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("To panel nodes", 0)
-        menuItem.AddNamedValue("To panel edges", 1)
-        menuItem.AddNamedValue("To panel edges and beams", 2)
-    End Sub
-    Public Function GetStringForPanelType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "To panel nodes"
-            Case 1
-                Return "To panel edges"
-            Case 2
-                Return "To panel edges and beams"
-
-            Case Else
-                Return "To panel edges and beams"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuTransferMethod(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Accurate(FEM),fixed link with beams", 0)
-        menuItem.AddNamedValue("Standard", 1)
-        menuItem.AddNamedValue("Accurate(FEM),hinged link with beams", 2)
-        menuItem.AddNamedValue("Tributary area", 3)
-    End Sub
-    Public Function GetStringForTransferMethod(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Accurate(FEM),fixed link with beams"
-            Case 1
-                Return "Standard"
-            Case 2
-                Return "Accurate(FEM),hinged link with beams"
-            Case 3
-                Return "Tributary area"
-            Case Else
-                Return "Standard"
-        End Select
-    End Function
-
-    Sub AddOptionsToMenuSupportingMembersValidity(menuItem As Param_Integer)
-        menuItem.AddNamedValue("All", 0)
-        menuItem.AddNamedValue("-Z", 1)
-        menuItem.AddNamedValue("+Z", 2)
-    End Sub
-    Public Function GetStringForSupportingMembersValidity(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "All"
-            Case 1
-                Return "-Z"
-            Case 2
-                Return "+Z"
-
-            Case Else
-                Return "All"
-        End Select
-    End Function
-
-    Public Sub AddOptionsToMenuTransferDirection(menuItem As Param_Integer)
-        menuItem.AddNamedValue("X (LCS panel)", 0)
-        menuItem.AddNamedValue("Y (LCS panel)", 1)
-        menuItem.AddNamedValue("all (LCS panel)", 2)
-    End Sub
-    Public Function GetStringForTransferDirection(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "X (LCS panel)"
-            Case 1
-                Return "Y (LCS panel)"
-            Case 2
-                Return "all (LCS panel)"
-
-            Case Else
-                Return "all (LCS panel)"
-        End Select
-    End Function
-
-    Public Sub AddOptionsToMenuNLFunctionType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Translation", 0)
-        menuItem.AddNamedValue("Rotation", 1)
-        menuItem.AddNamedValue("Nonlinear subsoil", 2)
-    End Sub
-    Public Function GetStringForitemNLFunctionType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Translation"
-            Case 1
-                Return "Rotation"
-            Case 2
-                Return "Nonlinear subsoil"
-            Case Else
-                Return "Translation"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuNLFunctionEndType(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Rigid", 0)
-        menuItem.AddNamedValue("Free", 1)
-        menuItem.AddNamedValue("Flexible", 2)
-    End Sub
-
-    Public Function GetStringForitemNLFunctionEndType(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Rigid"
-            Case 1
-                Return "Free"
-            Case 2
-                Return "Flexible"
-            Case Else
-                Return "Rigid"
-        End Select
-    End Function
-
-    Public Sub AddOptionstoMenuC1ztype(menuItem As Param_Integer)
-        menuItem.AddNamedValue("Flexible", 0)
-        menuItem.AddNamedValue("Nonlinear function", 1)
-    End Sub
-
-    Public Function GetStringForC1ztype(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Flexible"
-            Case 1
-                Return "Nonlinear function"
-
-            Case Else
-                Return "Flexible"
-        End Select
-    End Function
-
-
-    Public Sub AddOptionsToMenuBeamNLCableInitialMesh(menuitem As Param_Integer)
-        menuitem.AddNamedValue("Straight", 0)
-        menuitem.AddNamedValue("Calculated", 1)
-
-    End Sub
-
-    Public Function GetStringFromBeamNLCableInitialMesh(item As Integer) As String
-        Select Case item
-            Case 0
-                Return "Straight"
-            Case 1
-                Return "Calculated"
-            Case Else
-                Return "Straight"
         End Select
     End Function
 #End Region
@@ -960,8 +399,6 @@ Module HelperTools
         ConCat_pvt_enum = ConCat_pvt(p.ToString, Convert.ToInt32(enumValue), Koala.GetEnumDescription(enumValue))
     End Function
 
-    '<Custom additional code> 
-
     Public Sub CreateXMLFile(FileName As String, StructureType As String, MaterialTypes As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
                              projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_materials As List(Of String), in_sections As List(Of String),
                              in_nodes As List(Of String), in_beams As List(Of String), in_surfaces As List(Of String),
@@ -1030,7 +467,7 @@ Module HelperTools
         Dim model As New ModelData With {
             .Scale = scale,
             .MeshSize = meshSize,
-            .UILanguage = UILanguage,
+            .UILanguage = Koala.GetEnum(Of Koala.UILanguage)(UILanguage), ' required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
             .StructureType = StructureType,
             .Sections = UnflattenObjectData(in_sections, 4, "section"),
             .MaterialTypes = MaterialTypes,
@@ -1122,14 +559,9 @@ Module HelperTools
 
     Private Sub WriteXMLFile(ByRef oSB As Text.StringBuilder, modelData As ModelData, fileNameXMLdef As String)
 
-        'global variables for this component
-        '-----------------------------------
-        ' required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
-        Dim UILanguageNumber As Long = GetNumberForUILangauge(modelData.UILanguage)
-
         Dim i As Long
-        'write XML header information -----------------------------------------------------
 
+        'write XML header information -----------------------------------------------------
         oSB.AppendLine("<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>")
         oSB.AppendLine("<project xmlns=""http://www.scia.cz"">")
         oSB.AppendLine("<def uri=""" & fileNameXMLdef & """/>")
@@ -1925,7 +1357,8 @@ Module HelperTools
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... free surface load: " + Str(i))
                 End If
-                Call WriteFreeSurfaceLoad(oSB, modelData.Scale, i, modelData.FreeSurfaceLoads, UILanguageNumber)
+                ' required until free loads geometry's definition is language-neutral in SCIA Engineer's XML
+                Call WriteFreeSurfaceLoad(oSB, modelData.Scale, i, modelData.FreeSurfaceLoads, modelData.UILanguage)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -3460,46 +2893,15 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteNonlinearFunction(ByRef oSB, i, SE_NonlinearFunctions(,)) 'write 1 nodal support to the XML stream
-
-
+    Private Sub WriteNonlinearFunction(ByRef oSB, i, SE_NonlinearFunctions(,))
         oSB.AppendLine("<obj nm=""" & SE_NonlinearFunctions(i, 0) & """>")
+
         oSB.AppendLine(ConCat_pv("0", SE_NonlinearFunctions(i, 0)))
-        Select Case (SE_NonlinearFunctions(i, 1))
-            Case "Translation"
-                oSB.AppendLine(ConCat_pvt("1", "0", "Translation"))
-            Case "Rotation"
-                oSB.AppendLine(ConCat_pvt("1", "1", "Rotation"))
-            Case "Nonlinear subsoil"
-                oSB.AppendLine(ConCat_pvt("1", "2", "Nonlinear subsoil"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("1", "0", "Translation"))
-        End Select
-
-        Select Case (SE_NonlinearFunctions(i, 3))
-            Case "Rigid"
-                oSB.AppendLine(ConCat_pvt("2", "0", "Rigid"))
-            Case "Free"
-                oSB.AppendLine(ConCat_pvt("2", "1", "Free"))
-            Case "Flexible"
-                oSB.AppendLine(ConCat_pvt("2", "2", "Flexible"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("2", "0", "Rigid"))
-        End Select
-
-        Select Case (SE_NonlinearFunctions(i, 3))
-            Case "Rigid"
-                oSB.AppendLine(ConCat_pvt("3", "0", "Rigid"))
-            Case "Free"
-                oSB.AppendLine(ConCat_pvt("3", "1", "Free"))
-            Case "Flexible"
-                oSB.AppendLine(ConCat_pvt("3", "2", "Flexible"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("3", "0", "Rigid"))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.NLFunctionType)(1, SE_NonlinearFunctions(i, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.NLFunctionEndType)(2, SE_NonlinearFunctions(i, 2)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.NLFunctionEndType)(3, SE_NonlinearFunctions(i, 3)))
 
         Dim parts As String() = SE_NonlinearFunctions(i, 4).Split(New Char() {"|"c})
-
         Dim x As String
         Dim y As String
         Dim j As Long = 0
@@ -3525,11 +2927,9 @@ Module HelperTools
                     oSB.AppendLine(ConCat_pv1v2x("6", x, y, j))
                     j += 1
                 Next item
-
         End Select
 
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteNodeSupportHeaders(ByRef oSB)
@@ -5257,59 +4657,28 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteFreePointLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
-        'a free point load consists of:
-        'Load Case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
-
+    Private Sub WriteFreePointLoad(ByRef oSB, scale, iload, loads(,))
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "FF" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "FF" & Trim(Str(iload))))
-        'direction
-        Select Case loads(iload, 4)
-            Case "X"
-                oSB.AppendLine(ConCat_pvt("2", "0", "X"))
-            Case "Y"
-                oSB.AppendLine(ConCat_pvt("2", "1", "Y"))
-            Case "Z"
-                oSB.AppendLine(ConCat_pvt("2", "2", "Z"))
-        End Select
-        'validity
-        Select Case loads(iload, 1)
-            Case "All"
-                oSB.AppendLine(ConCat_pvt("3", "0", "All"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("3", "1", "-Z"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("3", "2", "+Z"))
-            Case "From-to"
-                oSB.AppendLine(ConCat_pvt("3", "3", "From-to"))
-            Case "Z=0"
-                oSB.AppendLine(ConCat_pvt("3", "4", "Z=0"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("3", "5", "-Z (incl. 0)"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("3", "6", "+Z (incl. 0)"))
-        End Select
-        'selection
-        oSB.AppendLine(ConCat_pvt("4", "0", "Auto"))
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Direction)(2, loads(iload, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(3, loads(iload, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(4, loads(iload, 2)))
+
         'load value
         oSB.AppendLine(ConCat_pv("5", loads(iload, 5) * 1000))
         'point X, Y, Z coordinates
         oSB.AppendLine(ConCat_pv("6", loads(iload, 6) * scale))
         oSB.AppendLine(ConCat_pv("7", loads(iload, 7) * scale))
         oSB.AppendLine(ConCat_pv("8", loads(iload, 8) * scale))
-        'coordinate system
-        Select Case loads(iload, 3)
-            Case "GCS"
-                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
-            Case "Member LCS"
-                oSB.AppendLine(ConCat_pvt("9", "1", "Member LCS"))
-        End Select
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystemFreePointLoad)(9, loads(iload, 3)))
+
         oSB.AppendLine(ConCat_pv("10", ""))
         oSB.AppendLine(ConCat_pv("11", loads(iload, 9)))
         oSB.AppendLine(ConCat_pv("12", loads(iload, 10)))
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteFreePointMomentLoadHeaders(ByRef oSB)
@@ -5330,41 +4699,15 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteFreePointMomentLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free point load to the XML stream
-        'a free point load consists of:
-        'Load Case, Selection, Validity, coord sys (GCS/LCS), direction (X, Y, Z), value (kN), PointX, PointY, PointZ
-
+    Private Sub WriteFreePointMomentLoad(ByRef oSB, scale, iload, loads(,))
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "FMP" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "FMP" & Trim(Str(iload))))
-        'direction
-        Select Case loads(iload, 4)
-            Case "Mx"
-                oSB.AppendLine(ConCat_pvt("2", "0", "Mx"))
-            Case "My"
-                oSB.AppendLine(ConCat_pvt("2", "1", "My"))
-            Case "Mz"
-                oSB.AppendLine(ConCat_pvt("2", "2", "Mz"))
-        End Select
-        'validity
-        Select Case loads(iload, 1)
-            Case "All"
-                oSB.AppendLine(ConCat_pvt("3", "0", "All"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("3", "1", "-Z"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("3", "2", "+Z"))
-            Case "From-to"
-                oSB.AppendLine(ConCat_pvt("3", "3", "From-to"))
-            Case "Z=0"
-                oSB.AppendLine(ConCat_pvt("3", "4", "Z=0"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("3", "5", "-Z (incl. 0)"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("3", "6", "+Z (incl. 0)"))
-        End Select
-        'selection
-        oSB.AppendLine(ConCat_pvt("4", "0", "Auto"))
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.MomentDirection)(2, loads(iload, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(3, loads(iload, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(4, loads(iload, 2)))
+
         'load value
         oSB.AppendLine(ConCat_pv("5", loads(iload, 5) * 1000))
         'point X, Y, Z coordinates
@@ -5372,19 +4715,13 @@ Module HelperTools
         oSB.AppendLine(ConCat_pv("7", loads(iload, 7) * scale))
         oSB.AppendLine(ConCat_pv("8", loads(iload, 8) * scale))
         'coordinate system
-        Select Case loads(iload, 3)
-            Case "GCS"
-                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
-            Case "Member LCS"
-                oSB.AppendLine(ConCat_pvt("9", "1", "Member LCS"))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.CoordSystemFreePointLoad)(9, loads(iload, 3)))
+
         oSB.AppendLine(ConCat_pv("10", ""))
         oSB.AppendLine(ConCat_pv("11", loads(iload, 9)))
         oSB.AppendLine(ConCat_pv("12", loads(iload, 10)))
 
-
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteFreeLineLoadHeaders(ByRef oSB)
@@ -5406,64 +4743,20 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-
-    Private Sub WriteFreeLineLoad(ByRef oSB, scale, iload, loads(,)) 'write 1 free line load to the XML stream
-        'a free line load consists of:
-        'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), LineShape
-
+    Private Sub WriteFreeLineLoad(ByRef oSB, scale, iload, loads(,))
 
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "FL" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "FL" & Trim(Str(iload))))
-        'direction
-        Select Case loads(iload, 4)
-            Case "X"
-                oSB.AppendLine(ConCat_pvt("2", "0", "X"))
-            Case "Y"
-                oSB.AppendLine(ConCat_pvt("2", "1", "Y"))
-            Case "Z"
-                oSB.AppendLine(ConCat_pvt("2", "2", "Z"))
-        End Select
 
-        'distribution
-        Select Case loads(iload, 5)
-            Case "Uniform"
-                oSB.AppendLine(ConCat_pvt("3", "0", loads(iload, 5)))
-            Case "Trapez"
-                oSB.AppendLine(ConCat_pvt("3", "1", loads(iload, 5)))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("3", "0", loads(iload, 5)))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Direction)(2, loads(iload, 4)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.DistributionOfLineLoad)(3, loads(iload, 5)))
 
-        'load value
         oSB.AppendLine(ConCat_pv("4", loads(iload, 6) * 1000))
         oSB.AppendLine(ConCat_pv("5", loads(iload, 7) * 1000))
-        'validity
-        Select Case loads(iload, 1)
-            Case "All"
-                oSB.AppendLine(ConCat_pvt("6", "0", "All"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("6", "1", "-Z"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("6", "2", "+Z"))
-            Case "From-to"
-                oSB.AppendLine(ConCat_pvt("6", "3", "From-to"))
-            Case "Z=0"
-                oSB.AppendLine(ConCat_pvt("6", "4", "Z=0"))
-            Case "-Z"
-                oSB.AppendLine(ConCat_pvt("6", "5", "-Z (incl. 0)"))
-            Case "+Z"
-                oSB.AppendLine(ConCat_pvt("6", "6", "+Z (incl. 0)"))
-        End Select
 
-        ' selection
-        Dim selection As Koala.Selection = Koala.GetEnum(Of Koala.Selection)(loads(iload, 2))
-        Select Case selection
-            Case Koala.Selection.Select
-                oSB.AppendLine(ConCat_pvt("7", "1", "Select"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("7", "0", "Auto"))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(6, loads(iload, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(7, loads(iload, 2)))
 
         'coordinate system
         Select Case loads(iload, 3)
@@ -5478,7 +4771,6 @@ Module HelperTools
         End Select
 
         'table of geometry
-
         Dim lineParts As String() = loads(iload, 8).Split(";")
         Dim lineType As String = lineParts(0).ToLower().Trim()
         Dim pointCount As Long = (lineParts.Length - 1) / 3
@@ -5528,7 +4820,6 @@ Module HelperTools
         oSB.AppendLine(ConCat_pv("13", loads(iload, 10)))
 
         oSB.AppendLine("</obj>")
-
     End Sub
 
     Private Sub WriteFreeSurfaceLoadHeaders(ByRef oSB)
@@ -5551,26 +4842,7 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteFreeSurfaceLoad(ByRef oSB, scale, iload, loads(,), UILanguageNumber) 'write 1 free surface load to the XML stream
-        'a free line load consists of:
-        'load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), value (kN/m), BoundaryShape
-
-        'oSB.AppendLine(ConCat_ht("0", "Load case"))
-        'oSB.AppendLine(ConCat_ht("1", "Name"))
-        'oSB.AppendLine(ConCat_ht("2", "Direction"))
-        'oSB.AppendLine(ConCat_ht("3", "Distribution"))
-        'oSB.AppendLine(ConCat_ht("4", "q"))
-        'oSB.AppendLine(ConCat_ht("5", "q1"))
-        'oSB.AppendLine(ConCat_ht("6", "q2"))
-        'oSB.AppendLine(ConCat_ht("7", "Validity"))
-        'oSB.AppendLine(ConCat_ht("8", "Select"))
-        'oSB.AppendLine(ConCat_ht("9", "System"))
-        'oSB.AppendLine(ConCat_ht("10", "Location"))
-        'oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
-        'oSB.AppendLine(ConCat_ht("12", "Selected objects"))
-        'oSB.AppendLine(ConCat_ht("13", "Validity from"))
-        'oSB.AppendLine(ConCat_ht("14", "Validity to"))
-
+    Private Sub WriteFreeSurfaceLoad(ByRef oSB, scale, iload, loads(,), uiLanguage) 'write 1 free surface load to the XML stream
         Dim BoundaryShape As String
         Dim LineShape As String
         Dim row_id As Long
@@ -5578,26 +4850,11 @@ Module HelperTools
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "FL" & Trim(Str(iload)) & """>")
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "FL" & Trim(Str(iload))))
-        'direction
-        Dim direction As Koala.Direction = Koala.GetEnum(Of Koala.Direction)(loads(iload, 4))
-        Select Case direction
-            Case Koala.Direction.X
-                oSB.AppendLine(ConCat_pvt("2", "0", "X"))
-            Case Koala.Direction.Y
-                oSB.AppendLine(ConCat_pvt("2", "1", "Y"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("2", "2", "Z"))
-        End Select
-        'distribution
+
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Direction)(2, loads(iload, 4)))
+
         Dim distribution As Koala.DistributionOfSurfaceLoad = Koala.GetEnum(Of Koala.DistributionOfSurfaceLoad)(loads(iload, 5))
-        Select Case distribution
-            Case Koala.DistributionOfSurfaceLoad.DirectionX
-                oSB.AppendLine(ConCat_pvt("3", "1", "Dir X"))
-            Case Koala.DistributionOfSurfaceLoad.DirectionY
-                oSB.AppendLine(ConCat_pvt("3", "2", "Dir Y"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("3", "0", "Uniform"))
-        End Select
+        oSB.AppendLine(ConCat_pvt("3", Convert.ToInt32(distribution), Koala.GetEnumDescription(distribution)))
         'load value(s)
         Select Case distribution
             Case Koala.DistributionOfSurfaceLoad.DirectionX, Koala.DistributionOfSurfaceLoad.DirectionY
@@ -5607,33 +4864,8 @@ Module HelperTools
                 oSB.AppendLine(ConCat_pv("4", loads(iload, 6) * 1000))
         End Select
 
-        'validity
-        Dim validity As Koala.Validity = Koala.GetEnum(Of Koala.Validity)(loads(iload, 1))
-        Select Case validity
-            Case Koala.Validity.ZNeg
-                oSB.AppendLine(ConCat_pvt("7", "1", "-Z"))
-            Case Koala.Validity.ZPos
-                oSB.AppendLine(ConCat_pvt("7", "2", "+Z"))
-            Case Koala.Validity.FromTo
-                oSB.AppendLine(ConCat_pvt("7", "3", "From-to"))
-            Case Koala.Validity.ZZero
-                oSB.AppendLine(ConCat_pvt("7", "4", "Z=0"))
-            Case Koala.Validity.ZNegOrZero
-                oSB.AppendLine(ConCat_pvt("7", "5", "-Z (incl. 0)"))
-            Case Koala.Validity.ZPosOrZero
-                oSB.AppendLine(ConCat_pvt("7", "6", "+Z (incl. 0)"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("7", "0", "All"))
-        End Select
-
-        'selection (loads(iload,2))
-        Dim selection As Koala.Selection = Koala.GetEnum(Of Koala.Selection)(loads(iload, 2))
-        Select Case selection
-            Case Koala.Selection.Select
-                oSB.AppendLine(ConCat_pvt("8", "1", "Select"))
-            Case Else
-                oSB.AppendLine(ConCat_pvt("8", "0", "Auto"))
-        End Select
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(7, loads(iload, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(8, loads(iload, 2)))
 
         'coordinate system
         Dim coordSys As Koala.CoordSystemFreeLoad = Koala.GetEnum(Of Koala.CoordSystemFreeLoad)(loads(iload, 3))
@@ -5674,12 +4906,12 @@ Module HelperTools
             oSB.AppendLine(ConCat_pv("4", Trim(Split(LineShape, ";")(3) * scale))) 'first node Z
             Select Case Strings.Trim(Strings.Split(LineShape, ";")(0)) 'curve type - only "Line by 2 pts" is supported by SCIA Engineer
                 Case "Line"
-                    If UILanguageNumber = "0" Then oSB.AppendLine(ConCat_pv("5", "Line")) 'English
-                    If UILanguageNumber = "1" Then oSB.AppendLine(ConCat_pv("5", "Lijn")) 'Dutch
-                    If UILanguageNumber = "2" Then oSB.AppendLine(ConCat_pv("5", "Ligne")) 'French
-                    If UILanguageNumber = "3" Then oSB.AppendLine(ConCat_pv("5", "Linie")) 'German
-                    If UILanguageNumber = "4" Then oSB.AppendLine(ConCat_pv("5", "Přímka")) 'Czech
-                    If UILanguageNumber = "5" Then oSB.AppendLine(ConCat_pv("5", "Čiara")) 'Slovak
+                    If uiLanguage = Koala.UILanguage.EN Then oSB.AppendLine(ConCat_pv("5", "Line")) 'English
+                    If uiLanguage = Koala.UILanguage.NL Then oSB.AppendLine(ConCat_pv("5", "Lijn")) 'Dutch
+                    If uiLanguage = Koala.UILanguage.FR Then oSB.AppendLine(ConCat_pv("5", "Ligne")) 'French
+                    If uiLanguage = Koala.UILanguage.DE Then oSB.AppendLine(ConCat_pv("5", "Linie")) 'German
+                    If uiLanguage = Koala.UILanguage.CZ Then oSB.AppendLine(ConCat_pv("5", "Přímka")) 'Czech
+                    If uiLanguage = Koala.UILanguage.SI Then oSB.AppendLine(ConCat_pv("5", "Čiara")) 'Slovak
                 Case "Arc"
                     oSB.AppendLine(ConCat_pv("5", "Circle arc")) 'not supported in SE
                 Case "Spline"

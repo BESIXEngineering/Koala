@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -130,8 +131,6 @@ Namespace Koala
 
             Dim EdgeType As String
             Dim BoundaryShape As String
-
-            Dim line As String, SurfaceName As String, NodeList As String
 
             Dim stopWatch As New System.Diagnostics.Stopwatch()
             Dim time_elapsed As Double
@@ -411,6 +410,26 @@ Namespace Koala
                 Return New Guid("baaa25dc-a287-4455-8621-0cd8609c6071")
             End Get
         End Property
+
+
+        Private Sub AddOptionsToMenuPanelType(menuItem As Param_Integer)
+            menuItem.AddNamedValue("To panel nodes", 0)
+            menuItem.AddNamedValue("To panel edges", 1)
+            menuItem.AddNamedValue("To panel edges and beams", 2)
+        End Sub
+
+        Private Sub AddOptionsToMenuTransferMethod(menuItem As Param_Integer)
+            menuItem.AddNamedValue("Accurate(FEM),fixed link with beams", 0)
+            menuItem.AddNamedValue("Standard", 1)
+            menuItem.AddNamedValue("Accurate(FEM),hinged link with beams", 2)
+            menuItem.AddNamedValue("Tributary area", 3)
+        End Sub
+
+        Private Sub AddOptionsToMenuTransferDirection(menuItem As Param_Integer)
+            menuItem.AddNamedValue("X (LCS panel)", 0)
+            menuItem.AddNamedValue("Y (LCS panel)", 1)
+            menuItem.AddNamedValue("all (LCS panel)", 2)
+        End Sub
     End Class
 
 End Namespace

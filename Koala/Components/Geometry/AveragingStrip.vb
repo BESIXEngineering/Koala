@@ -10,26 +10,14 @@ Namespace Koala
         Inherits GH_KoalaComponent
 
         Const DefaultNamePrefix As String = "RS"
-        ''' <summary>
-        ''' Each implementation of GH_Component must provide a public 
-        ''' constructor without any arguments.
-        ''' Category represents the Tab in which the component will appear, 
-        ''' Subcategory the panel. If you use non-existing tab or panel names, 
-        ''' new tabs/panels will automatically be created.
-        ''' </summary>
+
         Public Sub New()
             MyBase.New("Averaging Strip", "Averaging Strip",
                        "Create an Averaging Strip on 2D Member",
                        "Structure", New EsaObjectType() {EsaObjectType.AveragingStrip})
         End Sub
 
-        ''' <summary>
-        ''' Registers all the input parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
-            Dim leftIdx As Integer
-            Dim rightIdx As Integer
-
             pManager.AddTextParameter("2DMemberName", "2DMemberName", "Name of the 2D member where to put integration strip", GH_ParamAccess.item)
             pManager.AddGeometryParameter("Position", "Position", "Point or Line geometry on 2D Member", GH_ParamAccess.item)
             pManager.AddParameter(New Param_Enum("Direction", "Direction", GH_ParamAccess.item, AveragingStripDirection.longitudinal))
@@ -39,18 +27,10 @@ Namespace Koala
             pManager.AddTextParameter("AveragingStripPrefix", "AveragingStripPrefix", "Averaging Strip name prefix", GH_ParamAccess.item, DefaultNamePrefix)
         End Sub
 
-        ''' <summary>
-        ''' Registers all the output parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
             pManager.AddTextParameter("AveragingStrip", "AveragingStrip", "", GH_ParamAccess.list)
         End Sub
 
-        ''' <summary>
-        ''' This is the method that actually does the work.
-        ''' </summary>
-        ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        ''' to store data in output parameters.</param>
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
 
             NameIndex += 1
@@ -163,11 +143,6 @@ Namespace Koala
             DA.SetDataList(0, SE_averagingStrip)
         End Sub
 
-
-        ''' <summary>
-        ''' Provides an Icon for every component that will be visible in the User Interface.
-        ''' Icons need to be 24x24 pixels.
-        ''' </summary>
         Protected Overrides ReadOnly Property Icon() As System.Drawing.Bitmap
             Get
                 'You can add image files to your project resources and access them like this:
@@ -182,11 +157,6 @@ Namespace Koala
             End Get
         End Property
 
-        ''' <summary>
-        ''' Each component must have a unique Guid to identify it. 
-        ''' It is vital this Guid doesn't change otherwise old ghx files 
-        ''' that use the old ID will partially fail during loading.
-        ''' </summary>
         Public Overrides ReadOnly Property ComponentGuid() As Guid
             Get
                 Return New Guid("CFBC3ABA-D6CC-4E6B-903F-CAE905DA1707")

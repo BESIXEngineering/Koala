@@ -18,16 +18,16 @@
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug64|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>$(AppData)\Grasshopper\Libraries\</OutputPath>
+    <OutputPath>$(AppData)\Grasshopper\Libraries\Koala\</OutputPath>
     <DocumentationFile>Koala.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release64|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
@@ -38,36 +38,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <OptionExplicit>On</OptionExplicit>
-  </PropertyGroup>
-  <PropertyGroup>
     <OptionCompare>Binary</OptionCompare>
-  </PropertyGroup>
-  <PropertyGroup>
     <OptionStrict>Off</OptionStrict>
-  </PropertyGroup>
-  <PropertyGroup>
     <OptionInfer>On</OptionInfer>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug64|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>$(AppData)\Grasshopper\Libraries\</OutputPath>
-    <DocumentationFile>Koala.xml</DocumentationFile>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release64|x64'">
-    <DefineTrace>true</DefineTrace>
-    <OutputPath>$(AppData)\Grasshopper\Libraries\</OutputPath>
-    <DocumentationFile>Koala.xml</DocumentationFile>
-    <Optimize>true</Optimize>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
@@ -104,64 +77,90 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\CreateXML2.vb" />
+    <Compile Include="Components\Connections\HingeOnBeam.vb" />
+    <Compile Include="Components\Connections\NodeRigidArm.vb" />
     <Compile Include="Components\Geometry\AveragingStrip.vb" />
+    <Compile Include="Components\Geometry\ArbitraryProfile.vb" />
+    <Compile Include="Components\Geometry\IntegrationStrip.vb" />
+    <Compile Include="Components\Geometry\InternalNode1D.vb" />
+    <Compile Include="Components\Geometry\InternalEdge2D.vb" />
+    <Compile Include="Components\Geometry\LoadPanel.vb" />
+    <Compile Include="Components\Geometry\Member0D.vb" />
+    <Compile Include="Components\Geometry\Member1D.vb" />
+    <Compile Include="Components\Geometry\Member2D.vb" />
+    <Compile Include="Components\Geometry\Opening.vb" />
+    <Compile Include="Components\Geometry\SectionOn1D.vb" />
     <Compile Include="Components\Geometry\SectionOn2D.vb" />
+    <Compile Include="Components\GH_KoalaComponent.vb" />
     <Compile Include="Components\Library\LoadCase.vb" />
     <Compile Include="Components\Library\LoadGroup.vb" />
+    <Compile Include="Components\Library\MassCombination.vb" />
+    <Compile Include="Components\Library\MassGroup.vb" />
+    <Compile Include="Components\Library\NonlinearFunction.vb" />
     <Compile Include="Components\Library\ResultClass.vb" />
     <Compile Include="Components\Library\SeismicSpectrum.vb" />
-    <Compile Include="Components\Tools\NamedSelection.vb" />
-    <Compile Include="Components\GH_KoalaComponent.vb" />
+    <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
     <Compile Include="Components\Supports\SurfaceEdgeSupport.vb" />
     <Compile Include="Components\Supports\NodeSupport2.vb" />
     <Compile Include="Components\Supports\BeamPointSupport.vb" />
     <Compile Include="Components\Supports\SurfaceSupport2.vb" />
-    <Compile Include="Components\CreateXML2.vb" />
-    <Compile Include="Components\Geometry\IntegrationStrip.vb" />
-    <Compile Include="Components\Geometry\InternalNode1D.vb" />
-    <Compile Include="Components\Geometry\LoadPanel.vb" />
-    <Compile Include="Components\Geometry\Member1D.vb" />
-    <Compile Include="Components\Geometry\Member2D.vb" />
+    <Compile Include="Components\Tools\NamedSelection.vb" />
     <Compile Include="Deprecated\2Dmember.vb" />
-    <Compile Include="Analysis.vb" />
-    <Compile Include="Components\Geometry\ArbitraryProfile.vb" />
     <Compile Include="Deprecated\BeamInternalNode.vb" />
-    <Compile Include="BeamLoads.vb" />
-    <Compile Include="Deprecated\Member1D.vb" />
     <Compile Include="Deprecated\Beams.vb" />
     <Compile Include="Deprecated\BeamSupport.vb" />
     <Compile Include="Deprecated\CreateXML.vb" />
+    <Compile Include="Deprecated\EdgeSupport.vb" />
+    <Compile Include="Deprecated\FreeSurfaceLoad.vb" />
+    <Compile Include="Deprecated\Hinges.vb" />
+    <Compile Include="Deprecated\LoadCasesAndGroups.vb" />
+    <Compile Include="Deprecated\LoadPanels.vb" />
+    <Compile Include="Deprecated\Member1D.vb" />
+    <Compile Include="Deprecated\Nodes.vb" />
+    <Compile Include="Deprecated\NodeSupport.vb" />
+    <Compile Include="Deprecated\Openings.vb" />
+    <Compile Include="Deprecated\PointSupportOnBeam.vb" />
+    <Compile Include="Deprecated\ProjectInfo.vb" />
+    <Compile Include="Deprecated\SlabInternalEdge.vb" />
+    <Compile Include="Deprecated\SurfaceSupport.vb" />
+    <Compile Include="Helpers\ContainerData.vb" />
+    <Compile Include="Helpers\HelperTools.vb" />
+    <Compile Include="Helpers\GeometryHelpers.vb" />
+    <Compile Include="Model\Enums.vb" />
+    <Compile Include="Model\ModelData.vb" />
+    <Compile Include="Model\Material.vb" />
+    <Compile Include="Model\Node.vb" />
+    <Compile Include="Analysis.vb" />
+    <Compile Include="BeamLoads.vb" />
     <Compile Include="Cross-Sections.vb" />
     <Compile Include="CrossLink.vb" />
     <Compile Include="EdgeLoad.vb" />
-    <Compile Include="Deprecated\EdgeSupport.vb" />
-    <Compile Include="Components\Library\MassCombination.vb" />
-    <Compile Include="Components\Library\MassGroup.vb" />
-    <Compile Include="Model\Enums.vb" />
+    <Compile Include="FreePointLoad.vb" />
+    <Compile Include="FreeLineLoad.vb" />
     <Compile Include="FreePointMoment.vb" />
-    <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
-    <Compile Include="Deprecated\FreeSurfaceLoad.Designer.vb">
-      <DependentUpon>FreeSurfaceLoad.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Deprecated\FreeSurfaceLoad.vb" />
     <Compile Include="GapLocalBeamNL.vb" />
-    <Compile Include="Helpers\GeometryHelpers.vb" />
-    <Compile Include="Helpers\HelperTools.vb" />
-    <Compile Include="Deprecated\Hinges.vb" />
+    <Compile Include="KoalaInfo.vb" />
     <Compile Include="Layers.vb" />
     <Compile Include="LimitForceLocalBeamNL.vb" />
     <Compile Include="LinearCombination.vb" />
     <Compile Include="LineHinge.vb" />
     <Compile Include="LineMomentOnBeam.vb" />
     <Compile Include="LineMomentOnEdge.vb" />
-    <Compile Include="Deprecated\LoadCasesAndGroups.vb" />
-    <Compile Include="KoalaInfo.vb" />
-    <Compile Include="Deprecated\LoadPanels.vb" />
-    <Compile Include="Helpers\ContainerData.vb" />
-    <Compile Include="Model\ModelData.vb" />
-    <Compile Include="Model\Material.vb" />
-    <Compile Include="Model\Node.vb" />
+    <Compile Include="NLCable.vb" />
+    <Compile Include="NonlinearCombination.vb" />
+    <Compile Include="PointLoadOnBeam.vb" />
+    <Compile Include="PointLoadOnStructNode.vb" />
+    <Compile Include="PointMomentOnBeam.vb" />
+    <Compile Include="PointMomentOnStructNode.vb" />
+    <Compile Include="PressTensionOnlyBeamNl.vb" />
+    <Compile Include="ProjectData.vb" />
+    <Compile Include="StabilityCombination.vb" />
+    <Compile Include="Subsoil.vb" />
+    <Compile Include="SurfaceLoad.vb" />
+    <Compile Include="ThermalLoadOnBeam.vb" />
+    <Compile Include="ThermalLoadOnSurface.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -178,35 +177,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="FreePointLoad.vb" />
-    <Compile Include="FreeLineLoad.vb" />
-    <Compile Include="NLCable.vb" />
-    <Compile Include="Components\Connections\NodeRigidArm.vb" />
-    <Compile Include="Components\Geometry\Member0D.vb" />
-    <Compile Include="Deprecated\Nodes.vb" />
-    <Compile Include="Deprecated\NodeSupport.vb" />
-    <Compile Include="NonlinearCombination.vb" />
-    <Compile Include="NonlinearFunction.vb" />
-    <Compile Include="Components\Geometry\Opening.vb" />
-    <Compile Include="Deprecated\Openings.vb" />
-    <Compile Include="PointLoadOnBeam.vb" />
-    <Compile Include="PointLoadOnStructNode.vb" />
-    <Compile Include="PointMomentOnBeam.vb" />
-    <Compile Include="PointMomentOnStructNode.vb" />
-    <Compile Include="Components\Connections\HingeOnBeam.vb" />
-    <Compile Include="Deprecated\PointSupportOnBeam.vb" />
-    <Compile Include="PressTensionOnlyBeamNl.vb" />
-    <Compile Include="ProjectData.vb" />
-    <Compile Include="Deprecated\ProjectInfo.vb" />
-    <Compile Include="Components\Geometry\InternalEdge2D.vb" />
-    <Compile Include="Deprecated\SlabInternalEdge.vb" />
-    <Compile Include="Components\Geometry\SectionOn1D.vb" />
-    <Compile Include="StabilityCombination.vb" />
-    <Compile Include="Subsoil.vb" />
-    <Compile Include="SurfaceLoad.vb" />
-    <Compile Include="Deprecated\SurfaceSupport.vb" />
-    <Compile Include="ThermalLoadOnBeam.vb" />
-    <Compile Include="ThermalLoadOnSurface.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -217,7 +187,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="CHANGELOG.MD" />
+    <None Include="CHANGELOG.MD">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -230,11 +202,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Resources\Beam.bmp" />
+    <None Include="UserObjects\*.ghuser">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\2DMember.bmp" />
-    <Content Include="Resources\Analysis.bmp" />
+    <Content Include="Resources\koala.xml.def" />
+    <None Include="Resources\2DMember.bmp" />
+    <None Include="Resources\Analysis.bmp" />
+    <None Include="Resources\Beam.bmp" />
     <None Include="Resources\TehrmalLoadSurface.bmp" />
     <None Include="Resources\ThermalLoadBeam.bmp" />
     <None Include="Resources\SurfaceSupport.bmp" />
@@ -244,38 +220,37 @@
     <None Include="Resources\BeamPointMoment.bmp" />
     <None Include="Resources\BeamInternalNode.bmp" />
     <None Include="Resources\Cable.bmp" />
-    <Content Include="Resources\ArbitraryProfile.bmp" />
-    <Content Include="Resources\AveragingStrip.bmp" />
-    <Content Include="Resources\CreateXML.bmp" />
+    <None Include="Resources\ArbitraryProfile.bmp" />
+    <None Include="Resources\AveragingStrip.bmp" />
+    <None Include="Resources\CreateXML.bmp" />
     <None Include="Resources\Cross-link.bmp" />
-    <Content Include="Resources\Cross-section.bmp" />
+    <None Include="Resources\Cross-section.bmp" />
     <None Include="Resources\EdgeLoad.bmp" />
-    <Content Include="Resources\FreeLineLoad.bmp" />
-    <Content Include="Resources\FreePointLoad.bmp" />
+    <None Include="Resources\FreeLineLoad.bmp" />
+    <None Include="Resources\FreePointLoad.bmp" />
     <None Include="Resources\FreePointMoment.bmp" />
-    <Content Include="Resources\FreeSurfaceLoad.bmp" />
+    <None Include="Resources\FreeSurfaceLoad.bmp" />
     <None Include="Resources\Gap.bmp" />
-    <Content Include="Resources\Hinge.bmp" />
+    <None Include="Resources\Hinge.bmp" />
     <None Include="Resources\LinearCombination.bmp" />
     <None Include="Resources\LimitForceBeamNL.bmp" />
     <None Include="Resources\InternalSlab.bmp" />
     <None Include="Resources\IntegrationStrip.bmp" />
-    <Content Include="Resources\koala.xml.def" />
     <None Include="Resources\Layers.bmp" />
     <None Include="Resources\LineEdgeMoment.bmp" />
     <None Include="Resources\LineHinge.bmp" />
-    <Content Include="Resources\LineLoad.bmp" />
-    <Content Include="Resources\LineSupport.bmp" />
-    <Content Include="Resources\LoadCases.bmp" />
+    <None Include="Resources\LineLoad.bmp" />
+    <None Include="Resources\LineSupport.bmp" />
+    <None Include="Resources\LoadCases.bmp" />
     <None Include="Resources\LoadCase_new.bmp" />
-    <Content Include="Resources\LoadGroup.bmp" />
+    <None Include="Resources\LoadGroup.bmp" />
     <None Include="Resources\Opening.bmp" />
     <None Include="Resources\Node.bmp" />
     <None Include="Resources\LoadPanel.bmp" />
     <None Include="Resources\LoadGroup_new.bmp" />
     <None Include="Resources\MassCombination.bmp" />
     <None Include="Resources\MassGroup.bmp" />
-    <Content Include="Resources\NodeSupport.bmp" />
+    <None Include="Resources\NodeSupport.bmp" />
     <None Include="Resources\PointLoadPoint.bmp" />
     <None Include="Resources\PointLoadBeam.bmp" />
     <None Include="Resources\NonLinearCombination.bmp" />
@@ -292,7 +267,7 @@
     <None Include="Resources\SectionOn2D.bmp" />
     <None Include="Resources\SeismicSpectrum.bmp" />
     <None Include="Resources\ResultClass.bmp" />
-    <Content Include="Resources\SurfaceLoad.bmp" />
+    <None Include="Resources\SurfaceLoad.bmp" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
@@ -304,10 +279,9 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"
-</PostBuildEvent>
+    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug64|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
     <StartArguments>
     </StartArguments>

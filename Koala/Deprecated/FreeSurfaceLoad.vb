@@ -32,14 +32,10 @@ Namespace Koala
         ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("LoadCase", "LoadCase", "Name of load case", GH_ParamAccess.item, "LC2")
-            pManager.AddIntegerParameter("Validity", "Validity", "Validity: All,Z equals 0", GH_ParamAccess.item, 0)
-            AddOptionsToMenuValidity(pManager.Param(1))
-            pManager.AddIntegerParameter("Selection", "Selection", "Selection: Auto", GH_ParamAccess.item, 0)
-            AddOptionsToMenuSelection(pManager.Param(2))
-            pManager.AddIntegerParameter("CoordSys", "CoordSys", "Coordinate system: GCS - Length, GCS - Projection, Member LCS", GH_ParamAccess.item, 0)
-            AddOptionsToMenuCoordSysFreeLine(pManager.Param(3))
-            pManager.AddIntegerParameter("Direction", "Direction", "Direction of load: X,Y,Z", GH_ParamAccess.item, 2)
-            AddOptionsToMenuDirection(pManager.Param(4))
+            pManager.AddParameter(New Param_Enum("Validity", "Validity", GH_ParamAccess.item, Validity.All))
+            pManager.AddParameter(New Param_Enum("Selection", "Selection", GH_ParamAccess.item, Selection.Auto))
+            pManager.AddParameter(New Param_Enum("CoordSys", "Coordinate system", GH_ParamAccess.item, CoordSystemFreeLoad.GCSLength))
+            pManager.AddParameter(New Param_Enum("Direction", "Direction of load", GH_ParamAccess.item, Direction.Z))
             pManager.AddNumberParameter("LoadValue", "LoadValue", "Value of Load in KN/m", GH_ParamAccess.item, -1)
             pManager.AddCurveParameter("Boundaries", "Boundaries", "List of lines", GH_ParamAccess.list)
             pManager.AddNumberParameter("ValidityFrom", "ValidityFrom", "Validity From in m", GH_ParamAccess.item, 0)
@@ -64,10 +60,6 @@ Namespace Koala
             'note: only straight segments are supported in SCIA Engineer's XML today (SE 18.1.3035) > limitation of Koala as well
 
             Dim LoadCase As String = "LC1"
-            Dim Validity As String = "All"
-            Dim Selection As String = "Auto"
-            Dim CoordSys As String = "GCS - Length"
-            Dim Direction As String = "Z"
             Dim LoadValue As Double = -1.0
             Dim Boundaries = New List(Of Curve)
             Dim i As Integer
@@ -78,13 +70,13 @@ Namespace Koala
 
             If (Not DA.GetData(0, LoadCase)) Then Return
             If (Not DA.GetData(1, i)) Then Return
-            Validity = GetStringFromValidity(i)
+            Dim validity As Validity = CType(i, Validity)
             If (Not DA.GetData(2, i)) Then Return
-            Selection = GetStringFromMenuSelection(i)
+            Dim selection As Selection = CType(i, Selection)
             If (Not DA.GetData(3, i)) Then Return
-            CoordSys = GetStringFromCoordSysLine(i)
+            Dim coordSys As CoordSystemFreeLoad = CType(i, CoordSystemFreeLoad)
             If (Not DA.GetData(4, i)) Then Return
-            Direction = GetStringFromDirection(i)
+            Dim direction As Direction = CType(i, Direction)
             If (Not DA.GetData(5, LoadValue)) Then Return
             If (Not DA.GetDataList(Of Curve)(6, Boundaries)) Then Return
             If (Not DA.GetData(7, ValidityFrom)) Then Return
@@ -134,10 +126,10 @@ Namespace Koala
                 Next segment
 
                 SE_fsloads(itemcount, 0) = LoadCase
-                SE_fsloads(itemcount, 1) = Validity
-                SE_fsloads(itemcount, 2) = Selection
-                SE_fsloads(itemcount, 3) = CoordSys
-                SE_fsloads(itemcount, 4) = Direction
+                SE_fsloads(itemcount, 1) = GetEnumDescription(validity)
+                SE_fsloads(itemcount, 2) = GetEnumDescription(selection)
+                SE_fsloads(itemcount, 3) = GetEnumDescription(coordSys)
+                SE_fsloads(itemcount, 4) = GetEnumDescription(direction)
                 SE_fsloads(itemcount, 5) = "Uniform"
                 SE_fsloads(itemcount, 6) = LoadValue
                 SE_fsloads(itemcount, 7) = LoadValue

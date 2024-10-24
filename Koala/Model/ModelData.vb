@@ -6,7 +6,7 @@ Public Class ModelData
 
     Public Scale As Double
     Public MeshSize As Double
-    Public UILanguage As String
+    Public UILanguage As UILanguage
     Public StructureType As String
     Public MaterialTypes As List(Of String)
 

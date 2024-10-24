@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -110,6 +111,22 @@ Namespace Koala
                 Return New Guid("26133ceb-3c67-47dd-bce8-2728ecfd5b74")
             End Get
         End Property
+
+        Private Sub AddOptionsToMenuBeamNLTypePT(menuitem As Param_Integer)
+            menuitem.AddNamedValue("Press only", 0)
+            menuitem.AddNamedValue("Tension only", 1)
+        End Sub
+
+        Private Function GetStringFromBeamNLTypePT(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "Press only"
+                Case 1
+                    Return "Tension only"
+                Case Else
+                    Return "Press only"
+            End Select
+        End Function
     End Class
 
 End Namespace

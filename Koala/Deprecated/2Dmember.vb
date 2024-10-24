@@ -1,6 +1,7 @@
 ﻿Imports System.Collections.Generic
 
 Imports Grasshopper.Kernel
+Imports Grasshopper.Kernel.Parameters
 Imports Rhino.Geometry
 
 
@@ -474,6 +475,39 @@ Namespace Koala
                 Return New Guid("241d3b00-3cfe-4be4-9ebb-9cc86888baf8")
             End Get
         End Property
+
+
+        Private Sub AddOptionstoMenuMemberSystemPlane(menuItem As Param_Integer)
+            menuItem.AddNamedValue("Centre", 1)
+            menuItem.AddNamedValue("Top", 2)
+            menuItem.AddNamedValue("Bottom", 4)
+        End Sub
+
+        Private Sub AddOptionstoMenuFEMNLType2D(menuItem As Param_Integer)
+            menuItem.AddNamedValue("none", 0)
+            menuItem.AddNamedValue("Press only", 1)
+            menuItem.AddNamedValue("Membrane", 2)
+        End Sub
+
+        Private Function GetStringForFEMNLType2D(item As Integer) As String
+            Select Case item
+                Case 0
+                    Return "none"
+                Case 1
+                    Return "Press only"
+                Case 2
+                    Return "Membrane"
+                Case Else
+                    Return "none"
+            End Select
+        End Function
+
+        Private Sub AddOptionstoMenuSwapOrientation(menuItem As Param_Integer)
+            menuItem.AddNamedValue("No", 0)
+            menuItem.AddNamedValue("Yes", 1)
+        End Sub
+
+
     End Class
 
 End Namespace
