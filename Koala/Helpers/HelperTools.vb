@@ -998,7 +998,7 @@ Module HelperTools
                 If i > 0 And i Mod 100 = 0 Then
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... rigid arm: " + Str(i))
                 End If
-                Call WriteRigidArm(oSB, i, modelData.RigidArms)
+                Call WriteRigidArm(oSB, i, modelData)
             Next
 
             Call CloseContainerAndTable(oSB)
@@ -2598,22 +2598,23 @@ Module HelperTools
         oSB.AppendLine("</h>")
     End Sub
 
-    Private Sub WriteRigidArm(ByRef osb, iRigidArm, RigidArms(,))
+    Private Sub WriteRigidArm(ByRef osb As Text.StringBuilder, iRigidArm As Integer, modelData As ModelData)
 
-        osb.AppendLine("<obj nm=""" & RigidArms(iRigidArm, 0) & """>")
+        Dim rigidArms = modelData.RigidArms
+        osb.AppendLine("<obj nm=""" & rigidArms(iRigidArm, 0) & """>")
 
-        osb.appendline(ConCat_pv("0", RigidArms(iRigidArm, 0)))
-        osb.AppendLine(ConCat_pn("1", RigidArms(iRigidArm, 1)))
-        osb.appendline(ConCat_pn("2", RigidArms(iRigidArm, 2)))
-        If (RigidArms(iRigidArm, 3)) Then
-            osb.appendline(ConCat_pv("3", "1"))
+        osb.AppendLine(ConCat_pv("0", rigidArms(iRigidArm, 0)))
+        osb.AppendLine(ConCat_pn("1", modelData.GetNodeName(rigidArms(iRigidArm, 1))))
+        osb.AppendLine(ConCat_pn("2", modelData.GetNodeName(rigidArms(iRigidArm, 2))))
+        If (rigidArms(iRigidArm, 3)) Then
+            osb.AppendLine(ConCat_pv("3", "1"))
         Else
-            osb.appendline(ConCat_pv("3", "0"))
+            osb.AppendLine(ConCat_pv("3", "0"))
         End If
-        If (RigidArms(iRigidArm, 4)) Then
-            osb.appendline(ConCat_pv("4", "1"))
+        If (rigidArms(iRigidArm, 4)) Then
+            osb.AppendLine(ConCat_pv("4", "1"))
         Else
-            osb.appendline(ConCat_pv("4", "0"))
+            osb.AppendLine(ConCat_pv("4", "0"))
         End If
 
 

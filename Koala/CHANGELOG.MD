@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.22.2 (2024-11-26)
+### Fixed
+- Fixed RigidArm reference to duplicate nodes
+
 ## 3.22.1 (2024-10-23)
 ### Fixed
 - NonLinear Function Positive/Negative End Definition
