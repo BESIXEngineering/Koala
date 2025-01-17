@@ -5,7 +5,7 @@ Imports Rhino.Geometry
 
 
 Namespace Koala
-    <System.Obsolete("Obsolete. Use version 2 instead which supports a non-uniform load distribution.")>
+    <System.Obsolete("Obsolete. Use version 3 instead which supports a non-uniform load distribution.")>
     Public Class FreeSurfaceLoad
         Inherits GH_KoalaComponent
         ''' <summary>

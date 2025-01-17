@@ -5,10 +5,9 @@ Imports Rhino.Geometry
 
 Namespace Koala
     ''' <summary>
-    ''' Improved implementation of the FreeSurfaceLoad component to include the option to set a non-uniform distribution.
+    ''' Improved implementation of the FreeSurfaceLoad component to include the option to set a non-uniform distribution with 3 load values.
     ''' </summary>
-    <System.Obsolete("Obsolete. Use version 3 instead which supports a non-uniform load distribution.")>
-    Public Class FreeSurfaceLoad2
+    Public Class FreeSurfaceLoad3
         Inherits GH_KoalaComponent
         ''' <summary>
         ''' Each implementation of GH_Component must provide a public 
@@ -23,12 +22,6 @@ Namespace Koala
                 "Load", New EsaObjectType() {EsaObjectType.FreeSurfaceLoad})
         End Sub
 
-        Public Overrides ReadOnly Property Exposure As GH_Exposure
-            Get
-                Return GH_Exposure.hidden
-            End Get
-        End Property
-
         ''' <summary>
         ''' Registers all the input parameters for this component.
         ''' </summary>
@@ -42,7 +35,8 @@ Namespace Koala
             pManager.AddParameter(New Param_Enum("Distribution", "Distribution of the surface load", GH_ParamAccess.item, DistributionOfSurfaceLoad.Uniform))
 
             pManager.AddNumberParameter("LoadValue1", "LoadValue1", "Value of Load in KN/m", GH_ParamAccess.item, -1)
-            pManager.AddNumberParameter("LoadValue2", "LoadValue2", "Value of Load at end in KN/m (if not uniform distribution)", GH_ParamAccess.item, -1)
+            pManager.AddNumberParameter("LoadValue2", "LoadValue2", "Value of second Load in KN/m (if not uniform distribution)", GH_ParamAccess.item, -1)
+            pManager.AddNumberParameter("LoadValue3", "LoadValue3", "Value of third Load in KN/m (if 3 point distribution)", GH_ParamAccess.item, -1)
 
             pManager.AddCurveParameter("Boundary", "Boundary", "Boundary curve", GH_ParamAccess.item)
             pManager.AddNumberParameter("ValidityFrom", "ValidityFrom", "Validity From in m", GH_ParamAccess.item, 0)
@@ -71,6 +65,9 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
             Dim LoadCase As String = "LC1"
             Dim LoadValue1 As Double = -1.0
             Dim LoadValue2 As Double = -1.0
+            Dim LoadValue3 As Double = -1.0
+            Dim LoadValueString As String
+
             Dim boundary As Curve = Nothing
             Dim i As Integer
 
@@ -95,21 +92,23 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
             Select Case distribution
                 Case DistributionOfSurfaceLoad.DirectionX, DistributionOfSurfaceLoad.DirectionY
                     DA.GetData(7, LoadValue2)
+                    LoadValueString = $"{LoadValue1};{LoadValue2}"
                 Case DistributionOfSurfaceLoad.ThreePoints
                     DA.GetData(7, LoadValue2)
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Use the new FreeSurfaceLoad component to define the third load value")
+                    DA.GetData(8, LoadValue3)
+                    LoadValueString = $"{LoadValue1};{LoadValue2};{LoadValue3}"
                 Case Else
-                    LoadValue2 = LoadValue1
+                    LoadValueString = $"{LoadValue1}"
             End Select
 
-            If Not DA.GetData(8, boundary) Then Return
-            If (Not DA.GetData(9, ValidityFrom)) Then Return
-            If (Not DA.GetData(10, ValidityTo)) Then Return
+            If Not DA.GetData(9, boundary) Then Return
+            If (Not DA.GetData(10, ValidityFrom)) Then Return
+            If (Not DA.GetData(11, ValidityTo)) Then Return
 
-            If (Not DA.GetData(11, selected2DMembers)) Then Return
+            If (Not DA.GetData(12, selected2DMembers)) Then Return
 
             Dim SE_fsloads(11)
-            'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 or 2 values (kN/m^2), BoundaryShape
+            'a free surface load consists of: load case, validity, selection, coord. system (GCS/LCS), direction (X, Y, Z), distribution (uniform | dirX | dirY), 1 to 3 values (kN/m^2), BoundaryShape
 
             Dim segments() As Rhino.Geometry.Curve
             Dim segment As Rhino.Geometry.Curve
@@ -194,8 +193,8 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
             SE_fsloads(3) = GetEnumDescription(coordSys)
             SE_fsloads(4) = GetEnumDescription(direction)
             SE_fsloads(5) = GetEnumDescription(distribution)
-            SE_fsloads(6) = LoadValue1
-            SE_fsloads(7) = LoadValue2
+            SE_fsloads(6) = LoadValueString
+            SE_fsloads(7) = ""
             SE_fsloads(8) = BoundaryShape
             SE_fsloads(9) = ValidityFrom
             SE_fsloads(10) = ValidityTo
@@ -291,7 +290,7 @@ Example: 'S1;SURFACE;1 | S2;SURFACE;4'", GH_ParamAccess.item, "")
         ''' </summary>
         Public Overrides ReadOnly Property ComponentGuid() As Guid
             Get
-                Return New Guid("8499bfdb-1f34-4702-95a8-bb73d18a3a91")
+                Return New Guid("9499bfdb-1ab4-4202-95a8-bb73d18a3a91")
             End Get
         End Property
     End Class

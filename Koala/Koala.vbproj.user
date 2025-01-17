@@ -3,5 +3,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
     <StartAction>Program</StartAction>
+    <StartArguments>/netfx /nosplash /runscript="_grasshopper"</StartArguments>
   </PropertyGroup>
 </Project>

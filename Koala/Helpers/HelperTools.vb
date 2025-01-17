@@ -4832,14 +4832,15 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("4", "q"))
         oSB.AppendLine(ConCat_ht("5", "q1"))
         oSB.AppendLine(ConCat_ht("6", "q2"))
-        oSB.AppendLine(ConCat_ht("7", "Validity"))
-        oSB.AppendLine(ConCat_ht("8", "Select"))
-        oSB.AppendLine(ConCat_ht("9", "System"))
-        oSB.AppendLine(ConCat_ht("10", "Location"))
-        oSB.AppendLine(ConCat_ht("11", "Table of geometry"))
-        oSB.AppendLine(ConCat_ht("12", "Selected objects"))
-        oSB.AppendLine(ConCat_ht("13", "Validity from"))
-        oSB.AppendLine(ConCat_ht("14", "Validity to"))
+        oSB.AppendLine(ConCat_ht("7", "q3"))
+        oSB.AppendLine(ConCat_ht("8", "Validity"))
+        oSB.AppendLine(ConCat_ht("9", "Select"))
+        oSB.AppendLine(ConCat_ht("10", "System"))
+        oSB.AppendLine(ConCat_ht("11", "Location"))
+        oSB.AppendLine(ConCat_ht("12", "Table of geometry"))
+        oSB.AppendLine(ConCat_ht("13", "Selected objects"))
+        oSB.AppendLine(ConCat_ht("14", "Validity from"))
+        oSB.AppendLine(ConCat_ht("15", "Validity to"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -4856,34 +4857,75 @@ Module HelperTools
 
         Dim distribution As Koala.DistributionOfSurfaceLoad = Koala.GetEnum(Of Koala.DistributionOfSurfaceLoad)(loads(iload, 5))
         oSB.AppendLine(ConCat_pvt("3", Convert.ToInt32(distribution), Koala.GetEnumDescription(distribution)))
-        'load value(s)
+        ' Get load value(s); for backward compatibility support, foresee following situations:
+        ' - index 6 and 7 contain each a single load value
+        ' - index 6 contains a semi-colon (;) separated list of 1 to 3 load values (while index 7 is blank)
+        Dim loadValues(2) As Double
+        loadValues(0) = -1.0
+        loadValues(1) = -1.0
+        loadValues(2) = -1.0
+
+        Dim loadString = loads(iload, 6).ToString
+
+        If Not String.IsNullOrWhiteSpace(loadString) Then
+            ' Case semi-colon separated string
+            Dim parts() As String = loadString.Split(";"c)
+            If parts.Length > 1 Then
+                Dim lastValue As Double = -1
+                For i As Integer = 0 To 2
+                    If i < parts.Length AndAlso Not String.IsNullOrEmpty(parts(i)) Then
+                        loadValues(i) = Convert.ToDouble(parts(i))
+                        lastValue = loadValues(i)
+                    Else
+                        loadValues(i) = lastValue
+                    End If
+                Next
+
+            Else ' Case single value
+                loadValues(0) = Convert.ToDouble(loadString)
+
+                Dim loadString2 = loads(iload, 7).ToString
+                If Not String.IsNullOrWhiteSpace(loadString2) Then
+                    loadValues(1) = Convert.ToDouble(loadString2)
+                    loadValues(2) = loadValues(1)
+                Else
+                    loadValues(1) = loadValues(0)
+                    loadValues(2) = loadValues(0)
+                End If
+            End If
+        End If
+
         Select Case distribution
             Case Koala.DistributionOfSurfaceLoad.DirectionX, Koala.DistributionOfSurfaceLoad.DirectionY
-                oSB.AppendLine(ConCat_pv("5", loads(iload, 6) * 1000))
-                oSB.AppendLine(ConCat_pv("6", loads(iload, 7) * 1000))
+                oSB.AppendLine(ConCat_pv("5", loadValues(0) * 1000))
+                oSB.AppendLine(ConCat_pv("6", loadValues(1) * 1000))
+            Case DistributionOfSurfaceLoad.ThreePoints
+                oSB.AppendLine(ConCat_pv("5", loadValues(0) * 1000))
+                oSB.AppendLine(ConCat_pv("6", loadValues(1) * 1000))
+                oSB.AppendLine(ConCat_pv("7", loadValues(2) * 1000))
             Case Else
-                oSB.AppendLine(ConCat_pv("4", loads(iload, 6) * 1000))
+                oSB.AppendLine(ConCat_pv("4", loadValues(0) * 1000))
         End Select
 
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(7, loads(iload, 1)))
-        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(8, loads(iload, 2)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Validity)(8, loads(iload, 1)))
+        oSB.AppendLine(ConCat_pvt_enum(Of Koala.Selection)(9, loads(iload, 2)))
 
         'coordinate system
         Dim coordSys As Koala.CoordSystemFreeLoad = Koala.GetEnum(Of Koala.CoordSystemFreeLoad)(loads(iload, 3))
         Select Case coordSys
             Case Koala.CoordSystemFreeLoad.GCSProjection
-                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
-                oSB.AppendLine(ConCat_pvt("10", "1", "Projection"))
+                oSB.AppendLine(ConCat_pvt("10", "0", "GCS"))
+                oSB.AppendLine(ConCat_pvt("11", "1", "Projection"))
             Case Koala.CoordSystemFreeLoad.MemberLCS
-                oSB.AppendLine(ConCat_pvt("9", "1", "Member LCS"))
+                oSB.AppendLine(ConCat_pvt("10", "1", "Member LCS"))
             Case Else
-                oSB.AppendLine(ConCat_pvt("9", "0", "GCS"))
-                oSB.AppendLine(ConCat_pvt("10", "0", "Length"))
+                oSB.AppendLine(ConCat_pvt("10", "0", "GCS"))
+                oSB.AppendLine(ConCat_pvt("11", "0", "Length"))
         End Select
 
         'table of geometry
 
-        oSB.AppendLine(ConCat_opentable("11", ""))
+        oSB.AppendLine(ConCat_opentable("12", ""))
 
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Node"))
@@ -4924,13 +4966,13 @@ Module HelperTools
             row_id += 1
         Next LineShape
 
-        oSB.AppendLine(ConCat_closetable("11"))
+        oSB.AppendLine(ConCat_closetable("12"))
 
         'table of selection
         Dim selectionNames As String = loads(iload, 11)
 
         If Not String.IsNullOrEmpty(selectionNames) Then
-            oSB.AppendLine(ConCat_opentable("12", ""))
+            oSB.AppendLine(ConCat_opentable("13", ""))
 
             oSB.AppendLine("<h>")
             oSB.AppendLine(ConCat_ht("0", "Type"))
@@ -4964,14 +5006,14 @@ Module HelperTools
                 row_id += 1
             Next member
 
-            oSB.AppendLine(ConCat_closetable("12"))
+            oSB.AppendLine(ConCat_closetable("13"))
         Else
-            ' oSB.AppendLine(ConCat_pv("12", ""))
+            ' oSB.AppendLine(ConCat_pv("13", ""))
         End If
 
         ' validity from and to
-        oSB.AppendLine(ConCat_pv("13", loads(iload, 9)))
-        oSB.AppendLine(ConCat_pv("14", loads(iload, 10)))
+        oSB.AppendLine(ConCat_pv("14", loads(iload, 9)))
+        oSB.AppendLine(ConCat_pv("15", loads(iload, 10)))
 
         oSB.AppendLine("</obj>")
 

@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.23.0 (2025-01-17)
+### Added
+- New FreeSurfaceLoad component with possibility to input 3 load values (for 3 pt distribution type)
+
 ## 3.22.2 (2024-11-26)
 ### Fixed
 - Fixed RigidArm reference to duplicate nodes
@@ -16,7 +20,7 @@
 - LineHinge Tx|Ty|Tz|Rx input parameter names
 - FreePointLoad & FreeMomentLoad validity and system parameters
 
-## 3.22 (2024-09-18)
+## 3.22.0 (2024-09-18)
 ### Added
 - Added Material input to CreateXML component to modify steel and concrete material properties of materials already existing in the esa file
 ### Changed

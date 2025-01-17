@@ -100,6 +100,7 @@
     <Compile Include="Components\Library\NonlinearFunction.vb" />
     <Compile Include="Components\Library\ResultClass.vb" />
     <Compile Include="Components\Library\SeismicSpectrum.vb" />
+    <Compile Include="Components\Loads\FreeSurfaceLoad3.vb" />
     <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
     <Compile Include="Components\Supports\SurfaceEdgeSupport.vb" />
@@ -280,12 +281,6 @@
   -->
   <PropertyGroup>
     <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
-    <StartArguments>
-    </StartArguments>
-    <StartAction>Program</StartAction>
   </PropertyGroup>
   <Import Project="..\packages\RhinoCommon.6.34.21034.7001\build\net45\RhinoCommon.targets" Condition="Exists('..\packages\RhinoCommon.6.34.21034.7001\build\net45\RhinoCommon.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
