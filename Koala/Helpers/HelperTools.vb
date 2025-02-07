@@ -2763,6 +2763,9 @@ Module HelperTools
                         catalogueItem = "7"
                     Case "IROA" '> IRolledAsymmetric
                         catalogueItem = "8"
+                    Case "ISEC" '> General I profile (thick walled)
+                        catalogueLib = "EP_CssLib.EP_ProfLib_Geometric.1"
+                        catalogueItem = "0"
                         'Case "ZZEE" '> ZZee
                         '    catalogueItem = "24"
                         'Case "CFCH" '> ColdFormedChannel

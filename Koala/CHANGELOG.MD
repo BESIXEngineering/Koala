@@ -6,6 +6,13 @@
 ### Fixed
 ### Security
 
+## 3.23.1 (2025-02-07)
+### Added
+- ISEC profile type added to recognised section types
+
+### Fixed
+- Fixed Enum error (duplicate Enum value) in LoadCaseType
+
 ## 3.23.0 (2025-01-17)
 ### Added
 - New FreeSurfaceLoad component with possibility to input 3 load values (for 3 pt distribution type)

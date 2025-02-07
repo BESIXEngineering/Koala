@@ -502,7 +502,7 @@ Namespace Koala
         SW = 0
         Permanent = 1
         Variable = 2
-        Seismic = 2
+        Seismic = 3
     End Enum
 
     Public Enum LoadGroupLoadType
