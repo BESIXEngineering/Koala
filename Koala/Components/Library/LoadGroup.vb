@@ -1,7 +1,4 @@
-﻿Imports System.Collections.Generic
-
-Imports Grasshopper.Kernel
-Imports Rhino.Geometry
+﻿Imports Grasshopper.Kernel
 
 Namespace Koala
     Public Class LoadGroup

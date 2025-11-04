@@ -1,9 +1,6 @@
-﻿Imports System.Collections.Generic
-Imports System.Windows.Forms
-Imports System.Linq
+﻿Imports System.Windows.Forms
 Imports Grasshopper.Kernel
 Imports Grasshopper.Kernel.Types
-Imports Rhino.Geometry
 
 
 Namespace Koala
@@ -15,7 +12,7 @@ Namespace Koala
         ''' <summary>
         ''' Dictionary of variable parameter groups
         ''' </summary>
-        Private ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
+        Friend Shared ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
             {EsaObjectCategory.Project, New EsaObjectType() {
                 EsaObjectType.ProjectData}},
             {EsaObjectCategory.Tools, New EsaObjectType() {

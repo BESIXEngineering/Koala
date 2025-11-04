@@ -45,6 +45,11 @@ Public Class Material
         Type = Koala.MaterialType.Undefined
         Properties = New Dictionary(Of MaterialProperty, String)
 
+        'Strip outer curly braces, if any
+        If serialized.StartsWith("{"c) AndAlso serialized.EndsWith("}"c) Then
+            serialized = serialized.Substring(1, serialized.Length - 2)
+        End If
+
         Dim splittingChars As Char() = {","c, ";"c}
         Dim equalityChars As Char() = {"="c, ":"c}
 
@@ -52,6 +57,15 @@ Public Class Material
             Dim parts As String() = prop.Split(equalityChars, 2)
             Dim key As String = parts(0).Trim().ToLower()
             Dim value As String = parts(1).Trim()
+
+            'Strip outer quotes from key, if any
+            If key.StartsWith(""""c) AndAlso key.EndsWith(""""c) Then
+                key = key.Substring(1, key.Length - 2)
+            End If
+            'Strip outer quotes from value, if any
+            If value.StartsWith(""""c) AndAlso value.EndsWith(""""c) Then
+                value = value.Substring(1, value.Length - 2)
+            End If
 
             If key = "name" Then
                 Name = value
