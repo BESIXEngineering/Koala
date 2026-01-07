@@ -6,6 +6,13 @@
 ### Fixed
 ### Security
 
+## 3.24.0 (2026-01-07)
+### Added
+- KoalaConvert component providing a simple conversion mechanism for any object that has implemented a ToKoala method returning a List(Of Dictionary(Of String, String)). Each Dictionary in the List should hold the required object properties of a single Koala object.
+- Add support for JSON formatted material strings
+### Changed
+- CreateXML component's auto-detect parameters feature also searches for Koala components nested inside Grasshopper clusters.
+
 ## 3.23.1 (2025-02-07)
 ### Added
 - ISEC profile type added to recognised section types

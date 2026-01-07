@@ -14,14 +14,22 @@ Namespace Koala
     ''' The output parameters can be added/removed manually or automatically based on the object types detected in the input data.
     ''' </summary>
     Public Class KoalaConvert
-        Inherits GH_Component
+        Inherits GH_KoalaComponent
         Implements IGH_VariableParameterComponent
+
+        Public Overrides ReadOnly Property ObjectTypes As EsaObjectType()
+            Get
+                ' Returns all EsaObjectType values of which Params.Output contains a parameter with Name matching the enum description
+                Dim outputParamNames As New HashSet(Of String)(Params.Output.Select(Function(p) p.Name))
+                Return [Enum].GetValues(GetType(EsaObjectType)).Cast(Of EsaObjectType)().Where(Function(t) outputParamNames.Contains(GetEnumDescription(t))).ToArray()
+            End Get
+        End Property
 
         Public Sub New()
             MyBase.New("KoalaConvert", "KoalaConvert",
                 "Convert an object to Koala model data. The object should support Koala conversion, 
                 i.e. have a ToKoala() method that returns a compatible List<Dictionary<string, string>> object.",
-                "Koala", "General")
+                "General")
         End Sub
 
         Private ReadOnly FixedOutputParamCount As Integer = 0
