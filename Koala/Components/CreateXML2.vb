@@ -1,9 +1,6 @@
-﻿Imports System.Collections.Generic
-Imports System.Windows.Forms
-Imports System.Linq
+﻿Imports System.Windows.Forms
 Imports Grasshopper.Kernel
 Imports Grasshopper.Kernel.Types
-Imports Rhino.Geometry
 
 
 Namespace Koala
@@ -15,7 +12,7 @@ Namespace Koala
         ''' <summary>
         ''' Dictionary of variable parameter groups
         ''' </summary>
-        Private ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
+        Friend Shared ReadOnly VariableParameterDict As New Dictionary(Of EsaObjectCategory, EsaObjectType()) From {
             {EsaObjectCategory.Project, New EsaObjectType() {
                 EsaObjectType.ProjectData}},
             {EsaObjectCategory.Tools, New EsaObjectType() {
@@ -308,23 +305,34 @@ Namespace Koala
         End Function
 
         ''' <summary>
-        ''' Detect all object types created in the current document and add them as input parameters
+        ''' Detect all object types created in the current document (and nested documents) and add them as input parameters
         ''' </summary>
         Private Sub AutoAddInput()
             Dim doc = OnPingDocument()
             If doc Is Nothing Then Return
 
-            Dim objectTypes As New List(Of EsaObjectType)
-
-            For Each comp In doc.Objects.OfType(Of Koala.GH_KoalaComponent)
-                For Each t In comp.ObjectTypes
-                    If Not objectTypes.Contains(t) Then objectTypes.Add(t)
-                Next
-            Next
+            Dim objectTypes As New HashSet(Of EsaObjectType)
+            FindComponentObjectTypesRecursive(doc, objectTypes)
 
             If objectTypes.Count > 0 Then
                 AddParametersForEsaObjectTypes(objectTypes.ToArray)
             End If
+        End Sub
+
+        Private Sub FindComponentObjectTypesRecursive(doc As GH_Document, ByRef objectTypes As HashSet(Of EsaObjectType))
+            If doc Is Nothing Then Return
+
+            For Each comp In doc.Objects.OfType(Of Koala.GH_KoalaComponent)
+                For Each t In comp.ObjectTypes
+                    objectTypes.Add(t)
+                Next
+            Next
+
+            ' Detect types in cluster documents
+            For Each cluster In doc.Objects.OfType(Of Special.GH_Cluster)
+                Dim clusterDoc = cluster.Document(Nothing)
+                FindComponentObjectTypesRecursive(clusterDoc, objectTypes)
+            Next
         End Sub
 
         ''' <summary>
@@ -478,7 +486,6 @@ Namespace Koala
                 If paramIdx <> -1 Then
                     If Not paramAdded Then
                         paramAdded = True
-                        ExpireSolution(True)
                         Dim doc As GH_Document = OnPingDocument()
                         doc.UndoUtil.RecordGenericObjectEvent("Add Parameters", Me)
                     End If
@@ -490,6 +497,7 @@ Namespace Koala
             If paramAdded Then
                 Params.OnParametersChanged()
                 VariableParameterMaintenance()
+                ExpireSolution(True)
             End If
         End Sub
 

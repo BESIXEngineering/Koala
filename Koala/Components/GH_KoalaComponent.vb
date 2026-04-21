@@ -6,12 +6,21 @@ Namespace Koala
         Inherits GH_Component
 
         Public NameIndex As Long = 0
+        Private ReadOnly _objectTypes As EsaObjectType()
 
-        Public Property ObjectTypes As EsaObjectType()
+        Public Overridable ReadOnly Property ObjectTypes As EsaObjectType()
+            Get
+                Return _objectTypes
+            End Get
+        End Property
 
-        Public Sub New(name As String, nickname As String, description As String, subcategory As String, _objectTypes As EsaObjectType())
+        Protected Sub New(name As String, nickname As String, description As String, subcategory As String)
             MyBase.New(name, nickname, description, "Koala", subcategory)
-            ObjectTypes = _objectTypes
+        End Sub
+
+        Public Sub New(name As String, nickname As String, description As String, subcategory As String, compObjectTypes As EsaObjectType())
+            Me.New(name, nickname, description, subcategory)
+            _objectTypes = compObjectTypes
         End Sub
 
         Protected Overrides Sub BeforeSolveInstance()
