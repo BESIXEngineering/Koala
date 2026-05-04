@@ -343,6 +343,9 @@ Namespace Koala
                 Case EsaObjectType.SectionOn2D
                     keys = {"Surface", "Layer", "DrawDiagram", "Direction", "From", "To"}
 
+                Case EsaObjectType.AbsentElement
+                    keys = {"Name", "ModificationGroup", "ElementType", "ElementName"}
+
                 Case Else
                     AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Conversion not implemented for object type {oType}")
                     Return result

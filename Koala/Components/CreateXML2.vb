@@ -82,7 +82,9 @@ Namespace Koala
                 EsaObjectType.PreTensionElement,
                 EsaObjectType.GapElement,
                 EsaObjectType.LimitForceElement,
-                EsaObjectType.Cable}}
+                EsaObjectType.Cable}},
+            {EsaObjectCategory.ModelModifier, New EsaObjectType() {
+                EsaObjectType.AbsentElement}}
         }
 
         ''' <summary>
@@ -284,7 +286,8 @@ Namespace Koala
                           GetInputText(DA, EsaObjectType.IntegrationStrip),
                           GetInputText(DA, EsaObjectType.SectionOn1D),
                           GetInputText(DA, EsaObjectType.SectionOn2D),
-                          GetInputText(DA, EsaObjectType.AveragingStrip)
+                          GetInputText(DA, EsaObjectType.AveragingStrip),
+                          GetInputText(DA, EsaObjectType.AbsentElement)
                           )
 
             DA.SetData(0, fileName)

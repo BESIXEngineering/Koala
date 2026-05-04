@@ -1,53 +1,57 @@
-﻿Imports System.Collections.Generic
-Imports Grasshopper.GUI.HTML
-Imports Grasshopper.Kernel
-Imports Rhino.Geometry
+﻿Imports Grasshopper.Kernel
 
 
 Namespace Koala
 
     Public Class Cross_Sections
         Inherits GH_KoalaComponent
-        ''' <summary>
-        ''' Each implementation of GH_Component must provide a public 
-        ''' constructor without any arguments.
-        ''' Category represents the Tab in which the component will appear, 
-        ''' Subcategory the panel. If you use non-existing tab or panel names, 
-        ''' new tabs/panels will automatically be created.
-        ''' </summary>
         Public Sub New()
-            MyBase.New("CrossSections", "CrossSections",
-                "CrossSections description",
+            MyBase.New("CrossSection", "CrossSection",
+                "Definition of catalogue and parametric cross sections",
                 "Libraries", New EsaObjectType() {EsaObjectType.CrossSection})
         End Sub
 
-        ''' <summary>
-        ''' Registers all the input parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterInputParams(pManager As GH_Component.GH_InputParamManager)
             pManager.AddTextParameter("Sections", "Sections", "Name;Formcode;Profile;Material e.g.: CS1; FORM-2; RHS200/150/8.0; S 235", GH_ParamAccess.list, "CS1; FORM-2; RHS200/150/8.0; S 235")
-
-
         End Sub
 
-        ''' <summary>
-        ''' Registers all the output parameters for this component.
-        ''' </summary>
         Protected Overrides Sub RegisterOutputParams(pManager As GH_Component.GH_OutputParamManager)
             pManager.AddTextParameter("CrossSection", "CrossSection", "CrossSection data", GH_ParamAccess.list)
         End Sub
 
-        ''' <summary>
-        ''' This is the method that actually does the work.
-        ''' </summary>
-        ''' <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        ''' to store data in output parameters.</param>
+        Protected Overrides ReadOnly Property HelpDescription As String
+            Get
+                Return "<p>" &
+                    "Get the cross-section definition parts from a cross section string." &
+                    "The cross-section string comprises 4 parts separeted by semi-colon (Name;Formcode;Profile;Material):" &
+                    "</p>" &
+                    "<ul>" &
+                        "<li>Name: Name of the section (e.g. CS1)</li>" &
+                        "<li>Formcode: Code for the section form (e.g. FORM-2)</li>" &
+                        "<li>Profile: Section definition (e.g. RHS200/150/8.0)</li>" &
+                        "<li>Material: Material of the section (e.g. S 235)</li>" &
+                    "</ul>" &
+                    "<p>The Profile definition allows to specify additional properties by appending a json-object-like string.<br /> E.g. property multipliers can be added as such: RHS200/150/8.0{kA:3.0, kIy:2.0}</p>" &
+                    "<p>Supported properties: [MULTIPLIERS] kA, kAy, kAz, kIx, kIy, kIz</p>" &
+                    "<h3>Catalogue sections</h3>" &
+                    "<p>Define formcode FORM-1, FORM-2, etc. (as defined by SCIA) and the name of a profile available in the matching SCIA catalogue.</p>" &
+                    "<p>Examples:</p>" &
+                    "<ul><li>CS1; FORM-1; IPE180; S 355</li><li>CS2; FORM-2; RHS200/150/8.0; S 235</li></ul>" &
+                    "<h3>Parametric sections</h3>" &
+                    "<p>Define formcode CONC, STEE or TIMB and a section definition comprising the shape type and all required parameter values.</p>" &
+                    "<p>Examples:</p>" &
+                    "<ul><li>CS3; CONC; RECT300x500; C30/37</li><li>CS4; STEE; PIPE200x10; S 235</li><li>CS5; TIMB; CIRC300; C14 (EN 338)</li></ul>" &
+                    "<h3>Numerical sections</h3>" &
+                    "<p>Define formcode NUME and a section definition comprising the cross section properties in a json-object-like string format. Property values are given in millimeter-based units (like in SCIA interface).</p>" &
+                    "<p>Supported properties are: A, Ay, Az, It, Iy, Iz, Iw, Wely, Welz, Wply, Wplz, dy, dz, cYUCS, cZUCS, α, AL, AD, Mply+, Mply-, Mplz+, Mplz-, Rgy, Rgz, βy, βz, IYLCS, IZLCS, IYZLCS.</p>" &
+                    "<p>Example:</p>" &
+                    "<ul><li>CS6; NUME; {A: 5000, Iy:3.7e+7, Iz:1.4e+7, Rgy:82.84, Rgz:49.82}; S235</li></ul>"
+            End Get
+        End Property
+
         Protected Overrides Sub SolveInstance(DA As IGH_DataAccess)
-
-
             Dim i As Long
             Dim Sections = New List(Of String)
-
 
             If (Not DA.GetDataList(Of String)(0, Sections)) Then Return
 
@@ -88,21 +92,7 @@ Namespace Koala
                 FlatList.Add(SE_sections(i, 3))
             Next i
             DA.SetDataList(0, FlatList)
-
-
         End Sub
-
-        Protected Overrides Function HtmlHelp_Source() As String
-
-            Dim url As String = “https://jara-broz.gitbook.io/koala/manual/in-depth-component-reference/libraries/cross-sections“
-            'run default browser with help
-            Process.Start(url)
-
-            Return "GOTO:https://jara-broz.gitbook.io/koala/manual/in-depth-component-reference/libraries/cross-sections"
-            'Return "https://jara-broz.gitbook.io/koala/manual/in-depth-component-reference/libraries/cross-sections"
-        End Function
-
-
 
         ''' <summary>
         ''' Provides an Icon for every component that will be visible in the User Interface.

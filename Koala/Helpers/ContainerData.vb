@@ -1,5 +1,4 @@
-﻿Imports Rhino.DocObjects
-Imports Koala.Koala
+﻿Imports Koala.Koala
 
 Partial Module HelperTools
 
@@ -10,6 +9,7 @@ Partial Module HelperTools
         {EsaObjectType.Layer, "{D3885EC4-BAE5-11D4-B3FA-00104BC3B531}"},
         {EsaObjectType.Material, "{16B20277-A13B-4689-97D5-68F2BACF1318}"},
         {EsaObjectType.CrossSection, "{2127A9B3-36BD-11D4-B337-00104BC3B531}"},
+        {EsaObjectType.CrossSectionNumerical, "{2127A9B3-36BD-11D4-B337-00104BC3B531}"},
         {EsaObjectType.Node, "{39A7F468-A0D4-4DFF-8E5C-5843E1807D13}"},
         {EsaObjectType.Member1D, "{ECB5D684-7357-11D4-9F6C-00104BC3B443}"},
         {EsaObjectType.Member2D, "{8708ED31-8E66-11D4-AD94-F6F5DE2BE344}"},
@@ -60,7 +60,11 @@ Partial Module HelperTools
         {EsaObjectType.IntegrationStrip, "{6404DF99-5A82-478C-811A-BC16F6CF7DC9}"},
         {EsaObjectType.AveragingStrip, "{FE0D602A-29D1-45BD-8812-C65D66847842}"},
         {EsaObjectType.SectionOn1D, "{89BC3399-896D-43D0-8186-A493B1EC5FE2}"},
-        {EsaObjectType.SectionOn2D, "{96ACB475-E405-42E9-B2A9-682ADC4F94C7}"}
+        {EsaObjectType.SectionOn2D, "{96ACB475-E405-42E9-B2A9-682ADC4F94C7}"},
+        {EsaObjectType.AbsentGroup, "{83E6AF04-646A-4979-8379-7477EBDEC4F5}"},
+        {EsaObjectType.AbsentBeam, "{863264B9-6C91-4F8D-9A6A-602199A045B2}"},
+        {EsaObjectType.AbsentSurface, "{A9C9909E-1B97-45F0-BEFF-4A7DC7E090B8}"},
+        {EsaObjectType.AbsentSupport, "{3DE36961-C089-49D4-A37E-CC5C3B560B7A}"}
     }
 
     Public ContainerTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
@@ -70,6 +74,7 @@ Partial Module HelperTools
         {EsaObjectType.Layer, "EP_DSG_Elements.EP_DataLayer.1"},
         {EsaObjectType.Material, "EP_MaterialEC.EP_MaterialHeaderEC_EN.1"},
         {EsaObjectType.CrossSection, "CrossSection.EP_CrossSection.1"},
+        {EsaObjectType.CrossSectionNumerical, "CrossSection.EP_CrossSection.1"},
         {EsaObjectType.Node, "EP_DSG_Elements.EP_StructNode.1"},
         {EsaObjectType.Member1D, "EP_DSG_Elements.EP_Beam.1"},
         {EsaObjectType.Member2D, "EP_DSG_Elements.EP_Plane.1"},
@@ -120,7 +125,11 @@ Partial Module HelperTools
         {EsaObjectType.IntegrationStrip, "EP_DSG_Elements.8.00.EP_CheckMember2D.1"},
         {EsaObjectType.AveragingStrip, "EP_DSG_Elements.EP_RedistStrip.1"},
         {EsaObjectType.SectionOn1D, "DataAddScia.EP_SectionOnBeam.1"},
-        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"}
+        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"},
+        {EsaObjectType.AbsentGroup, "DataSetScia.EP_AbsentGroup.1"},
+        {EsaObjectType.AbsentBeam, "DataAddSupport.EP_AbsentBeam.1"},
+        {EsaObjectType.AbsentSurface, "DataAddSupport.EP_AbsentSlab.1"},
+        {EsaObjectType.AbsentSupport, "DataAddSupport.EP_AbsentSupport.1"}
     }
 
 
@@ -130,6 +139,7 @@ Partial Module HelperTools
         {EsaObjectType.Selection, "50D04CF8-11B3-4F1B-AB09-CAF908654548"},
         {EsaObjectType.Layer, "06959627-BC30-413C-97DC-B412E4F7E9DA"},
         {EsaObjectType.CrossSection, "CDB98AF7-B4FE-4360-8240-C9F4A34065B3"},
+        {EsaObjectType.CrossSectionNumerical, "09EB4963-199C-4FCC-91F9-FB67D948CDEF"},
         {EsaObjectType.Node, "FCFB763E-A640-42FF-A2DC-2D5FA1A420BF"}, '"E2CADA5A-BD04-4CE2-9F43-C09035196EF8"
         {EsaObjectType.Member1D, "0884F792-2361-4B07-A8D6-828706CB2FE1"},
         {EsaObjectType.Member2D, "2F3C64B3-BAF2-4E26-ACF1-CB6DDBD6BC0F"},
@@ -180,7 +190,11 @@ Partial Module HelperTools
         {EsaObjectType.IntegrationStrip, "78FC8556-8B69-45B2-8174-3E7534ACDCEF"},
         {EsaObjectType.AveragingStrip, "4849FC97-8AF4-4546-BB2E-68337ADBDEB4"},
         {EsaObjectType.SectionOn1D, "27125C4E-D477-4AE4-BAF7-966A7B0E288B"},
-        {EsaObjectType.SectionOn2D, "061DDBA5-F511-4ED1-B546-E75514741D9C"}
+        {EsaObjectType.SectionOn2D, "061DDBA5-F511-4ED1-B546-E75514741D9C"},
+        {EsaObjectType.AbsentGroup, "8DE9BF40-1E64-4E6C-9106-548E16AF1D49"},
+        {EsaObjectType.AbsentBeam, "A62E03BA-D435-41B4-B374-152B583B95E1"},
+        {EsaObjectType.AbsentSurface, "F3C44370-BF99-4858-907A-FB20D2189954"},
+        {EsaObjectType.AbsentSupport, "51B8499B-57FB-4B09-80ED-3063E1765310"}
     }
 
     Public TableTypes As Dictionary(Of EsaObjectType, String) = New Dictionary(Of EsaObjectType, String) From {
@@ -189,6 +203,7 @@ Partial Module HelperTools
         {EsaObjectType.Selection, "EPSelectManager.EP_DBSelectItem.1"},
         {EsaObjectType.Layer, "EP_DSG_Elements.EP_DataLayer.1"},
         {EsaObjectType.CrossSection, "CrossSection.EP_CssGeometry.1"},
+        {EsaObjectType.CrossSectionNumerical, "EP_CrossSection.EP_.1"},
         {EsaObjectType.Node, "EP_DSG_Elements.EP_StructNode.1"},
         {EsaObjectType.Member1D, "EP_DSG_Elements.EP_Beam.1"},
         {EsaObjectType.Member2D, "EP_DSG_Elements.EP_Plane.1"},
@@ -239,7 +254,11 @@ Partial Module HelperTools
         {EsaObjectType.IntegrationStrip, "EP_DSG_Elements.8.00.EP_CheckMember2D.1"},
         {EsaObjectType.AveragingStrip, "EP_DSG_Elements.EP_RedistStrip.1"},
         {EsaObjectType.SectionOn1D, "DataAddScia.EP_SectionOnBeam.1"},
-        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"}
+        {EsaObjectType.SectionOn2D, "DataAddScia.EP_SectionOnSlab.1"},
+        {EsaObjectType.AbsentGroup, "DataSetScia.EP_AbsentGroup.1"},
+        {EsaObjectType.AbsentBeam, "DataAddSupport.EP_AbsentBeam.1"},
+        {EsaObjectType.AbsentSurface, "DataAddSupport.EP_AbsentSlab.1"},
+        {EsaObjectType.AbsentSupport, "DataAddSupport.EP_AbsentSupport.1"}
     }
 
 

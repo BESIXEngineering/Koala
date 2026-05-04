@@ -1,5 +1,4 @@
 ﻿Imports Koala.Koala
-Imports Rhino.DocObjects
 
 Public Class ModelData
     Public NodeMap As Dictionary(Of String, Node)
@@ -83,6 +82,8 @@ Public Class ModelData
     Public AveragingStrips(,) As String
     Public SectionOn1D(,) As String
     Public SectionOn2D(,) As String
+
+    Public AbsentElement(,) As String
 
     ''' <summary>
     ''' Find the matching name of the node as mapped in the model

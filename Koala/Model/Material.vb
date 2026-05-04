@@ -52,20 +52,11 @@ Public Class Material
 
         Dim splittingChars As Char() = {","c, ";"c}
         Dim equalityChars As Char() = {"="c, ":"c}
+        Dim key As String, value As String
 
-        For Each prop In serialized.Split(splittingChars)
-            Dim parts As String() = prop.Split(equalityChars, 2)
-            Dim key As String = parts(0).Trim().ToLower()
-            Dim value As String = parts(1).Trim()
-
-            'Strip outer quotes from key, if any
-            If key.StartsWith(""""c) AndAlso key.EndsWith(""""c) Then
-                key = key.Substring(1, key.Length - 2)
-            End If
-            'Strip outer quotes from value, if any
-            If value.StartsWith(""""c) AndAlso value.EndsWith(""""c) Then
-                value = value.Substring(1, value.Length - 2)
-            End If
+        For Each kvp In ParseKeyValuePairs(serialized, splittingChars, equalityChars)
+            key = kvp.Item1.ToLower()
+            value = kvp.Item2
 
             If key = "name" Then
                 Name = value

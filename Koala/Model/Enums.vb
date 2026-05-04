@@ -27,6 +27,23 @@ Namespace Koala
                 End If
             End Sub
 
+            Public Sub New(_name As String, _description As String, _access As GH_ParamAccess, _options As [Enum](), Optional defaultIndex As Integer = 0, Optional setPersistant As Boolean = True)
+                MyBase.New()
+                Name = _name
+                NickName = _name
+                Description = _description
+                Access = _access
+
+                For Each item In _options
+                    Dim s As String = GetEnumDescription(item)
+                    AddNamedValue(s, Convert.ToInt32(item))
+                    Description += " | " & s & "=" & Convert.ToInt32(item).ToString()
+                Next
+                If setPersistant Then
+                    SetPersistentData(defaultIndex)
+                End If
+            End Sub
+
             ' Get the private field "m_namedValues" using reflection
             Dim namedValuesField As FieldInfo = Me.GetType().BaseType.GetField("m_namedValues", BindingFlags.NonPublic Or BindingFlags.Instance)
 
@@ -416,6 +433,7 @@ Namespace Koala
         SurfaceLoad
         ThermalLoad
         NonLinear
+        ModelModifier
     End Enum
 
     ''' <summary>
@@ -429,6 +447,7 @@ Namespace Koala
         Layer
         Material
         CrossSection
+        CrossSectionNumerical
         Selection
 
         Node
@@ -496,6 +515,12 @@ Namespace Koala
 
         SectionOn1D
         SectionOn2D
+
+        AbsentGroup
+        AbsentElement
+        AbsentBeam
+        AbsentSurface
+        AbsentSupport
     End Enum
 
     Public Enum LoadCaseType

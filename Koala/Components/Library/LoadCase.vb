@@ -25,6 +25,9 @@ Namespace Koala
             pManager.AddTextParameter("Name", "Name", "Load case name (e.g. LC1-selfweight)", GH_ParamAccess.item)
             pManager.AddParameter(New Param_Enum("Type", "Load case type", GH_ParamAccess.item, LoadCaseType.Permanent))
             pManager.AddTextParameter("LoadGroup", "LoadGroup", "Name of the belonging load group (e.g. LG1)", GH_ParamAccess.item)
+
+            Dim opt As Integer = pManager.AddTextParameter("ModificationGroup", "ModificationGroup", "Name of the belonging modification group, if applicable (e.g. MG1)", GH_ParamAccess.item)
+            pManager.Param(opt).Optional = True
         End Sub
 
         ''' <summary>
@@ -45,6 +48,7 @@ Namespace Koala
             Dim lcasename As String = ""
             Dim lcasetype As LoadCaseType = LoadCaseType.Permanent
             Dim lcasegroup As String = ""
+            Dim modificationgroup As String = ""
 
             If (Not DA.GetData(0, lcasename)) Then Return
             DA.GetData(0, lcasename)
@@ -53,6 +57,7 @@ Namespace Koala
             If DA.GetData(1, i) Then lcasetype = CType(i, LoadCaseType)
 
             If (Not DA.GetData(2, lcasegroup)) Then Return
+            DA.GetData(3, modificationgroup)
 
             'Check and process input data
             If String.IsNullOrEmpty(lcasename) Then
@@ -65,9 +70,14 @@ Namespace Koala
                 Return
             End If
 
+            Dim groups As String = lcasegroup
+            If Not String.IsNullOrEmpty(modificationgroup) Then
+                groups &= "|" & modificationgroup
+            End If
+
             SE_loadcases(0) = lcasename
             SE_loadcases(1) = GetEnumDescription(lcasetype)
-            SE_loadcases(2) = lcasegroup
+            SE_loadcases(2) = groups
 
             DA.SetDataList(0, SE_loadcases)
         End Sub

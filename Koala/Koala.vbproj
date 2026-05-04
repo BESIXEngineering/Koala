@@ -103,6 +103,7 @@
     <Compile Include="Components\Library\SeismicSpectrum.vb" />
     <Compile Include="Components\Loads\FreeSurfaceLoad3.vb" />
     <Compile Include="Components\Loads\FreeSurfaceLoad2.vb" />
+    <Compile Include="Components\ModelModifiers\AbsentElement.vb" />
     <Compile Include="Components\Supports\BeamLineSupport.vb" />
     <Compile Include="Components\Supports\SurfaceEdgeSupport.vb" />
     <Compile Include="Components\Supports\NodeSupport2.vb" />
@@ -209,6 +210,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\ModelModifier.png" />
     <None Include="Resources\Koala.png" />
     <Content Include="Resources\koala.xml.def" />
     <None Include="Resources\2DMember.bmp" />

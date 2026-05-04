@@ -1,4 +1,4 @@
-﻿Imports System.Collections.Generic
+﻿Imports System.Globalization
 Imports System.IO
 Imports Grasshopper.Kernel.Parameters
 Imports Koala.Koala
@@ -311,6 +311,7 @@ Module HelperTools
     End Function
 #End Region
 
+#Region "General helper functions"
     Private Function UnflattenObjectData(dataIn As List(Of String), valuesPerObject As Integer, name As String) As String(,)
         UnflattenObjectData = Nothing
 
@@ -334,6 +335,46 @@ Module HelperTools
 
     End Function
 
+    ''' <summary>
+    ''' Split a flat json-object-like string to extract key-value pairs
+    ''' </summary>
+    ''' <param name="text"></param>
+    ''' <param name="splittingChars"></param>
+    ''' <param name="equalityChars"></param>
+    ''' <returns></returns>
+    Public Iterator Function ParseKeyValuePairs(ByVal text As String, Optional ByVal splittingChars As Char() = Nothing, Optional ByVal equalityChars As Char() = Nothing) As IEnumerable(Of (String, String))
+        If splittingChars Is Nothing Then
+            splittingChars = {","c, ";"c}
+        End If
+        If equalityChars Is Nothing Then
+            equalityChars = {"="c, ":"c}
+        End If
+
+        'Strip outer curly braces, if any
+        If text.StartsWith("{"c) AndAlso text.EndsWith("}"c) Then
+            text = text.Substring(1, text.Length - 2)
+        End If
+
+        For Each prop In text.Split(splittingChars)
+            Dim parts As String() = prop.Split(equalityChars, 2)
+            Dim key As String = parts(0).Trim()
+            Dim value As String = parts(1).Trim()
+
+            'Strip outer quotes from key, if any
+            If key.StartsWith(""""c) AndAlso key.EndsWith(""""c) Then
+                key = key.Substring(1, key.Length - 2)
+            End If
+            'Strip outer quotes from value, if any
+            If value.StartsWith(""""c) AndAlso value.EndsWith(""""c) Then
+                value = value.Substring(1, value.Length - 2)
+            End If
+
+            Yield ((key, value))
+        Next
+    End Function
+#End Region
+
+#Region "XMLWriter"
     Private Sub OpenContainerAndTable(ByRef oSB As Text.StringBuilder, type As Koala.EsaObjectType)
         OpenContainer(oSB, type)
         oSB.AppendLine("<table id=""" & TableIds(type) & """ t=""" & TableTypes(type) & """>")
@@ -398,6 +439,7 @@ Module HelperTools
         Dim enumValue = Koala.GetEnum(Of T)(value)
         ConCat_pvt_enum = ConCat_pvt(p.ToString, Convert.ToInt32(enumValue), Koala.GetEnumDescription(enumValue))
     End Function
+#End Region
 
     Public Sub CreateXMLFile(FileName As String, StructureType As String, MaterialTypes As List(Of String), UILanguage As String, scale As Double, meshSize As Double, RemDuplNodes As Boolean, Tolerance As Double,
                              projectInfo As List(Of String), in_selections As List(Of String), in_layers As List(Of String), in_materials As List(Of String), in_sections As List(Of String),
@@ -413,7 +455,7 @@ Module HelperTools
                              in_slabinternalEdges As List(Of String), in_RigidArms As List(Of String), in_Cables As List(Of String), in_BeamInternalNodes As List(Of String), in_LineHiges As List(Of String),
                              in_ThermalLoadBeams As List(Of String), in_ThermalLoadSurfaces As List(Of String), in_ArbitraryProfiles As List(Of String),
                              in_IntegationStrips As List(Of String), in_SectionOn1D As List(Of String), in_SectionOn2D As List(Of String),
-                             in_AveragingStrips As List(Of String))
+                             in_AveragingStrips As List(Of String), in_AbsentElement As List(Of String))
 
         Dim i As Long
 
@@ -525,7 +567,8 @@ Module HelperTools
             .IntegrationStrips = UnflattenObjectData(in_IntegationStrips, 17, "integration strip"),
             .AveragingStrips = UnflattenObjectData(in_AveragingStrips, 14, "averaging strip"),
             .SectionOn1D = UnflattenObjectData(in_SectionOn1D, 8, "section on 1d"),
-            .SectionOn2D = UnflattenObjectData(in_SectionOn2D, 6, "section on 2d")
+            .SectionOn2D = UnflattenObjectData(in_SectionOn2D, 6, "section on 2d"),
+            .AbsentElement = UnflattenObjectData(in_AbsentElement, 4, "absent element")
         }
 
         'write the XML file
@@ -783,14 +826,41 @@ Module HelperTools
         End If
 
         If modelData.Sections IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.CrossSection)
-            Call WriteSectionHeaders(oSB)
+            ' Distinguish numerical sections (formtype == NUME) and other sections.
+            ' Store indices of either in a separate list
+            Dim numericalIndices As New List(Of Integer)
+            Dim otherIndices As New List(Of Integer)
 
             For i = 0 To modelData.Sections.GetLength(0) - 1
-                Call WriteSection(oSB, modelData.Sections(i, 0), modelData.Sections(i, 1), modelData.Sections(i, 2), modelData.Sections(i, 3))
+                If GetSectionFormType(modelData.Sections(i, 1)) = "NUME" Then
+                    numericalIndices.Add(i)
+                Else
+                    otherIndices.Add(i)
+                End If
             Next i
 
-            Call CloseContainerAndTable(oSB)
+            If otherIndices.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.CrossSection)
+                Call WriteSectionHeaders(oSB)
+
+                For Each i In otherIndices
+                    Call WriteSection(oSB, modelData.Sections(i, 0), modelData.Sections(i, 1), modelData.Sections(i, 2), modelData.Sections(i, 3))
+                Next i
+
+                Call CloseContainerAndTable(oSB)
+            End If
+
+            If numericalIndices.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.CrossSectionNumerical)
+                Call WriteSectionNumericalHeaders(oSB)
+
+                For Each i In numericalIndices
+                    Call WriteSection(oSB, modelData.Sections(i, 0), modelData.Sections(i, 1), modelData.Sections(i, 2), modelData.Sections(i, 3))
+                Next i
+
+                Call CloseContainerAndTable(oSB)
+            End If
+
         End If
 
         ' Non-linear functions need to be defined at the start in order to be referenced by other members
@@ -1044,6 +1114,80 @@ Module HelperTools
             Next
 
             Call CloseContainerAndTable(oSB)
+        End If
+
+        'Model absences
+        If modelData.AbsentElement IsNot Nothing Then
+            ' Collect all unique AbsentGroup names
+            Dim absentGroupNames As New List(Of String)
+            If modelData.AbsentElement IsNot Nothing Then
+                For i = 0 To modelData.AbsentElement.GetLength(0) - 1
+                    Dim groupName = modelData.AbsentElement(i, 1)
+                    If Not String.IsNullOrEmpty(groupName) AndAlso Not absentGroupNames.Contains(groupName) Then
+                        absentGroupNames.Add(groupName)
+                    End If
+                Next
+            End If
+
+            ' Add AbsentGroup objects to the XML for each unique group name
+            If absentGroupNames.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.AbsentGroup)
+                Call WriteAbsentGroupHeaders(oSB)
+                For Each groupName In absentGroupNames
+                    Call WriteAbsentGroup(oSB, groupName)
+                Next
+                Call CloseContainerAndTable(oSB)
+            End If
+
+            ' Split absent elements into separate tables for supports, beams and surfaces
+            Dim asupportIndices As New List(Of Integer)
+            Dim abeamIndices As New List(Of Integer)
+            Dim asurfaceIndices As New List(Of Integer)
+            For i = 0 To modelData.AbsentElement.GetLength(0) - 1
+                Dim objType As EsaObjectType = Koala.GetEnum(Of EsaObjectType)(modelData.AbsentElement(i, 2))
+                Dim objName As String = modelData.AbsentElement(i, 3)
+                If objType = EsaObjectType.Undefined Then
+                    objType = modelData.FindObjectTypeByName(objName)
+                End If
+                If objType = EsaObjectType.Undefined Then
+                    Throw New Exception("Failed to determine type of object " & objName & " for absence " & modelData.AbsentElement(i, 0))
+                End If
+
+                If objType.ToString().Contains("Support") Then
+                    asupportIndices.Add(i)
+                ElseIf objType = EsaObjectType.Member1D Then
+                    abeamIndices.Add(i)
+                ElseIf objType = EsaObjectType.Member2D Then
+                    asurfaceIndices.Add(i)
+                End If
+            Next
+
+            If asupportIndices.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.AbsentSupport)
+                Call WriteAbsentElementHeaders(oSB)
+                For Each i In asupportIndices
+                    Call WriteAbsentElement(oSB, i, modelData)
+                Next
+                Call CloseContainerAndTable(oSB)
+            End If
+
+            If abeamIndices.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.AbsentBeam)
+                Call WriteAbsentElementHeaders(oSB)
+                For Each i In abeamIndices
+                    Call WriteAbsentElement(oSB, i, modelData)
+                Next
+                Call CloseContainerAndTable(oSB)
+            End If
+
+            If asurfaceIndices.Count > 0 Then
+                Call OpenContainerAndTable(oSB, Koala.EsaObjectType.AbsentSurface)
+                Call WriteAbsentElementHeaders(oSB)
+                For Each i In asurfaceIndices
+                    Call WriteAbsentElement(oSB, i, modelData)
+                Next
+                Call CloseContainerAndTable(oSB)
+            End If
         End If
 
         'Define load cases before mass groups!
@@ -2628,8 +2772,57 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("1", "Catalog ID"))
         oSB.AppendLine(ConCat_ht("2", "Catalog item"))
         oSB.AppendLine(ConCat_ht("3", "Parameters"))
+        oSB.AppendLine(ConCat_ht("4", "Property Modifications"))
+        oSB.AppendLine(ConCat_ht("5", "Flexural buckling z-z"))
+        oSB.AppendLine(ConCat_ht("6", "Flexural buckling y-y"))
         oSB.AppendLine("</h>")
     End Sub
+
+    Private Sub WriteSectionNumericalHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Type"))
+        oSB.AppendLine(ConCat_ht("2", "Detailed"))
+        oSB.AppendLine(ConCat_ht("3", "Material"))
+        oSB.AppendLine(ConCat_ht("4", "Edit buckling curves"))
+        oSB.AppendLine(ConCat_ht("5", "Flexural buckling y-y"))
+        oSB.AppendLine(ConCat_ht("6", "Flexural buckling z-z"))
+        oSB.AppendLine(ConCat_ht("7", "Lateral torsional buckling"))
+        oSB.AppendLine(ConCat_ht("8", "A"))
+        oSB.AppendLine(ConCat_ht("9", "A@y"))
+        oSB.AppendLine(ConCat_ht("10", "A@z"))
+        oSB.AppendLine(ConCat_ht("11", "I@t"))
+        oSB.AppendLine(ConCat_ht("12", "I@y"))
+        oSB.AppendLine(ConCat_ht("13", "I@z"))
+        oSB.AppendLine(ConCat_ht("14", "I@w"))
+        oSB.AppendLine(ConCat_ht("15", "W@ely"))
+        oSB.AppendLine(ConCat_ht("16", "W@elz"))
+        oSB.AppendLine(ConCat_ht("17", "W@ply"))
+        oSB.AppendLine(ConCat_ht("18", "W@plz"))
+        oSB.AppendLine(ConCat_ht("19", "d@y"))
+        oSB.AppendLine(ConCat_ht("20", "d@z"))
+        oSB.AppendLine(ConCat_ht("21", "c@YUCS"))
+        oSB.AppendLine(ConCat_ht("22", "c@ZUCS"))
+        oSB.AppendLine(ConCat_ht("23", "α"))
+        oSB.AppendLine(ConCat_ht("24", "AL"))
+        oSB.AppendLine(ConCat_ht("25", "AD"))
+        oSB.AppendLine(ConCat_ht("26", "M@ply+"))
+        oSB.AppendLine(ConCat_ht("27", "M@ply-"))
+        oSB.AppendLine(ConCat_ht("28", "M@plz+"))
+        oSB.AppendLine(ConCat_ht("29", "M@plz-"))
+        oSB.AppendLine(ConCat_ht("30", "i@y"))
+        oSB.AppendLine(ConCat_ht("31", "i@z"))
+        oSB.AppendLine(ConCat_ht("32", "β y"))
+        oSB.AppendLine(ConCat_ht("33", "β z"))
+        oSB.AppendLine(ConCat_ht("34", "I@YLCS"))
+        oSB.AppendLine(ConCat_ht("35", "I@ZLCS"))
+        oSB.AppendLine(ConCat_ht("36", "I@YZLCS"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Function GetSectionFormType(ByVal sectioncode As String) As String
+        Return Strings.UCase(Strings.Left(sectioncode, 4))
+    End Function
 
     Private Sub WriteSection(ByRef oSB, sectionname, sectioncode, sectiondef, sectionmat) 'write 1 profile: hot-rolled steel or concrete
 
@@ -2639,7 +2832,16 @@ Module HelperTools
         oSB.AppendLine("<obj nm=""" & sectionname & """>")
         oSB.AppendLine(ConCat_pv("0", sectionname)) 'Name
 
-        formtype = Strings.UCase(Strings.Left(sectioncode, 4))
+        ' If the section definition ends with a part between curly brackets {...}, then extract that part
+        Dim propertyModifications As Dictionary(Of String, String) = Nothing
+        If sectiondef.Contains("{") And sectiondef.EndsWith("}") Then
+            Dim modString As String = sectiondef.Substring(sectiondef.IndexOf("{"))
+            propertyModifications = ParseKeyValuePairs(modString).ToDictionary(Of String, String)(Function(kv) kv.Item1.ToLower(), Function(kv) kv.Item2)
+            ' Remove the part between curly brackets from the section definition
+            sectiondef = sectiondef.Substring(0, sectiondef.IndexOf("{"))
+        End If
+
+        formtype = GetSectionFormType(sectioncode)
 
         If formtype = "FORM" Then
             'steel rolled profiles
@@ -2661,6 +2863,91 @@ Module HelperTools
             oSB.AppendLine(ConCat_pv("5", sectiondef & "|" & formcode))
             oSB.AppendLine("</row>")
             oSB.AppendLine("</p3>")
+
+        ElseIf formtype = "NUME" Then
+            'numerical section defined by user
+            oSB.AppendLine(ConCat_pv("1", sectiondef)) ' Description
+            oSB.AppendLine(ConCat_pv("2", "Numerical"))
+            oSB.AppendLine(ConCat_pn("3", sectionmat))
+            ' 4 to 7: buckling
+            Dim propertyKeys As New Dictionary(Of String, Integer) From
+            {
+                {"A", 8},
+                {"Ay", 9},
+                {"Az", 10},
+                {"It", 11},
+                {"Iy", 12},
+                {"Iz", 13},
+                {"Iw", 14},
+                {"Wely", 15},
+                {"Welz", 16},
+                {"Wply", 17},
+                {"Wplz", 18},
+                {"dy", 19},
+                {"dz", 20},
+                {"cYUCS", 21},
+                {"cZUCS", 22},
+                {"α", 23},
+                {"AL", 24},
+                {"AD", 25},
+                {"Mply+", 26},
+                {"Mply-", 27},
+                {"Mplz+", 28},
+                {"Mplz-", 29},
+                {"Rgy", 30},
+                {"Rgz", 31},
+                {"βy", 32},
+                {"βz", 33},
+                {"IYLCS", 34},
+                {"IZLCS", 35},
+                {"IYZLCS", 36}
+            }
+
+            ' factors to convert from mm-based unit to SI (m-based) unit
+            Dim propertyFactors As New Dictionary(Of String, Double) From
+            {
+                {"A", 0.000001},
+                {"Ay", 0.000001},
+                {"Az", 0.000001},
+                {"It", 0.000000000001},
+                {"Iy", 0.000000000001},
+                {"Iz", 0.000000000001},
+                {"Iw", 1.0E-18},
+                {"Wely", 0.000000001},
+                {"Welz", 0.000000001},
+                {"Wply", 0.000000001},
+                {"Wplz", 0.000000001},
+                {"dy", 0.001},
+                {"dz", 0.001},
+                {"cYUCS", 0.001},
+                {"cZUCS", 0.001},
+                {"α", Math.PI / 180},
+                {"AL", 0.001},
+                {"AD", 0.001},
+                {"Mply+", 0.001},
+                {"Mply-", 0.001},
+                {"Mplz+", 0.001},
+                {"Mplz-", 0.001},
+                {"Rgy", 0.001},
+                {"Rgz", 0.001},
+                {"βy", 0.001},
+                {"βz", 0.001},
+                {"IYLCS", 0.000000000001},
+                {"IZLCS", 0.000000000001},
+                {"IYZLCS", 0.000000000001}}
+
+            Dim key As String
+            Dim row As Integer
+            For Each kvp In propertyKeys.OrderBy(Of Integer)(Function(kv) kv.Value)
+                key = kvp.Key.ToLower()
+                row = kvp.Value
+                If propertyModifications IsNot Nothing AndAlso propertyModifications.ContainsKey(key) Then
+                    Dim pvalue As Double = Convert.ToDouble(propertyModifications(key)) * propertyFactors(kvp.Key)
+                    oSB.AppendLine(ConCat_pv(row.ToString(), pvalue.ToString(CultureInfo.CurrentCulture)))
+                Else
+                    'oSB.AppendLine(ConCat_pv(row.ToString(), "0"))
+                End If
+            Next
 
         Else
             Dim catalogueLib As String
@@ -2774,6 +3061,9 @@ Module HelperTools
                         '    catalogueItem = "26"
                         'Case "CFZE" '> ColdFormedZee
                         '    catalogueItem = "27"
+                    Case "IWES"  '> SheetWelded - I symmetric
+                        catalogueLib = "EP_CssLib.EP_ProfLib_SheetWelded.1"
+                        catalogueItem = "0"
                     Case Else
                         Throw New ArgumentException("Invalid Thin-Walled section type " & sectiontype)
                 End Select
@@ -2849,6 +3139,8 @@ Module HelperTools
                     dimensionNameString = "tha;Ba;thb;Bb"
                 Case "DREP" '> DoubleRectangleWithPlates
                     dimensionNameString = "Ba;ha;Bb;hb"
+                Case "IWES" '> SheetWelded - I symmetric
+                    dimensionNameString = "Ba;tha;Bb;thb;Hw;a"
                 Case Else
                     Throw New ArgumentException("Invalid section type " & sectiontype)
             End Select
@@ -2879,6 +3171,46 @@ Module HelperTools
             Next
 
             oSB.AppendLine("</p3>")
+        End If
+
+        ' Add property modifiers
+        If propertyModifications IsNot Nothing And formtype <> "NUME" Then
+
+            Dim multiplierKeys As New Dictionary(Of String, Integer) From
+            {
+                {"ka", 1},
+                {"kay", 2},
+                {"kaz", 3},
+                {"kit", 4},
+                {"kiy", 5},
+                {"kiz", 6}
+            }
+            Dim useMultipliers As Boolean = multiplierKeys.Any(Function(kvp) propertyModifications.ContainsKey(kvp.Key.ToLower()))
+
+            If useMultipliers Then
+                oSB.AppendLine("<p4 t="""">")
+                oSB.AppendLine("<h>")
+                oSB.AppendLine(ConCat_ht("0", "Use property multipliers"))
+                oSB.AppendLine(ConCat_ht("1", "k a"))
+                oSB.AppendLine(ConCat_ht("2", "k ay"))
+                oSB.AppendLine(ConCat_ht("3", "k az"))
+                oSB.AppendLine(ConCat_ht("4", "k ix"))
+                oSB.AppendLine(ConCat_ht("5", "k iy"))
+                oSB.AppendLine(ConCat_ht("6", "k iz"))
+                oSB.AppendLine("</h>")
+                oSB.AppendLine("<row id=""0"">")
+                oSB.AppendLine(ConCat_pv("0", "1"))
+                For Each kvp In multiplierKeys.OrderBy(Of Integer)(Function(k) k.Value)
+                    Dim key As String = kvp.Key.ToLower()
+                    If propertyModifications.ContainsKey(key) Then
+                        oSB.AppendLine(ConCat_pv(kvp.Value.ToString(), propertyModifications(key)))
+                    Else
+                        ' oSB.AppendLine(ConCat_pv(kvp.Value.ToString(), "1.0"))
+                    End If
+                Next
+                oSB.AppendLine("</row>")
+                oSB.AppendLine("</p4>")
+            End If
         End If
 
         oSB.AppendLine("</obj>")
@@ -3354,6 +3686,61 @@ Module HelperTools
 
     End Sub
 
+    Private Sub WriteAbsentGroupHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteAbsentGroup(ByRef oSB, name) 'write 1 load group to the XML stream
+        oSB.AppendLine("<obj nm=""" & name & """>")
+        oSB.AppendLine(ConCat_pv("0", name))
+        oSB.AppendLine("</obj>")
+    End Sub
+
+    Private Sub WriteAbsentElementHeaders(ByRef oSB)
+        oSB.AppendLine("<h>")
+        oSB.AppendLine(ConCat_ht("0", "Name"))
+        oSB.AppendLine(ConCat_ht("1", "Reference Table"))
+        oSB.AppendLine(ConCat_ht("2", "Modification group"))
+        oSB.AppendLine("</h>")
+    End Sub
+
+    Private Sub WriteAbsentElement(oSB As Text.StringBuilder, iAbsent As Long, modelData As ModelData)
+
+        Dim name As String = modelData.AbsentElement(iAbsent, 0)
+        oSB.AppendLine("<obj id=""" & Trim(Str(iAbsent)) & """ nm=""" & name & """>")
+        oSB.AppendLine(ConCat_pv("0", name))
+        'write beam name as reference table
+        oSB.AppendLine("<p1 t="""">")
+        oSB.AppendLine("<h>")
+        oSB.AppendLine("<h0 t=""Member Type""/>")
+        oSB.AppendLine("<h1 t=""Member Type Name""/>")
+        oSB.AppendLine("<h2 t=""Member Name""/>")
+        oSB.AppendLine("</h>")
+
+        Dim objType As EsaObjectType = Koala.GetEnum(Of EsaObjectType)(modelData.AbsentElement(iAbsent, 2))
+        Dim objName As String = modelData.AbsentElement(iAbsent, 3)
+        If objType = EsaObjectType.Undefined Then
+            objType = modelData.FindObjectTypeByName(objName)
+        End If
+        If objType = EsaObjectType.Undefined Then
+            Throw New Exception("Failed to determine type of object " & objName & " for absence " & name)
+        End If
+
+        oSB.AppendLine("<row id=""0"">")
+        oSB.AppendLine(ConCat_pv("0", ContainerIds(objType)))
+        oSB.AppendLine(ConCat_pv("1", ContainerTypes(objType)))
+        oSB.AppendLine(ConCat_pv("2", objName)) ' Name of referenced member
+        oSB.AppendLine("</row>")
+        oSB.AppendLine("</p1>")
+        'end of reference table
+
+        oSB.AppendLine(ConCat_pn("2", modelData.AbsentElement(iAbsent, 1))) ' AbsentGroup name
+        oSB.AppendLine("</obj>")
+
+    End Sub
+
     Private Sub WriteLoadGroupHeaders(ByRef oSB)
         oSB.AppendLine("<h>")
         oSB.AppendLine(ConCat_ht("0", "Name"))
@@ -3644,8 +4031,9 @@ Module HelperTools
         oSB.AppendLine(ConCat_ht("1", "Action type")) '0: Permanent, 1: Variable
         oSB.AppendLine(ConCat_ht("2", "Load type")) '0: Self-weight, 1: Standard, 2: Primary
         oSB.AppendLine(ConCat_ht("3", "Direction")) '0: -Z, 1: +Z, 2: -Y etc.
-        oSB.AppendLine(ConCat_ht("4", "Load group"))
-        oSB.AppendLine(ConCat_ht("5", "Specification"))
+        oSB.AppendLine(ConCat_ht("4", "Specification"))
+        oSB.AppendLine(ConCat_ht("5", "Load group"))
+        oSB.AppendLine(ConCat_ht("6", "Modification group"))
         oSB.AppendLine("</h>")
     End Sub
 
@@ -3672,6 +4060,7 @@ Module HelperTools
             Case Koala.LoadCaseType.Seismic
                 oSB.AppendLine(ConCat_pvt("1", "1", "Variable"))
                 oSB.AppendLine(ConCat_pvt("2", "1", "Dynamic"))
+                oSB.AppendLine(ConCat_pvt("4", "100", "Seismicity"))
                 'Parameters to add for earthquake load cases :
                 'Specification 'seismicity'
                 'Mass Combination to consider
@@ -3689,11 +4078,22 @@ Module HelperTools
 
         End Select
 
-        oSB.AppendLine(ConCat_pn("4", cases(icase, 2)))
-
-        If lctype = Koala.LoadCaseType.Seismic Then
-            oSB.AppendLine(ConCat_pvt("5", "100", "Seismicity"))
+        ' If the groups contains a | character, then the part befor the | is the load group and the part after is the modification group.
+        ' Else it only represents the load group.
+        ' Split the groups string:
+        Dim groups As String = cases(icase, 2)
+        Dim loadGroup As String = groups
+        Dim modificationGroup As String = ""
+        If groups.Contains("|") Then
+            loadGroup = groups.Split("|"c)(0).Trim()
+            modificationGroup = groups.Split("|"c)(1).Trim()
         End If
+        If String.IsNullOrEmpty(modificationGroup) Then
+            modificationGroup = "None"
+        End If
+
+        oSB.AppendLine(ConCat_pn("5", loadGroup))
+        oSB.AppendLine(ConCat_pn("6", modificationGroup))
 
         oSB.AppendLine("</obj>")
 
@@ -4447,7 +4847,6 @@ Module HelperTools
 
         Dim loads = modelData.NodePointMoments
         oSB.AppendLine("<obj id=""" & Trim(Str(iload)) & """ nm=""" & "MLP" & Trim(Str(iload)) & """>")
-
 
         oSB.AppendLine(ConCat_pn("0", loads(iload, 0)))
         oSB.AppendLine(ConCat_pv("1", "MLP" & Trim(Str(iload))))

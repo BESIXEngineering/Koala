@@ -6,6 +6,15 @@
 ### Fixed
 ### Security
 
+## 3.25.0 (2026-05-04)
+### Added
+- Support for Numerical Cross Section definitions
+- Support for Steel Cross Section type SheetWelded I, symmetric (IWES)
+- Html help with examples for Cross-Sections component
+- Model Modifier: Added AbsentElement component to define an absent beam, slab or support
+- Added ModificationGroup input parameter to LoadCase component
+	NOTE: will give an error when opening scripts that use a LoadCase component without the new parameter. This error can be safely ignored.
+
 ## 3.24.0 (2026-01-07)
 ### Added
 - KoalaConvert component providing a simple conversion mechanism for any object that has implemented a ToKoala method returning a List(Of Dictionary(Of String, String)). Each Dictionary in the List should hold the required object properties of a single Koala object.
@@ -16,7 +25,6 @@
 ## 3.23.1 (2025-02-07)
 ### Added
 - ISEC profile type added to recognised section types
-
 ### Fixed
 - Fixed Enum error (duplicate Enum value) in LoadCaseType
 
