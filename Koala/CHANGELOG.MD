@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.25.1 (2026-05-07)
+### Fixed
+- LoadCase without ModificationGroup no longer gets assigned a "None" p6 element (Modification group) value in the XML file, as this can occasionally cause SCIA load issues.
+
 ## 3.25.0 (2026-05-04)
 ### Added
 - Support for Numerical Cross Section definitions

@@ -4089,11 +4089,16 @@ Module HelperTools
             modificationGroup = groups.Split("|"c)(1).Trim()
         End If
         If String.IsNullOrEmpty(modificationGroup) Then
-            modificationGroup = "None"
+            ' modificationGroup = "None"  
+            ' This can throw errors in SCIA (not always, but not clear why it sometimes does). Best to leave empty if there is no modification group.
+            ' Todo: Investigate - Seems to happen in models where Modification Groups already exist or once existed > some Id conflicts perhaps?
         End If
 
         oSB.AppendLine(ConCat_pn("5", loadGroup))
-        oSB.AppendLine(ConCat_pn("6", modificationGroup))
+
+        If Not String.IsNullOrEmpty(modificationGroup) Then
+            oSB.AppendLine(ConCat_pn("6", modificationGroup))
+        End If
 
         oSB.AppendLine("</obj>")
 
