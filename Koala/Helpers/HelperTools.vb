@@ -1190,6 +1190,21 @@ Module HelperTools
             End If
         End If
 
+        ' Define load groups before load cases and combinations!
+        If modelData.LoadGroups IsNot Nothing Then
+            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadGroup)
+            Call WriteLoadGroupHeaders(oSB)
+
+            For i = 0 To modelData.LoadGroups.GetLength(0) - 1
+                If i > 0 And i Mod 100 = 0 Then
+                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load group: " + Str(i))
+                End If
+                Call WriteLoadGroup(oSB, i, modelData.LoadGroups)
+            Next
+
+            Call CloseContainerAndTable(oSB)
+        End If
+
         'Define load cases before mass groups!
         If modelData.LoadCases IsNot Nothing Then
             Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadCase)
@@ -1200,20 +1215,6 @@ Module HelperTools
                     Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load case: " + Str(i))
                 End If
                 Call WriteLoadCase(oSB, i, modelData.LoadCases)
-            Next
-
-            Call CloseContainerAndTable(oSB)
-        End If
-
-        If modelData.LoadGroups IsNot Nothing Then
-            Call OpenContainerAndTable(oSB, Koala.EsaObjectType.LoadGroup)
-            Call WriteLoadGroupHeaders(oSB)
-
-            For i = 0 To modelData.LoadGroups.GetLength(0) - 1
-                If i > 0 And i Mod 100 = 0 Then
-                    Rhino.RhinoApp.WriteLine("Creating the XML file string in memory... load group: " + Str(i))
-                End If
-                Call WriteLoadGroup(oSB, i, modelData.LoadGroups)
             Next
 
             Call CloseContainerAndTable(oSB)

@@ -6,6 +6,10 @@
 ### Fixed
 ### Security
 
+## 3.25.2 (2026-06-10)
+### Fixed
+- Write LoadGroup objects before LoadCase objects in XML, so that LoadCases can reference the correct LoadGroups.
+
 ## 3.25.1 (2026-05-07)
 ### Fixed
 - LoadCase without ModificationGroup no longer gets assigned a "None" p6 element (Modification group) value in the XML file, as this can occasionally cause SCIA load issues.
